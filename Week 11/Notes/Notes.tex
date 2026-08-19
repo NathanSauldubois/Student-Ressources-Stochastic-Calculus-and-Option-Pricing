@@ -1,0 +1,2323 @@
+\documentclass[11pt]{article}
+
+% ============================================================
+% Packages
+% ============================================================
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,mathtools,amsthm}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{microtype}
+\usepackage{graphicx}
+
+% ============================================================
+% Macros
+% ============================================================
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Pbb}{\mathbb{P}}
+\newcommand{\F}{\mathcal{F}}
+\newcommand{\Qbb}{\mathbb{Q}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\dd}{\,\mathrm{d}}
+
+% ============================================================
+% Environments
+% ============================================================
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+\newtheorem{remark}{Remark}
+
+\theoremstyle{plain}
+\newtheorem{proposition}{Proposition}
+\newtheorem{theorem}{Theorem}
+
+% ============================================================
+% Title
+% ============================================================
+\title{\textbf{Change of Numeraire}\\
+\large MSFE6233 --- Option Pricing}
+\author{Nathan Sauldubois}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\vspace{-1em}
+
+\section{Motivation and general principle}
+
+
+In the Black--Scholes framework, and more generally in arbitrage-free
+continuous-time models, the standard pricing principle says that
+discounted asset prices are martingales under a suitable risk-neutral
+measure.
+Usually, the discounting is performed using the money market account,
+which leads to the familiar statement that
+$
+D(t)S(t)
+$
+is a martingale under the risk-neutral measure.
+
+However, there is nothing fundamentally special about the money market
+account.
+More generally, one may choose any strictly positive traded asset
+$
+N(t)
+$
+as a unit of account.
+Such an asset is called a \emph{numeraire}.
+Once a numeraire is chosen, every asset price can be expressed in units
+of this numeraire, i.e.
+$
+S^N(t):=\frac{S(t)}{N(t)}.
+$
+
+The key idea of the change of numeraire is that a change of unit of
+account naturally comes with a change of probability measure.
+More precisely, for each admissible numeraire \(N\), there exists an
+associated equivalent martingale measure, under which prices expressed
+in units of \(N\) are martingales.
+Thus, instead of working with
+$
+D(t)S(t),
+$
+one may work with
+$
+S(t)/N(t),
+$
+provided one also changes the pricing measure accordingly.
+
+This point of view is conceptually important and practically very
+useful.
+
+\paragraph{Why is this useful?}
+
+First, it gives a more flexible formulation of risk-neutral valuation.
+The standard money-market numeraire is only one possible choice among
+many others.
+Depending on the derivative being priced, another numeraire may lead to
+a simpler pricing formula or a more convenient dynamics.
+
+Second, it allows one to simplify the treatment of stochastic interest
+rates.
+When pricing under the money-market numeraire, one often has to handle
+the joint randomness of the payoff and the discount factor.
+By choosing a more suitable numeraire, such as a zero-coupon bond
+maturing at the payoff date, one can often absorb the discounting into
+the numeraire and obtain a cleaner expectation formula.
+
+Third, the change of numeraire is particularly important in fixed-income
+and FX modeling.
+For instance, choosing a zero-coupon bond as numeraire leads to the
+\(T\)-forward measure, under which forward prices become martingales.
+Likewise, in FX markets, changing from the domestic to the foreign
+money-market account naturally leads to the foreign pricing measure.
+
+\paragraph{General principle.}
+
+The guiding principle of the chapter is therefore the following:
+
+\begin{quote}
+Choose a positive traded asset \(N\) as numeraire, express all prices in
+units of \(N\), and switch to the associated probability measure under
+which the denominated prices become martingales.
+\end{quote}
+
+This is exactly the same philosophy as ordinary risk-neutral pricing,
+but formulated in a more general and more powerful way.
+
+\paragraph{What will be studied in this lecture?}
+
+We proceed in four steps.
+
+First, we recall the notion of numeraire and explain how a new
+probability measure is associated with each choice of numeraire.
+
+Second, we derive the general pricing formula under an arbitrary
+numeraire and explain the martingale property of denominated prices.
+
+Third, we revisit It\^o calculus for ratio processes, in order to see
+how asset dynamics transform when the numeraire is changed.
+
+Finally, we study the most important examples:
+the money market account, the stock as numeraire, and the zero-coupon
+bond numeraire, with particular emphasis on forward measures and their
+applications to derivative pricing.
+
+\subsection{It\^o calculus refresher for ratio processes}
+
+To use the change-of-numeraire method effectively, it is useful to
+recall how It\^o's formula applies to ratios of stochastic processes.
+
+\paragraph{Why ratios appear.}
+Once a numeraire \(N(t)\) has been chosen, the relevant price process is
+no longer \(S(t)\) itself, but the denominated price
+\[
+\frac{S(t)}{N(t)}.
+\]
+The dynamics of this ratio determine whether the process is a martingale
+under the associated measure.
+
+\paragraph{General setting.}
+Let \(S(t)\) and \(N(t)\) be two strictly positive It\^o processes of the form
+\[
+\mathrm{d}S(t)=\mu_S(t)S(t)\,\mathrm{d}t+\sigma_S(t)S(t)\,\mathrm{d}W(t),
+\]
+\[
+\mathrm{d}N(t)=\mu_N(t)N(t)\,\mathrm{d}t+\sigma_N(t)N(t)\,\mathrm{d}W(t),
+\]
+where, for simplicity, we write the one-dimensional case.
+
+We want to compute the dynamics of
+\[
+R(t):=\frac{S(t)}{N(t)}.
+\]
+
+\paragraph{It\^o formula for the ratio.}
+Applying It\^o's formula to the map
+\[
+f(s,n)=\frac{s}{n},
+\]
+we obtain
+\[
+\mathrm{d}\Big(\frac{S(t)}{N(t)}\Big)
+=
+\frac{1}{N(t)}\,\mathrm{d}S(t)
+-
+\frac{S(t)}{N(t)^2}\,\mathrm{d}N(t)
++
+\frac{S(t)}{N(t)^3}\,\mathrm{d}\langle N\rangle_t
+-
+\frac{1}{N(t)^2}\,\mathrm{d}\langle S,N\rangle_t.
+\]
+
+Using
+\[
+\mathrm{d}\langle N\rangle_t=\sigma_N(t)^2N(t)^2\,\mathrm{d}t,
+\qquad
+\mathrm{d}\langle S,N\rangle_t=\sigma_S(t)\sigma_N(t)S(t)N(t)\,\mathrm{d}t,
+\]
+this yields
+\[
+\mathrm{d}\Big(\frac{S(t)}{N(t)}\Big)
+=
+\frac{S(t)}{N(t)}
+\Big(
+\mu_S(t)-\mu_N(t)+\sigma_N(t)^2-\sigma_S(t)\sigma_N(t)
+\Big)\mathrm{d}t
++
+\frac{S(t)}{N(t)}\big(\sigma_S(t)-\sigma_N(t)\big)\mathrm{d}W(t).
+\]
+
+\paragraph{Interpretation of the drift term.}
+This formula shows that the drift of the ratio is not simply the
+difference of the two drifts.
+There is an additional quadratic-variation correction term coming from
+It\^o's formula.
+
+This is exactly why a change of numeraire generally requires a change of
+measure: under the original measure, the process \(S(t)/N(t)\) does not
+usually have zero drift.
+
+\paragraph{Special case: money market account.}
+If \(N(t)=B(t)\) is the money market account, then
+\[
+\mathrm{d}B(t)=r(t)B(t)\,\mathrm{d}t,
+\]
+so \(\sigma_N(t)=0\).
+In that case,
+\[
+\mathrm{d}\Big(\frac{S(t)}{B(t)}\Big)
+=
+\frac{S(t)}{B(t)}\big(\mu_S(t)-r(t)\big)\mathrm{d}t
++
+\frac{S(t)}{B(t)}\sigma_S(t)\mathrm{d}W(t).
+\]
+
+Under the usual risk-neutral measure, we have \(\mu_S(t)=r(t)\), and
+therefore
+\[
+\mathrm{d}\Big(\frac{S(t)}{B(t)}\Big)
+=
+\frac{S(t)}{B(t)}\sigma_S(t)\mathrm{d}W(t),
+\]
+which is the familiar martingale property of discounted prices.
+
+\paragraph{Logarithmic viewpoint.}
+It is also useful to write
+\[
+\log\Big(\frac{S(t)}{N(t)}\Big)=\log S(t)-\log N(t).
+\]
+This can simplify computations when both \(S\) and \(N\) are geometric
+It\^o processes.
+
+\paragraph{Main lesson.}
+The change of numeraire amounts to studying ratio processes.
+It\^o's formula shows explicitly how their drift and volatility are
+modified, and it explains why the appropriate martingale property only
+holds after the corresponding change of measure.
+
+\paragraph{What comes next.}
+We now turn to the main examples of numeraires and illustrate how the
+general pricing formula simplifies in concrete situations.
+
+
+\section{Numeraire, measure, and martingale property}
+
+\subsection{Choice of numeraire}
+
+We begin by formalizing the notion of numeraire.
+
+\paragraph{Definition.}
+A \emph{numeraire} is a strictly positive traded asset chosen as the
+unit of account.
+Once a numeraire \(N(t)\) has been selected, any asset price \(S(t)\)
+can be expressed in units of this numeraire through the ratio
+\[
+S^N(t):=\frac{S(t)}{N(t)}.
+\]
+The main idea is that pricing can be carried out using these
+denominated prices instead of the original dollar prices.  
+
+\paragraph{The standard choice.}
+In the usual Black--Scholes framework, the natural numeraire is the
+money market account
+\[
+B(t)=e^{\int_0^t R(s)\,\mathrm{d}s},
+\]
+or, in the constant-rate case,
+\[
+B(t)=e^{rt}B(0).
+\]
+Choosing \(B(t)\) as numeraire leads to the standard discounted price
+process
+\[
+\frac{S(t)}{B(t)}=D(t)S(t),
+\qquad D(t)=\frac1{B(t)},
+\]
+which is a martingale under the usual risk-neutral measure. 
+
+\paragraph{Why can we choose another numeraire?}
+The important point is that the money market account is only one
+possible choice.
+In any arbitrage-free model without dividends, one may use any strictly
+positive traded asset as numeraire.
+Possible choices include:
+\begin{itemize}[leftmargin=1.4em]
+\item the domestic money market account,
+\item the foreign money market account,
+\item a zero-coupon bond maturing at some fixed date \(T\),
+\item or even a derivative asset, provided its price remains strictly positive.
+\end{itemize}
+Each such choice comes with its own associated equivalent martingale
+measure. 
+\paragraph{Dynamics of the numeraire under the risk-neutral measure.}
+
+Let \(N(t)\) be a strictly positive traded asset, and assume that we work
+under the usual risk-neutral measure \(\widetilde{\mathbb P}\)
+associated with the money market account
+\[
+B(t)=\exp\!\Big(\int_0^t R(s)\,\mathrm{d}s\Big).
+\]
+
+Since \(N\) is a traded asset, its discounted price
+\[
+D(t)N(t)=\frac{N(t)}{B(t)}
+\]
+must be a \(\widetilde{\mathbb P}\)-martingale.
+
+Under the usual square-integrability assumptions, the martingale
+representation theorem implies that there exists an adapted process
+\(\nu(t)\in\R^d\) such that
+\[
+\mathrm{d}\big(D(t)N(t)\big)
+=
+D(t)N(t)\,\nu(t)\cdot \mathrm{d}\widetilde W(t).
+\]
+
+Equivalently,
+\[
+\frac{\mathrm{d}\big(D(t)N(t)\big)}{D(t)N(t)}
+=
+\nu(t)\cdot \mathrm{d}\widetilde W(t).
+\]
+
+Since
+\[
+\mathrm{d}D(t)=-R(t)D(t)\,\mathrm{d}t,
+\]
+It\^o's product rule yields
+\[
+\mathrm{d}\big(D(t)N(t)\big)
+=
+D(t)\,\mathrm{d}N(t)+N(t)\,\mathrm{d}D(t),
+\]
+because \(D\) has finite variation and therefore
+\[
+\mathrm{d}\langle D,N\rangle_t=0.
+\]
+
+Substituting the dynamics of \(D\), we obtain
+\[
+\mathrm{d}\big(D(t)N(t)\big)
+=
+D(t)\Big(\mathrm{d}N(t)-R(t)N(t)\,\mathrm{d}t\Big).
+\]
+
+Comparing this with
+\[
+\mathrm{d}\big(D(t)N(t)\big)
+=
+D(t)N(t)\,\nu(t)\cdot \mathrm{d}\widetilde W(t),
+\]
+we deduce that the numeraire \(N\) satisfies
+\[
+\boxed{
+\mathrm{d}N(t)
+=
+R(t)N(t)\,\mathrm{d}t
++
+N(t)\,\nu(t)\cdot \mathrm{d}\widetilde W(t).
+}
+\]
+
+\paragraph{Interpretation.}
+
+This formula shows that, under the risk-neutral measure, every strictly
+positive traded numeraire has drift equal to the short rate \(R(t)\).
+Only its volatility process \(\nu(t)\) depends on the specific choice of
+numeraire.
+
+Thus:
+\begin{itemize}[leftmargin=1.4em]
+\item the money market account corresponds to the special case
+\[
+\nu(t)=0,
+\]
+\item a risky numeraire has the same drift \(R(t)\), but a non-zero
+volatility process \(\nu(t)\).
+\end{itemize}
+
+\paragraph{Integrated form.}
+
+The previous SDE can be written explicitly as
+\[
+N(t)
+=
+N(0)\exp\!\Big(
+\int_0^t \Big(R(s)-\frac12\|\nu(s)\|^2\Big)\,\mathrm{d}s
++
+\int_0^t \nu(s)\cdot \mathrm{d}\widetilde W(s)
+\Big).
+\]
+
+This makes it clear that \(N(t)\) remains strictly positive, as required
+for a valid numeraire.
+
+
+\paragraph{Main principle.}
+Once a numeraire \(N\) is chosen, the relevant object is no longer the
+discounted price \(D(t)S(t)\), but rather the denominated price
+\[
+\frac{S(t)}{N(t)}.
+\]
+The fundamental theorem is then reformulated as follows: associated with
+each numeraire \(N\), there exists an equivalent martingale measure
+\(\Qbb^N\) under which prices expressed in units of \(N\) are
+martingales. In this sense, the ordinary risk-neutral measure is simply
+the special case corresponding to the money market account. 
+
+\paragraph{Dynamics of denominated asset prices under the new measure.}
+
+Let \(S(t)\) be a traded asset and let \(N(t)\) be a strictly positive
+traded numeraire.
+Under the usual risk-neutral measure \(\widetilde{\mathbb P}\), suppose
+that
+\[
+\mathrm{d}S(t)
+=
+R(t)S(t)\,\mathrm{d}t
++
+S(t)\sigma(t)\cdot \mathrm{d}\widetilde W(t),
+\]
+and, as shown above,
+\[
+\mathrm{d}N(t)
+=
+R(t)N(t)\,\mathrm{d}t
++
+N(t)\nu(t)\cdot \mathrm{d}\widetilde W(t).
+\]
+
+We define the denominated price process
+\[
+S^N(t):=\frac{S(t)}{N(t)}.
+\]
+
+\paragraph{Step 1: dynamics under \(\widetilde{\mathbb P}\).}
+
+Applying It\^o's formula to the ratio \(S(t)/N(t)\), we obtain
+\[
+\mathrm{d}S^N(t)
+=
+S^N(t)
+\Big(
+\|\nu(t)\|^2-\sigma(t)\cdot\nu(t)
+\Big)\mathrm{d}t
++
+S^N(t)\big(\sigma(t)-\nu(t)\big)\cdot \mathrm{d}\widetilde W(t).
+\]
+
+Thus, under the original risk-neutral measure
+\(\widetilde{\mathbb P}\), the denominated price process generally has
+a non-zero drift.
+
+\paragraph{Step 2: change of measure.}
+
+Let \(\widetilde{\mathbb P}^N\) be the probability measure associated
+with the numeraire \(N\).
+Its density with respect to \(\widetilde{\mathbb P}\) is generated by
+the process \(\nu\), and Girsanov's theorem implies that
+\[
+\widetilde W^N(t)
+:=
+\widetilde W(t)-\int_0^t \nu(s)\,\mathrm{d}s
+\]
+is a Brownian motion under \(\widetilde{\mathbb P}^N\).
+
+Equivalently,
+\[
+\mathrm{d}\widetilde W(t)
+=
+\mathrm{d}\widetilde W^N(t)+\nu(t)\,\mathrm{d}t.
+\]
+
+Substituting this into the previous dynamics gives
+\begin{align*}
+\mathrm{d}S^N(t)
+&=
+S^N(t)
+\Big(
+\|\nu(t)\|^2-\sigma(t)\cdot\nu(t)
+\Big)\mathrm{d}t
++
+S^N(t)\big(\sigma(t)-\nu(t)\big)\cdot
+\big(\mathrm{d}\widetilde W^N(t)+\nu(t)\,\mathrm{d}t\big)
+\\
+&=
+S^N(t)\big(\sigma(t)-\nu(t)\big)\cdot \mathrm{d}\widetilde W^N(t),
+\end{align*}
+since the drift terms cancel.
+
+Hence, under the measure associated with the numeraire \(N\), the
+denominated asset price is driftless:
+\[
+\boxed{
+\mathrm{d}S^N(t)
+=
+S^N(t)\big(\sigma(t)-\nu(t)\big)\cdot \mathrm{d}\widetilde W^N(t).
+}
+\]
+
+\paragraph{Main consequence.}
+
+This formula makes the change-of-numeraire principle completely explicit:
+under the measure associated with \(N\), the denominated price process
+\(S(t)/N(t)\) is a local martingale, and in the present setting a true
+martingale.
+
+\paragraph{Pedagogical message.}
+
+The important point is the following:
+\begin{quote}
+changing numeraire removes the drift of the denominated price, but it
+also changes its volatility.
+\end{quote}
+
+More precisely, the volatility of \(S^N(t)\) under the new measure is
+not \(\sigma(t)\), but
+\[
+\sigma(t)-\nu(t).
+\]
+
+Thus a change of numeraire does not simply relabel prices:
+it also changes the stochastic dynamics of the relevant processes.
+
+\paragraph{Special case.}
+
+If the numeraire is the money market account, then \(\nu(t)=0\), so
+\[
+S^N(t)=\frac{S(t)}{B(t)}
+\]
+and the above formula reduces to the familiar risk-neutral dynamics
+\[
+\mathrm{d}\Big(\frac{S(t)}{B(t)}\Big)
+=
+\frac{S(t)}{B(t)}\sigma(t)\cdot \mathrm{d}\widetilde W(t).
+\]
+
+
+\paragraph{Why is the choice of numeraire useful?}
+The choice of numeraire is largely a matter of convenience.
+A suitable numeraire can simplify both the pricing formula and the asset
+dynamics.
+For example, choosing a zero-coupon bond maturing at \(T\) leads to the
+\(T\)-forward measure, under which the forward price process becomes a
+martingale, which is particularly convenient for bond options and
+interest-rate derivatives. More generally, different numeraires are
+adapted to different classes of problems, such as fixed-income or FX
+pricing. 
+
+\paragraph{What we do next.}
+In the next subsection, we explain how a probability measure is attached
+to a given numeraire and why, under that new measure, the denominated
+asset prices become martingales.
+
+
+\subsection{Associated probability measures}
+
+We now explain how a new probability measure is associated with a given
+choice of numeraire.
+
+\paragraph{General idea.}
+Suppose that \(N(t)\) is a strictly positive traded asset chosen as
+numeraire.
+The goal is to construct a probability measure \(\Qbb^N\) under which
+all asset prices expressed in units of \(N\) become martingales.
+
+This is the natural extension of the usual risk-neutral construction:
+when the money market account \(B(t)\) is chosen as numeraire, the
+associated measure is precisely the standard risk-neutral measure.
+
+\paragraph{Radon--Nikodym density.}
+Let \(B(t)\) denote the money market account, and let \(\Qbb\) be the
+usual risk-neutral measure associated with \(B\).
+The probability measure \(\Qbb^N\) associated with the numeraire \(N\)
+is defined through the density process
+\[
+L_t
+:=
+\frac{\mathrm{d}\Qbb^N}{\mathrm{d}\Qbb}\Big|_{\mathcal{F}_t}
+=
+\frac{N(t)/B(t)}{N(0)/B(0)}.
+\]
+
+Equivalently,
+\[
+L_t
+=
+\frac{D(t)N(t)}{D(0)N(0)},
+\qquad D(t)=\frac1{B(t)}.
+\]
+
+Since \(N\) is a traded asset, the discounted process \(D(t)N(t)\) is a
+\(\Qbb\)-martingale.
+Therefore \(L_t\) is a positive \(\Qbb\)-martingale with
+\[
+\E^\Qbb[L_t]=1,
+\]
+so it indeed defines a new probability measure equivalent to \(\Qbb\).
+
+\paragraph{Change of measure between two numeraires.}
+
+Let \(N(t)\) and \(M(t)\) be two strictly positive traded numeraires, and
+let \(\Qbb^N\) and \(\Qbb^M\) be their associated probability measures.
+
+By definition, with respect to the usual risk-neutral measure
+\(\widetilde{\mathbb P}\), we have
+\[
+\frac{\mathrm{d}\Qbb^N}{\mathrm{d}\widetilde{\mathbb P}}\Big|_{\F_t}
+=
+\frac{D(t)N(t)}{D(0)N(0)},
+\qquad
+\frac{\mathrm{d}\Qbb^M}{\mathrm{d}\widetilde{\mathbb P}}\Big|_{\F_t}
+=
+\frac{D(t)M(t)}{D(0)M(0)},
+\]
+where
+\[
+D(t)=\frac1{B(t)}.
+\]
+
+Taking the ratio of these two Radon--Nikodym derivatives, we obtain the
+density process of \(\Qbb^M\) with respect to \(\Qbb^N\):
+\[
+\frac{\mathrm{d}\Qbb^M}{\mathrm{d}\Qbb^N}\Big|_{\F_t}
+=
+\frac{D(t)M(t)}{D(0)M(0)}
+\frac{D(0)N(0)}{D(t)N(t)}
+=
+\frac{N(0)M(t)}{N(t)M(0)}.
+\]
+
+Hence, for every \(t\in[0,T]\),
+\[
+\boxed{
+\frac{\mathrm{d}\Qbb^M}{\mathrm{d}\Qbb^N}\Big|_{\F_t}
+=
+\frac{N(0)M(t)}{N(t)M(0)}.
+}
+\]
+
+In particular, at terminal time \(T\),
+\[
+\boxed{
+\frac{\mathrm{d}\Qbb^M}{\mathrm{d}\Qbb^N}
+=
+\frac{N(0)M(T)}{N(T)M(0)}.
+}
+\]
+
+\paragraph{Interpretation.}
+
+This formula shows that the change of measure between two numeraires is
+entirely determined by their relative value.
+
+More precisely, changing numeraire from \(N\) to \(M\) amounts to
+reweighting probabilities according to the ratio
+\[
+\frac{M(T)}{N(T)}.
+\]
+
+Thus the relation between the two associated measures is encoded in the
+relative performance of the two numeraires.
+
+\paragraph{A useful consequence.}
+
+For every integrable random variable \(X\), Bayes' rule gives
+\[
+\E^{\Qbb^M}[X\mid\F_t]
+=
+\frac{1}{L_t^{M/N}}
+\E^{\Qbb^N}[L_T^{M/N}X\mid\F_t],
+\]
+where
+\[
+L_t^{M/N}
+:=
+\frac{\mathrm{d}\Qbb^M}{\mathrm{d}\Qbb^N}\Big|_{\F_t}
+=
+\frac{N(0)M(t)}{N(t)M(0)}.
+\]
+
+This is the practical formula used to pass from one numeraire-based
+pricing measure to another.
+
+\paragraph{Interpretation.}
+The density process \(L_t\) reweights probabilities according to the
+relative performance of the chosen numeraire \(N\) compared with the
+money market account.
+
+If the numeraire performs well in some states of the world, those states
+receive relatively more weight under \(\Qbb^N\).
+Thus, changing numeraire amounts to changing both:
+\begin{itemize}[leftmargin=1.4em]
+\item the unit of account,
+\item the probability measure.
+\end{itemize}
+
+\paragraph{Why equivalence matters.}
+The measures \(\Qbb\) and \(\Qbb^N\) are equivalent, which means that
+they assign zero probability to the same events.
+Thus, changing numeraire does not change which events are possible; it
+only changes their probabilities.
+
+\paragraph{Main consequence.}
+Under the measure \(\Qbb^N\), the price of any traded asset \(S(t)\)
+expressed in units of the numeraire,
+\[
+\frac{S(t)}{N(t)},
+\]
+is a martingale.
+
+This is the fundamental property that makes the change of numeraire so
+useful in pricing.
+
+\paragraph{Special case: money market account.}
+If one chooses \(N(t)=B(t)\), then
+\[
+L_t = \frac{B(t)/B(t)}{B(0)/B(0)} = 1,
+\]
+so \(\Qbb^N=\Qbb\).
+Hence the usual risk-neutral measure is simply the measure associated
+with the money market account.
+
+\paragraph{What we do next.}
+In the next subsection, we state and prove the martingale property of
+asset prices expressed in units of the chosen numeraire.
+
+
+\subsection{Martingale property under the chosen numeraire}
+
+We now state the key result behind the change of numeraire method.
+
+\paragraph{Main statement.}
+Let \(N(t)\) be a strictly positive traded asset chosen as numeraire, and
+let \(\Qbb^N\) be the probability measure associated with \(N\).
+Then, for any traded asset \(S(t)\), the denominated price process
+\[
+\frac{S(t)}{N(t)}
+\]
+is a \(\Qbb^N\)-martingale.
+
+In other words, under the measure corresponding to the chosen
+numeraire, all asset prices measured in units of that numeraire have
+zero drift.
+
+\paragraph{Interpretation.}
+This is the exact analogue of the usual risk-neutral property.
+Under the standard risk-neutral measure \(\Qbb\), discounted prices
+\[
+\frac{S(t)}{B(t)}
+\]
+are martingales, where \(B(t)\) is the money market account.
+After changing numeraire from \(B\) to \(N\), the same property holds
+with \(N\) in place of \(B\).
+
+Thus the change of numeraire does not alter the fundamental no-arbitrage
+principle; it only changes the unit in which prices are measured.
+
+\paragraph{Conditional expectation form.}
+Equivalently, for every \(0\le t\le T\),
+\[
+\frac{S(t)}{N(t)}
+=
+\E^{\Qbb^N}\!\left[
+\frac{S(T)}{N(T)}
+\;\middle|\;
+\mathcal{F}_t
+\right].
+\]
+
+This is the martingale representation that will lead directly to the
+pricing formula under a general numeraire.
+
+\paragraph{Why this is useful.}
+The practical advantage is that one may choose a numeraire adapted to
+the payoff being priced.
+If the payoff naturally involves some asset \(N(T)\), then expressing
+the claim in units of \(N(T)\) often simplifies the pricing formula and
+the corresponding dynamics.
+
+This is particularly useful:
+\begin{itemize}[leftmargin=1.4em]
+\item in fixed-income models, where bond numeraires lead to forward measures,
+\item in FX models, where foreign and domestic money market accounts
+naturally generate different pricing measures,
+\item and more generally whenever the standard money-market discounting
+is not the most convenient choice.
+\end{itemize}
+
+\paragraph{Heuristic proof.}
+Recall that the measure \(\Qbb^N\) is defined by the density process
+\[
+L_t
+=
+\frac{D(t)N(t)}{D(0)N(0)},
+\qquad D(t)=\frac1{B(t)}.
+\]
+Since both \(D(t)S(t)\) and \(D(t)N(t)\) are \(\Qbb\)-martingales, Bayes'
+rule gives, for \(t\le T\),
+\[
+\E^{\Qbb^N}\!\left[\frac{S(T)}{N(T)}\middle|\mathcal{F}_t\right]
+=
+\frac{1}{L_t}
+\E^\Qbb\!\left[L_T\frac{S(T)}{N(T)}\middle|\mathcal{F}_t\right].
+\]
+Using
+\[
+L_T\frac{S(T)}{N(T)}
+=
+\frac{D(T)N(T)}{D(0)N(0)}\frac{S(T)}{N(T)}
+=
+\frac{D(T)S(T)}{D(0)N(0)},
+\]
+we obtain
+\[
+\E^{\Qbb^N}\!\left[\frac{S(T)}{N(T)}\middle|\mathcal{F}_t\right]
+=
+\frac{1}{L_t}\,
+\frac{1}{D(0)N(0)}
+\E^\Qbb\!\left[D(T)S(T)\middle|\mathcal{F}_t\right].
+\]
+Since \(D(t)S(t)\) is a \(\Qbb\)-martingale,
+\[
+\E^\Qbb\!\left[D(T)S(T)\middle|\mathcal{F}_t\right]=D(t)S(t).
+\]
+Therefore
+\[
+\E^{\Qbb^N}\!\left[\frac{S(T)}{N(T)}\middle|\mathcal{F}_t\right]
+=
+\frac{D(t)S(t)}{D(t)N(t)}
+=
+\frac{S(t)}{N(t)},
+\]
+which proves the martingale property.
+
+\paragraph{Key message.}
+Once the numeraire \(N\) has been fixed, the correct martingale object
+is no longer the discounted price \(D(t)S(t)\), but the denominated
+price
+\[
+\frac{S(t)}{N(t)}.
+\]
+This is the fundamental principle behind all change-of-numeraire pricing
+formulas.
+
+\section{Pricing formula and change-of-measure intuition}
+
+\subsection{Pricing under a general numeraire}
+
+We now derive the pricing formula under an arbitrary numeraire.
+
+\paragraph{Set-up.}
+Let \(N(t)\) be a strictly positive traded asset chosen as numeraire, and
+let \(\Qbb^N\) be the associated probability measure.
+Consider a contingent claim paying \(X\) at maturity \(T\).
+
+The time-\(t\) price of the claim will be denoted by \(\Pi(t;X)\).
+
+\paragraph{Key idea.}
+Since prices expressed in units of the numeraire are martingales under
+\(\Qbb^N\), the denominated price process
+\[
+\frac{\Pi(t;X)}{N(t)}
+\]
+must satisfy
+\[
+\frac{\Pi(t;X)}{N(t)}
+=
+\E^{\Qbb^N}\!\left[
+\frac{X}{N(T)}
+\;\middle|\;
+\mathcal{F}_t
+\right].
+\]
+
+Multiplying both sides by \(N(t)\), we obtain the general pricing
+formula
+\[
+\boxed{
+\Pi(t;X)
+=
+N(t)\,
+\E^{\Qbb^N}\!\left[
+\frac{X}{N(T)}
+\;\middle|\;
+\mathcal{F}_t
+\right].
+}
+\]
+
+\paragraph{Interpretation.}
+This is the analogue of the usual risk-neutral pricing formula, except
+that the payoff is first expressed in units of the chosen numeraire,
+and the expectation is taken under the corresponding measure.
+
+Thus the pricing problem always has the same structure:
+\begin{itemize}[leftmargin=1.4em]
+\item divide the payoff by the numeraire at maturity,
+\item take conditional expectation under the associated measure,
+\item multiply back by the current value of the numeraire.
+\end{itemize}
+
+\paragraph{Comparison with the standard risk-neutral formula.}
+If the numeraire is the money market account \(B(t)\), then
+\[
+\Pi(t;X)
+=
+B(t)\,
+\E^\Qbb\!\left[
+\frac{X}{B(T)}
+\;\middle|\;
+\mathcal{F}_t
+\right].
+\]
+Since
+\[
+\frac{B(t)}{B(T)}=e^{-r(T-t)}
+\]
+in the constant-rate case, this reduces to the usual formula
+\[
+\Pi(t;X)
+=
+\E^\Qbb\!\left[
+e^{-r(T-t)}X
+\;\middle|\;
+\mathcal{F}_t
+\right].
+\]
+
+Hence the ordinary risk-neutral pricing formula is simply the special
+case corresponding to the money market numeraire.
+
+\paragraph{Why another numeraire may help.}
+The usefulness of the formula
+\[
+\Pi(t;X)
+=
+N(t)\,
+\E^{\Qbb^N}\!\left[
+\frac{X}{N(T)}
+\;\middle|\;
+\mathcal{F}_t
+\right]
+\]
+is that the choice of \(N\) may simplify the payoff or the dynamics.
+
+For example:
+\begin{itemize}[leftmargin=1.4em]
+\item if the payoff naturally contains a bond \(P(T,T^\ast)\), choosing
+that bond as numeraire may eliminate the discounting term;
+\item if the payoff is naturally expressed relative to the stock price,
+choosing the stock as numeraire may simplify the expectation;
+\item in FX models, choosing the domestic or foreign money market account
+leads to different but equivalent pricing representations.
+\end{itemize}
+
+\paragraph{A useful rule of thumb.}
+The best numeraire is usually the one that makes the normalized payoff
+\[
+\frac{X}{N(T)}
+\]
+as simple as possible.
+
+\paragraph{What comes next.}
+In the following subsections, we illustrate this general pricing
+principle with the most important examples:
+the money market account, the stock as numeraire, and the zero-coupon
+bond numeraire.
+
+\subsection{Relation between numeraires and change of measure}
+
+We now make explicit the relation between a change of numeraire and the
+corresponding change of probability measure.
+
+\paragraph{General principle.}
+Choosing a new numeraire does not only modify the unit in which prices
+are expressed; it also changes the probability measure under which the
+denominated prices become martingales.
+
+Thus, a change of numeraire always comes together with a change of
+measure.
+
+\paragraph{From the money market numeraire to a general numeraire.}
+Let \(B(t)\) be the money market account, and let \(\Qbb\) be the usual
+risk-neutral measure associated with \(B\).
+Let \(N(t)\) be another strictly positive traded asset, used as a new
+numeraire.
+
+The measure \(\Qbb^N\) associated with \(N\) is defined through the
+Radon--Nikodym density
+\[
+\frac{\mathrm{d}\Qbb^N}{\mathrm{d}\Qbb}\Big|_{\mathcal{F}_t}
+=
+\frac{N(t)/B(t)}{N(0)/B(0)}
+=
+\frac{D(t)N(t)}{D(0)N(0)},
+\qquad D(t)=\frac1{B(t)}.
+\]
+
+Since \(D(t)N(t)\) is a positive \(\Qbb\)-martingale, this indeed defines
+an equivalent probability measure.
+
+\paragraph{Bayes' rule.}
+For every integrable random variable \(X\), Bayes' rule gives
+\[
+\E^{\Qbb^N}[X\mid\mathcal{F}_t]
+=
+\frac{1}{L_t}\,
+\E^\Qbb[L_T X\mid\mathcal{F}_t],
+\qquad
+L_t:=\frac{D(t)N(t)}{D(0)N(0)}.
+\]
+
+This formula is the practical tool that allows us to move from one
+measure to another.
+
+\paragraph{Interpretation.}
+The density process \(L_t\) tilts probabilities according to the
+relative performance of the new numeraire \(N\) with respect to the
+money market account.
+
+Hence, under the new measure \(\Qbb^N\), states of the world in which
+the numeraire performs well receive relatively more weight.
+
+\paragraph{Relation between two arbitrary numeraires.}
+More generally, suppose that \(N^1(t)\) and \(N^2(t)\) are two strictly
+positive traded numeraires, with associated measures \(\Qbb^{N^1}\) and
+\(\Qbb^{N^2}\).
+Then the change of measure from \(\Qbb^{N^1}\) to \(\Qbb^{N^2}\) is given by
+\[
+\frac{\mathrm{d}\Qbb^{N^2}}{\mathrm{d}\Qbb^{N^1}}\Big|_{\mathcal{F}_t}
+=
+\frac{N^2(t)/N^1(t)}{N^2(0)/N^1(0)}.
+\]
+
+Thus, the relative price process
+\[
+\frac{N^2(t)}{N^1(t)}
+\]
+plays the role of density process between the two associated measures.
+
+\paragraph{Why this is natural.}
+This formula shows that changing numeraire from \(N^1\) to \(N^2\) is
+equivalent to reweighting probabilities by the relative value of the two
+numeraires.
+
+In particular, the change of numeraire is entirely encoded in the ratio
+of the two numeraires.
+
+\paragraph{Main consequence.}
+Once the measure has been changed accordingly, any traded asset \(S(t)\)
+expressed in units of the new numeraire becomes a martingale:
+\[
+\frac{S(t)}{N^2(t)}
+\quad\text{is a }\Qbb^{N^2}\text{-martingale.}
+\]
+
+This is the key mechanism behind all practical applications of the
+change-of-numeraire method.
+
+\paragraph{What we do next.}
+To make this more concrete, we next revisit It\^o calculus for ratio
+processes and see how the dynamics of asset prices change when the
+numeraire is replaced.
+
+
+
+\section{Examples and applications}
+
+
+\subsection{Money market account}
+
+We start with the most classical choice of numeraire: the money market
+account.
+
+\paragraph{Definition.}
+The money market account \(B(t)\) is the value at time \(t\) of one unit
+invested in the bank account at time \(0\).
+Its dynamics are
+\[
+\mathrm{d}B(t)=R(t)B(t)\,\mathrm{d}t,
+\qquad B(0)=1,
+\]
+so that
+\[
+B(t)=\exp\!\Big(\int_0^t R(s)\,\mathrm{d}s\Big).
+\]
+In the constant-rate case, this reduces to
+\[
+B(t)=e^{rt}.
+\]
+
+\paragraph{Associated numeraire.}
+If we choose \(B(t)\) as numeraire, then the denominated price of an
+asset \(S(t)\) is simply its discounted price
+\[
+\frac{S(t)}{B(t)}=D(t)S(t),
+\qquad D(t):=\frac1{B(t)}.
+\]
+
+\paragraph{Associated measure.}
+The probability measure associated with the money market account is the
+usual risk-neutral measure, which we denote by \(\Qbb\).
+Under this measure, every traded asset expressed in units of the money
+market account is a martingale.
+
+In other words, for any traded asset \(S(t)\),
+\[
+\frac{S(t)}{B(t)}
+\quad\text{is a }\Qbb\text{-martingale.}
+\]
+
+Equivalently, for \(0\le t\le T\),
+\[
+\frac{S(t)}{B(t)}
+=
+\E^\Qbb\!\left[
+\frac{S(T)}{B(T)}
+\;\middle|\;
+\mathcal{F}_t
+\right].
+\]
+
+\paragraph{Pricing formula.}
+For a contingent claim paying \(X\) at time \(T\), the general
+numeraire-pricing formula becomes
+\[
+\Pi(t;X)
+=
+B(t)\E^\Qbb\!\left[
+\frac{X}{B(T)}
+\;\middle|\;
+\mathcal{F}_t
+\right].
+\]
+In the constant-rate case,
+\[
+\boxed{
+\Pi(t;X)
+=
+\E^\Qbb\!\left[
+e^{-r(T-t)}X
+\;\middle|\;
+\mathcal{F}_t
+\right].
+}
+\]
+
+This is the standard risk-neutral pricing formula used throughout the
+course.
+
+\paragraph{Dynamics under the risk-neutral measure.}
+If the asset price follows
+\[
+\mathrm{d}S(t)=\mu(t)S(t)\,\mathrm{d}t+\sigma(t)S(t)\,\mathrm{d}W(t)
+\]
+under some measure, then under the risk-neutral measure \(\Qbb\) its
+drift becomes the short rate:
+\[
+\mathrm{d}S(t)=R(t)S(t)\,\mathrm{d}t+\sigma(t)S(t)\,\mathrm{d}W^\Qbb(t).
+\]
+Hence
+\[
+\mathrm{d}\Big(\frac{S(t)}{B(t)}\Big)
+=
+\frac{S(t)}{B(t)}\sigma(t)\,\mathrm{d}W^\Qbb(t),
+\]
+which makes the martingale property explicit.
+
+\paragraph{Interpretation.}
+Choosing the money market account as numeraire means that all prices are
+measured in units of cash invested at the short rate.
+This is the most natural choice when interest rates are deterministic or
+when no other numeraire simplifies the problem.
+
+\paragraph{Why this is the standard choice.}
+The money market account is the default numeraire because:
+\begin{itemize}[leftmargin=1.4em]
+\item it leads to the usual risk-neutral valuation formula,
+\item discounting by \(B(t)\) is familiar and easy to interpret,
+\item it is the natural benchmark in equity option pricing.
+\end{itemize}
+
+\paragraph{Limitation.}
+Although the money market numeraire is the standard one, it is not
+always the most convenient.
+For some payoffs, especially in fixed-income or FX models, another
+choice of numeraire leads to a simpler dynamics or a cleaner pricing
+formula.
+This is precisely why the change-of-numeraire method is so useful.
+
+
+\subsection{Stock as numeraire}
+
+We now consider another important choice of numeraire: the stock itself.
+
+\paragraph{Definition.}
+Suppose that the stock price \(S(t)\) is strictly positive for all
+\(t\in[0,T]\).
+Then we may choose \(S(t)\) as numeraire.
+In that case, the denominated price of any traded asset \(X(t)\) is
+\[
+\frac{X(t)}{S(t)}.
+\]
+
+\paragraph{Associated measure.}
+The probability measure associated with the stock numeraire will be
+denoted by \(\Qbb^S\).
+By the general change-of-numeraire principle, every traded asset
+expressed in units of the stock is a \(\Qbb^S\)-martingale.
+
+Thus, for any traded asset \(X(t)\),
+\[
+\frac{X(t)}{S(t)}
+\quad\text{is a }\Qbb^S\text{-martingale.}
+\]
+
+Equivalently, for \(0\le t\le T\),
+\[
+\frac{X(t)}{S(t)}
+=
+\E^{\Qbb^S}\!\left[
+\frac{X(T)}{S(T)}
+\;\middle|\;
+\mathcal{F}_t
+\right].
+\]
+
+\paragraph{Pricing formula.}
+Let \(X\) be a contingent claim paid at time \(T\).
+The general pricing formula becomes
+\[
+\Pi(t;X)
+=
+S(t)\E^{\Qbb^S}\!\left[
+\frac{X}{S(T)}
+\;\middle|\;
+\mathcal{F}_t
+\right].
+\]
+
+This representation is especially convenient when the payoff naturally
+contains a factor \(S(T)\).
+
+\paragraph{Typical example.}
+Suppose that the claim payoff can be written as
+\[
+X=S(T)\,Y,
+\]
+for some random variable \(Y\).
+Then the stock-numeraire pricing formula simplifies to
+\[
+\Pi(t;X)
+=
+S(t)\E^{\Qbb^S}\!\left[
+Y
+\;\middle|\;
+\mathcal{F}_t
+\right].
+\]
+
+So the factor \(S(T)\) disappears from the expectation once the stock is
+used as numeraire.
+
+\paragraph{Connection with equity derivatives.}
+This choice of numeraire is useful for payoffs that are naturally
+homogeneous in the stock price.
+It also provides an elegant alternative representation for some
+equity-linked contracts.
+
+In particular, if a payoff is proportional to the terminal stock price,
+then working under \(\Qbb^S\) often leads to a simpler expectation than
+under the usual risk-neutral measure.
+
+\paragraph{Density process.}
+Starting from the usual risk-neutral measure \(\Qbb\), the stock
+numeraire measure \(\Qbb^S\) is defined by
+\[
+\frac{\mathrm{d}\Qbb^S}{\mathrm{d}\Qbb}\Big|_{\mathcal{F}_t}
+=
+\frac{D(t)S(t)}{D(0)S(0)},
+\qquad D(t)=\frac1{B(t)}.
+\]
+
+Since \(D(t)S(t)\) is a positive \(\Qbb\)-martingale, this defines an
+equivalent probability measure.
+
+\paragraph{Interpretation.}
+Under \(\Qbb^S\), probabilities are tilted according to the performance
+of the stock relative to the money market account.
+States of the world in which the stock performs well receive relatively
+more weight.
+
+\paragraph{Why this matters.}
+The stock numeraire is less common than the money market account in
+basic pricing formulas, but it is conceptually important:
+it shows that the same derivative can be priced under different
+measures, depending on the chosen numeraire.
+
+This flexibility is one of the main strengths of the
+change-of-numeraire method.
+
+
+\subsection{Zero-coupon bond as numeraire}
+
+A particularly important choice of numeraire in fixed-income modeling is
+a zero-coupon bond.
+
+\paragraph{Definition.}
+Fix a maturity date \(T^\ast\).
+We denote by
+\[
+P(t,T^\ast)
+\]
+the price at time \(t\leq T^\ast\) of a zero-coupon bond paying \(1\) at
+time \(T^\ast\).
+
+Since bond prices are strictly positive, \(P(t,T^\ast)\) can be used as
+a numeraire.
+
+\paragraph{Associated measure.}
+The probability measure associated with the numeraire
+\[
+N(t)=P(t,T^\ast)
+\]
+is called the \emph{\(T^\ast\)-forward measure}, and is usually denoted
+by
+\[
+\Qbb^{T^\ast}.
+\]
+
+By the general change-of-numeraire principle, any traded asset price
+expressed in units of \(P(t,T^\ast)\) is a \(\Qbb^{T^\ast}\)-martingale.
+
+Thus, for any traded asset \(X(t)\),
+\[
+\frac{X(t)}{P(t,T^\ast)}
+\quad\text{is a }\Qbb^{T^\ast}\text{-martingale.}
+\]
+
+Equivalently,
+\[
+\frac{X(t)}{P(t,T^\ast)}
+=
+\E^{\Qbb^{T^\ast}}\!\left[
+\frac{X(T)}{P(T,T^\ast)}
+\;\middle|\;
+\mathcal{F}_t
+\right].
+\]
+
+\paragraph{Pricing formula.}
+Let \(X\) be a contingent claim paid at time \(T\leq T^\ast\).
+Then
+\[
+\Pi(t;X)
+=
+P(t,T^\ast)\,
+\E^{\Qbb^{T^\ast}}\!\left[
+\frac{X}{P(T,T^\ast)}
+\;\middle|\;
+\mathcal{F}_t
+\right].
+\]
+
+In the important special case \(T=T^\ast\), we have
+\[
+P(T^\ast,T^\ast)=1,
+\]
+so the pricing formula simplifies to
+\[
+\boxed{
+\Pi(t;X)
+=
+P(t,T^\ast)\,
+\E^{\Qbb^{T^\ast}}\!\left[
+X
+\;\middle|\;
+\mathcal{F}_t
+\right].
+}
+\]
+
+
+\paragraph{A useful Black--Scholes interpretation under the \(T\)-forward measure.}
+
+One particularly useful consequence of the bond-numeraire approach is
+the following simple rule of thumb:
+
+\begin{quote}
+under the \(T\)-forward measure, one may price a claim maturing at time
+\(T\) as if the short rate were equal to \(0\), and then multiply the
+result by \(P(0,T)\).
+\end{quote}
+
+\paragraph{Why this is true.}
+
+Suppose that a contingent claim pays \(X\) at time \(T\).
+Using the zero-coupon bond \(P(t,T)\) as numeraire, the pricing formula
+becomes
+\[
+\Pi(t;X)
+=
+P(t,T)\,
+\E^{\Qbb^T}\!\left[
+X
+\;\middle|\;
+\F_t
+\right],
+\]
+since
+\[
+P(T,T)=1.
+\]
+
+Thus the discounting disappears from the expectation.
+In this sense, the role played by the short rate in the usual
+risk-neutral formula is absorbed into the bond numeraire.
+
+\paragraph{Forward price viewpoint.}
+
+If \(S(t)\) is a traded asset, define its \(T\)-forward price by
+\[
+F(t,T):=\frac{S(t)}{P(t,T)}.
+\]
+
+Under the \(T\)-forward measure, this normalized price process is a
+martingale.
+Equivalently, one may think of \(F(t,T)\) as evolving like an asset with
+zero drift under the corresponding pricing measure.
+
+This is exactly the analogue of the Black--Scholes setting with
+vanishing interest rate.
+
+\paragraph{Practical rule.}
+
+Suppose that the payoff at time \(T\) is of the form
+\[
+X=h(S(T)).
+\]
+Then, instead of working directly under the money-market numeraire, one
+may:
+\begin{itemize}[leftmargin=1.4em]
+\item switch to the \(T\)-forward measure,
+\item work with the forward price process,
+\item use the Black--Scholes formula with effective rate \(r=0\),
+\item and finally multiply the result by \(P(0,T)\).
+\end{itemize}
+
+In other words, if \(C^{(0)}(0)\) denotes the Black--Scholes price
+computed with zero short rate and forward-style normalization, then
+\[
+\boxed{
+\Pi(0;X)=P(0,T)\,C^{(0)}(0).
+}
+\]
+
+\paragraph{Interpretation.}
+
+The point is not that the interest rate has disappeared from the model,
+but rather that it has been absorbed into the numeraire.
+The pricing problem is therefore rewritten in a form where the relevant
+normalized process has zero drift under the new measure.
+
+\paragraph{Pedagogical message.}
+
+The \(T\)-forward measure is often useful because it transforms pricing
+problems with discounting into pricing problems without explicit
+discounting inside the expectation.
+
+This is why one often says informally that, under the \(T\)-forward
+measure, ``Black--Scholes works with \(r=0\)'', provided one remembers to
+multiply the final answer by the bond price \(P(0,T)\).
+
+
+\paragraph{Why this is useful.}
+This is the main reason why bond numeraires are so important.
+If the payoff is received exactly at the maturity of the chosen bond,
+the discounting disappears from the expectation.
+The price is simply the bond price times a conditional expectation under
+the corresponding forward measure.
+
+\paragraph{Forward prices.}
+A natural quantity in fixed-income markets is the forward price of an
+asset for delivery at time \(T^\ast\).
+Under the \(T^\ast\)-forward measure, such forward prices typically
+become martingales.
+This is completely analogous to the usual risk-neutral framework, except
+that the bond \(P(t,T^\ast)\) replaces the money market account.
+
+\paragraph{Density process.}
+Starting from the usual risk-neutral measure \(\Qbb\), the
+\(T^\ast\)-forward measure is defined by
+\[
+\frac{\mathrm{d}\Qbb^{T^\ast}}{\mathrm{d}\Qbb}\Big|_{\mathcal{F}_t}
+=
+\frac{D(t)P(t,T^\ast)}{D(0)P(0,T^\ast)},
+\qquad D(t)=\frac1{B(t)}.
+\]
+
+Since \(D(t)P(t,T^\ast)\) is a positive \(\Qbb\)-martingale, this indeed
+defines an equivalent probability measure.
+
+\paragraph{Interpretation.}
+Using a zero-coupon bond as numeraire means that prices are measured in
+units of future cash delivered at time \(T^\ast\).
+This is particularly natural in interest-rate models, where many claims
+are linked to future bond prices, forward rates, or swap rates.
+
+\paragraph{Main application.}
+The bond numeraire and the associated forward measure are fundamental
+tools in fixed-income derivative pricing.
+They simplify the pricing of bond options, caplets, floorlets, and many
+other interest-rate products.
+
+\paragraph{Key message.}
+Choosing a zero-coupon bond as numeraire is often the most natural
+choice when the payoff is linked to a future date \(T^\ast\).
+In that case, the corresponding forward measure leads to simpler pricing
+formulas and more tractable dynamics.
+
+
+\subsection{Forward measures}
+
+Forward measures arise naturally when the chosen numeraire is a
+zero-coupon bond.
+
+\paragraph{Definition.}
+Fix a maturity date \(T^\ast\), and consider the zero-coupon bond
+\[
+P(t,T^\ast).
+\]
+If this bond is used as numeraire, the associated probability measure is
+called the \emph{\(T^\ast\)-forward measure}, and is denoted by
+\[
+\Qbb^{T^\ast}.
+\]
+
+Thus the \(T^\ast\)-forward measure is simply the measure associated
+with the bond numeraire \(P(t,T^\ast)\).
+
+\paragraph{Key martingale property.}
+By the general change-of-numeraire principle, any traded asset price
+expressed in units of \(P(t,T^\ast)\) is a \(\Qbb^{T^\ast}\)-martingale.
+
+In particular, if \(X\) is a contingent claim paid at time \(T^\ast\),
+then its price process satisfies
+\[
+\frac{\Pi(t;X)}{P(t,T^\ast)}
+=
+\E^{\Qbb^{T^\ast}}\!\left[
+X
+\;\middle|\;
+\mathcal{F}_t
+\right].
+\]
+
+Equivalently,
+\[
+\boxed{
+\Pi(t;X)
+=
+P(t,T^\ast)\,
+\E^{\Qbb^{T^\ast}}\!\left[
+X
+\;\middle|\;
+\mathcal{F}_t
+\right].
+}
+\]
+
+This is the basic pricing formula under the forward measure.
+
+\paragraph{Why this is useful.}
+The forward measure is particularly convenient when the payoff is paid at
+a fixed future date \(T^\ast\).
+In that case, the discounting disappears from the expectation, and the
+pricing formula becomes especially simple.
+
+This is one of the main reasons why forward measures play such an
+important role in fixed-income modeling.
+
+\paragraph{Forward prices.}
+Suppose that an asset \(X(t)\) can be delivered at time \(T^\ast\).
+Its forward price for delivery at time \(T^\ast\) is typically defined by
+normalizing with the bond price \(P(t,T^\ast)\).
+
+Under the \(T^\ast\)-forward measure, this forward price process is a
+martingale.
+This is the natural analogue of the usual risk-neutral martingale
+property, but with the bond \(P(t,T^\ast)\) replacing the money market
+account.
+
+\paragraph{Example: bond option intuition.}
+Suppose that a claim pays
+\[
+X = h\big(P(T^\ast,T_1),\dots,P(T^\ast,T_n)\big)
+\]
+at time \(T^\ast\).
+Then under the \(T^\ast\)-forward measure, its price is
+\[
+\Pi(t;X)
+=
+P(t,T^\ast)\,
+\E^{\Qbb^{T^\ast}}\!\left[
+h\big(P(T^\ast,T_1),\dots,P(T^\ast,T_n)\big)
+\;\middle|\;
+\mathcal{F}_t
+\right].
+\]
+
+Thus the bond price \(P(t,T^\ast)\) factors out, and the remaining
+expectation is taken under a measure naturally adapted to the payment
+date.
+
+\paragraph{Connection with LIBOR and swap market models.}
+In practical interest-rate modeling, different forward measures are
+attached to different payment dates.
+For example:
+\begin{itemize}[leftmargin=1.4em]
+\item caplets are naturally priced under the forward measure associated
+with their payment date,
+\item swap-related quantities are often studied under annuity measures,
+which are built from suitable linear combinations of bonds.
+\end{itemize}
+
+Thus forward measures are one of the main building blocks of modern
+fixed-income derivative pricing.
+
+\paragraph{Density process.}
+Starting from the standard risk-neutral measure \(\Qbb\), the
+\(T^\ast\)-forward measure is defined by
+\[
+\frac{\mathrm{d}\Qbb^{T^\ast}}{\mathrm{d}\Qbb}\Big|_{\mathcal{F}_t}
+=
+\frac{D(t)P(t,T^\ast)}{D(0)P(0,T^\ast)},
+\qquad D(t)=\frac1{B(t)}.
+\]
+
+Since \(D(t)P(t,T^\ast)\) is a positive \(\Qbb\)-martingale, this indeed
+defines an equivalent probability measure.
+
+\paragraph{Interpretation.}
+The forward measure is the probability measure under which future cash
+flows paid at time \(T^\ast\) are naturally valued in units of one unit
+of currency delivered at time \(T^\ast\).
+
+\paragraph{Key message.}
+Forward measures are not new pricing principles; they are simply the
+change-of-numeraire principle applied to zero-coupon bonds.
+Their importance comes from the fact that they are often the most
+natural and efficient measures for pricing fixed-income derivatives.
+
+
+\subsection{Applications to derivative pricing}
+
+We now illustrate how the change-of-numeraire method can be used in
+practice to simplify derivative pricing formulas.
+
+\paragraph{General strategy.}
+Suppose that a contingent claim pays \(X\) at time \(T\).
+Under a numeraire \(N\) with associated measure \(\Qbb^N\), its price is
+given by
+\[
+\Pi(t;X)
+=
+N(t)\,
+\E^{\Qbb^N}\!\left[
+\frac{X}{N(T)}
+\;\middle|\;
+\mathcal{F}_t
+\right].
+\]
+
+The practical idea is therefore simple:
+\begin{itemize}[leftmargin=1.4em]
+\item choose a numeraire adapted to the structure of the payoff,
+\item rewrite the payoff in units of this numeraire,
+\item compute the expectation under the associated measure.
+\end{itemize}
+
+A good choice of numeraire often leads to a much simpler pricing
+formula.
+
+\paragraph{Application 1: standard risk-neutral pricing.}
+If the money market account \(B(t)\) is chosen as numeraire, then we
+recover the usual risk-neutral formula
+\[
+\Pi(t;X)
+=
+B(t)\E^\Qbb\!\left[
+\frac{X}{B(T)}
+\;\middle|\;
+\mathcal{F}_t
+\right].
+\]
+In the constant-rate case, this becomes
+\[
+\Pi(t;X)
+=
+\E^\Qbb\!\left[
+e^{-r(T-t)}X
+\;\middle|\;
+\mathcal{F}_t
+\right].
+\]
+
+This is the default pricing formula used in most equity-option models.
+
+\paragraph{Application 2: stock numeraire.}
+Suppose that the payoff can be written as
+\[
+X=S(T)\,Y,
+\]
+for some random variable \(Y\).
+Then using the stock as numeraire gives
+\[
+\Pi(t;X)
+=
+S(t)\E^{\Qbb^S}\!\left[
+Y
+\;\middle|\;
+\mathcal{F}_t
+\right].
+\]
+
+Thus the factor \(S(T)\) disappears inside the expectation.
+This can be useful for equity-linked contracts whose payoff is naturally
+proportional to the stock price.
+
+\paragraph{Application 3: bond numeraire.}
+Suppose now that the payoff is paid at a fixed date \(T^\ast\).
+Choosing the zero-coupon bond \(P(t,T^\ast)\) as numeraire yields
+\[
+\Pi(t;X)
+=
+P(t,T^\ast)\,
+\E^{\Qbb^{T^\ast}}\!\left[
+X
+\;\middle|\;
+\mathcal{F}_t
+\right].
+\]
+
+This is particularly convenient for fixed-income derivatives, because
+the discounting disappears from the expectation.
+
+For example, if a claim pays a function of bond prices at time
+\(T^\ast\), say
+\[
+X=h\big(P(T^\ast,T_1),\dots,P(T^\ast,T_n)\big),
+\]
+then its price becomes
+\[
+\Pi(t;X)
+=
+P(t,T^\ast)\,
+\E^{\Qbb^{T^\ast}}\!\left[
+h\big(P(T^\ast,T_1),\dots,P(T^\ast,T_n)\big)
+\;\middle|\;
+\mathcal{F}_t
+\right].
+\]
+
+\paragraph{Application 4: forward contracts.}
+The change-of-numeraire method also explains naturally why forward
+prices are martingales under the appropriate forward measure.
+
+If delivery takes place at time \(T^\ast\), then under the
+\(T^\ast\)-forward measure, forward prices are naturally expressed in
+units of \(P(t,T^\ast)\), and therefore become martingales.
+
+This is one of the central ideas in fixed-income modeling.
+
+\paragraph{Application 5: foreign exchange intuition.}
+In FX markets, one may choose either the domestic or the foreign money
+market account as numeraire.
+This leads to different but equivalent pricing measures.
+The resulting formulas provide a natural framework for pricing foreign
+exchange derivatives and for understanding the symmetry between
+domestic and foreign viewpoints.
+
+\paragraph{Main lesson.}
+The change-of-numeraire method is not a new pricing principle; it is a
+way of reorganizing the same no-arbitrage pricing problem so that the
+payoff and the dynamics are expressed under the most convenient unit of
+account.
+
+\paragraph{Rule of thumb.}
+Whenever a derivative pricing formula looks complicated, a natural
+question to ask is:
+\begin{quote}
+Is there a better numeraire under which the payoff becomes simpler?
+\end{quote}
+
+This is often the key step that transforms a difficult pricing problem
+into a tractable one.
+
+
+% ============================================================
+\section{Foreign exchange derivative pricing}
+% ============================================================
+
+We conclude with a brief application of the change-of-numeraire method
+to foreign exchange markets.
+
+The main idea is that an exchange rate can naturally be viewed from two
+different perspectives:
+\begin{itemize}[leftmargin=1.4em]
+\item as the price of one unit of foreign currency expressed in domestic currency,
+\item or, equivalently, through its inverse, as the price of one unit of domestic currency expressed in foreign currency.
+\end{itemize}
+
+This symmetry makes FX markets a particularly natural setting for the
+change-of-numeraire method.
+
+% ------------------------------------------------------------
+\subsection{Domestic and foreign money market accounts}
+
+We denote by
+\[
+B_d(t)=e^{r_d t}
+\qquad\text{and}\qquad
+B_f(t)=e^{r_f t}
+\]
+the domestic and foreign money market accounts, where \(r_d\) and \(r_f\)
+are the domestic and foreign short rates, assumed here constant for
+simplicity.
+
+We denote by
+\[
+X(t)
+\]
+the spot exchange rate, defined as the price in domestic currency of one
+unit of foreign currency.
+
+Thus:
+\begin{itemize}[leftmargin=1.4em]
+\item \(X(t)\) is measured in domestic currency,
+\item one unit of foreign cash invested in the foreign bank account has
+domestic value
+\[
+X(t)B_f(t).
+\]
+\end{itemize}
+
+This quantity plays a central role in FX pricing.
+
+% ------------------------------------------------------------
+\subsection{Risk-neutral dynamics of the exchange rate}
+
+Under the domestic risk-neutral measure \(\Qbb^d\), the domestic
+discounted value of any traded asset must be a martingale.
+
+In particular, the foreign bank account expressed in domestic currency,
+namely
+\[
+X(t)B_f(t),
+\]
+must satisfy
+\[
+\frac{X(t)B_f(t)}{B_d(t)}
+\quad\text{is a }\Qbb^d\text{-martingale.}
+\]
+
+This implies that the exchange rate dynamics under the domestic
+risk-neutral measure take the form
+\[
+\boxed{
+\mathrm{d}X(t)=\big(r_d-r_f\big)X(t)\,\mathrm{d}t+\sigma X(t)\,\mathrm{d}W_t^{\Qbb^d}.
+}
+\]
+
+\paragraph{Interpretation.}
+The foreign interest rate plays the same role as a continuous dividend
+yield.
+Indeed, holding one unit of foreign currency gives access to the foreign
+money market account, just as holding a stock with dividends provides a
+continuous cashflow.
+
+For this reason, an FX rate behaves mathematically like an equity with
+continuous dividend yield \(r_f\).
+
+% ------------------------------------------------------------
+\subsection{Pricing formula under the domestic measure}
+
+Let \(H(X(T))\) be the payoff of a European FX derivative, paid at time
+\(T\) in domestic currency.
+
+Under the domestic money market numeraire, its price is
+\[
+\boxed{
+\Pi(t)
+=
+\E^{\Qbb^d}\!\left[
+e^{-r_d(T-t)}H(X(T))
+\;\middle|\;
+\mathcal{F}_t
+\right].
+}
+\]
+
+This is the usual domestic risk-neutral pricing formula.
+
+In particular, a European call option on the exchange rate with strike
+\(K\) has payoff
+\[
+(X(T)-K)^+,
+\]
+and price
+\[
+\Pi(t)
+=
+\E^{\Qbb^d}\!\left[
+e^{-r_d(T-t)}(X(T)-K)^+
+\;\middle|\;
+\mathcal{F}_t
+\right].
+\]
+
+% ------------------------------------------------------------
+\subsection{Black--Scholes formula for FX options}
+
+Since the FX rate follows a lognormal dynamics under \(\Qbb^d\), the
+usual Black--Scholes formula applies, with the foreign rate \(r_f\)
+playing the role of a dividend yield.
+
+Hence the domestic price of a European call option on the exchange rate
+is
+\[
+\boxed{
+C(t)
+=
+X(t)e^{-r_f(T-t)}N(d_1)
+-
+Ke^{-r_d(T-t)}N(d_2),
+}
+\]
+where
+\[
+d_1
+=
+\frac{\ln(X(t)/K)+\big(r_d-r_f+\tfrac12\sigma^2\big)(T-t)}
+{\sigma\sqrt{T-t}},
+\]
+\[
+d_2=d_1-\sigma\sqrt{T-t}.
+\]
+
+Similarly, the European put price is
+\[
+\boxed{
+P(t)
+=
+Ke^{-r_d(T-t)}N(-d_2)
+-
+X(t)e^{-r_f(T-t)}N(-d_1).
+}
+\]
+
+\paragraph{Interpretation.}
+This is exactly the Black--Scholes formula with:
+\begin{itemize}[leftmargin=1.4em]
+\item spot price \(X(t)\),
+\item domestic discounting at rate \(r_d\),
+\item foreign rate \(r_f\) acting as a continuous yield.
+\end{itemize}
+
+% ------------------------------------------------------------
+\subsection{Change of numeraire viewpoint}
+
+The FX setting provides a natural illustration of the change of
+numeraire idea.
+
+From the domestic viewpoint, we discount by \(B_d(t)\) and work under
+the domestic risk-neutral measure \(\Qbb^d\).
+
+From the foreign viewpoint, one may instead use the foreign money market
+account \(B_f(t)\) as numeraire, or equivalently work with domestic
+asset prices expressed in foreign currency.
+This leads to a foreign pricing measure \(\Qbb^f\).
+
+Thus FX pricing naturally involves two equivalent martingale measures:
+\begin{itemize}[leftmargin=1.4em]
+\item the domestic measure,
+\item the foreign measure.
+\end{itemize}
+
+The same contract may then be represented in two different but
+equivalent ways, depending on the chosen numeraire.
+
+\paragraph{Main lesson.}
+FX pricing is one of the clearest examples showing that:
+\begin{quote}
+the choice of numeraire is not just a mathematical trick, but a natural
+way of reflecting different economic viewpoints.
+\end{quote}
+
+% ------------------------------------------------------------
+\subsection{FX put--call parity}
+
+Let \(C(t)\) and \(P(t)\) be the domestic prices of a European call and
+put on the exchange rate with strike \(K\) and maturity \(T\).
+
+The put--call parity relation becomes
+\[
+\boxed{
+C(t)-P(t)=X(t)e^{-r_f(T-t)}-Ke^{-r_d(T-t)}.
+}
+\]
+
+This is the FX analogue of the usual equity parity relation, with the
+foreign rate \(r_f\) replacing the dividend yield.
+
+% ------------------------------------------------------------
+\subsection{Summary}
+
+The key formulas to remember are:
+\begin{itemize}[leftmargin=1.4em]
+\item under the domestic measure,
+\[
+\mathrm{d}X(t)=\big(r_d-r_f\big)X(t)\,\mathrm{d}t+\sigma X(t)\,\mathrm{d}W_t^{\Qbb^d},
+\]
+\item the foreign rate acts like a dividend yield,
+\item FX options are priced by Black--Scholes with \(r_d\) as discount
+rate and \(r_f\) as yield,
+\item the domestic and foreign viewpoints correspond to different
+numeraires and different but equivalent martingale measures.
+\end{itemize}
+
+\paragraph{Domestic and foreign measures in FX markets.}
+
+Let \(B_d(t)\) and \(B_f(t)\) denote the domestic and foreign money
+market accounts, and let \(X(t)\) be the exchange rate, defined as the
+price in domestic currency of one unit of foreign currency.
+
+Under the domestic viewpoint, the natural numeraire is \(B_d(t)\), and
+the associated pricing measure is the domestic risk-neutral measure
+\(\Qbb^d\).
+Under the foreign viewpoint, the natural numeraire is \(B_f(t)\), and
+the associated pricing measure is the foreign risk-neutral measure
+\(\Qbb^f\).
+
+However, since \(X(t)\) converts foreign currency into domestic
+currency, the foreign bank account expressed in domestic currency is
+\[
+X(t)B_f(t).
+\]
+This is a strictly positive traded asset, and it can therefore be used
+as a domestic numeraire.
+
+\paragraph{Change of measure between domestic and foreign viewpoints.}
+
+Using the general numeraire-change formula, the Radon--Nikodym density
+between the foreign and domestic measures is given by
+\[
+\frac{\mathrm{d}\Qbb^f}{\mathrm{d}\Qbb^d}\Big|_{\F_t}
+=
+\frac{B_d(0)\,X(t)B_f(t)}{B_d(t)\,X(0)B_f(0)}.
+\]
+
+In the constant-rate case, where
+\[
+B_d(t)=e^{r_d t},
+\qquad
+B_f(t)=e^{r_f t},
+\]
+this becomes
+\[
+\frac{\mathrm{d}\Qbb^f}{\mathrm{d}\Qbb^d}\Big|_{\F_t}
+=
+\frac{X(t)e^{r_f t}}{X(0)e^{r_d t}}.
+\]
+
+Equivalently, at time \(T\),
+\[
+\boxed{
+\frac{\mathrm{d}\Qbb^f}{\mathrm{d}\Qbb^d}
+=
+\frac{X(T)e^{r_f T}}{X(0)e^{r_d T}}.
+}
+\]
+
+\paragraph{Interpretation.}
+
+This formula shows that moving from the domestic measure to the foreign
+measure amounts to reweighting probabilities according to the relative
+performance of the foreign bank account expressed in domestic currency.
+
+Thus the domestic and foreign pricing measures are not unrelated:
+they are linked exactly by the exchange rate and the two money market
+accounts.
+
+\paragraph{FX forward pricing.}
+
+Consider now a forward contract written on the exchange rate, with
+maturity \(T\) and delivery price \(K\).
+Its payoff at time \(T\), in domestic currency, is
+$$
+X(T)-K.
+$$
+
+Its time-\(t\) price under the domestic measure is therefore
+$$
+\Pi(t)
+=
+\E^{\Qbb^d}\!\left[
+e^{-r_d(T-t)}(X(T)-K)
+\;\middle|\;
+\F_t
+\right].
+$$
+
+Using the fact that under \(\Qbb^d\),
+$$
+\mathrm{d}X(t)=\big(r_d-r_f\big)X(t)\,\mathrm{d}t+\sigma X(t)\,\mathrm{d}W_t^{\Qbb^d},
+$$
+we obtain
+$$
+\E^{\Qbb^d}[X(T)\mid\F_t]
+=
+X(t)e^{(r_d-r_f)(T-t)}.
+$$
+
+Hence
+$$
+\Pi(t)
+=
+e^{-r_d(T-t)}X(t)e^{(r_d-r_f)(T-t)}
+-
+e^{-r_d(T-t)}K,
+$$
+that is,
+$$
+\boxed{
+\Pi(t)=X(t)e^{-r_f(T-t)}-Ke^{-r_d(T-t)}.
+}
+$$
+
+\paragraph{Forward exchange rate.}
+
+The forward exchange rate \(F(t,T)\) is defined by the value of \(K\)
+for which the contract has zero value at time \(t\).
+Thus
+$$
+\Pi(t)=0
+\qquad\Longleftrightarrow\qquad
+K=F(t,T),
+$$
+so that
+$$
+\boxed{
+F(t,T)=X(t)e^{(r_d-r_f)(T-t)}.
+}
+$$
+
+\paragraph{Interpretation.}
+
+This is the FX analogue of the usual forward-pricing formula.
+The domestic rate pushes the forward price upward, while the foreign
+rate acts like a continuous dividend yield and pushes it downward.
+
+\paragraph{Key message.}
+
+The FX market provides a particularly transparent example of the
+change-of-numeraire method:
+\begin{itemize}[leftmargin=1.4em]
+\item the domestic and foreign viewpoints correspond to different
+numeraires,
+\item the corresponding pricing measures are linked by an explicit
+Radon--Nikodym density,
+\item and the forward pricing formula follows naturally from the
+domestic risk-neutral dynamics.
+\end{itemize}
+
+
+% ============================================================
+\section{Interpretation and summary}
+% ============================================================
+
+\subsection{Link with risk-neutral valuation}
+
+The change-of-numeraire method should be understood as a generalization
+of the usual risk-neutral valuation principle.
+
+In the standard framework, the money market account \(B(t)\) is chosen
+as numeraire, and the associated probability measure is the usual
+risk-neutral measure \(\Qbb\).
+Under this measure, discounted asset prices
+\[
+\frac{S(t)}{B(t)}
+\]
+are martingales, and the price of a contingent claim \(X\) is given by
+\[
+\Pi(t;X)
+=
+B(t)\E^\Qbb\!\left[
+\frac{X}{B(T)}
+\;\middle|\;
+\mathcal{F}_t
+\right].
+\]
+
+The change-of-numeraire method extends this idea by replacing the money
+market account with an arbitrary strictly positive traded asset \(N(t)\).
+
+Once \(N\) is chosen as numeraire, the relevant martingale object is no
+longer the discounted price \(S(t)/B(t)\), but the denominated price
+\[
+\frac{S(t)}{N(t)}.
+\]
+The corresponding pricing measure is no longer \(\Qbb\), but the
+measure \(\Qbb^N\) associated with \(N\).
+
+The pricing formula then becomes
+\[
+\Pi(t;X)
+=
+N(t)\E^{\Qbb^N}\!\left[
+\frac{X}{N(T)}
+\;\middle|\;
+\mathcal{F}_t
+\right].
+\]
+
+Thus the usual risk-neutral valuation formula is simply the special case
+corresponding to the money market numeraire.
+
+\paragraph{Key message.}
+Risk-neutral valuation is not tied to one specific measure.
+Rather, it is a general no-arbitrage pricing principle:
+\begin{quote}
+once a numeraire is chosen, there exists an associated equivalent
+martingale measure under which prices expressed in units of that
+numeraire are martingales.
+\end{quote}
+
+In this sense, the ordinary risk-neutral measure is only one member of a
+whole family of equivalent martingale measures indexed by the choice of
+numeraire.
+
+\subsection{Practical interpretation}
+
+From a practical point of view, the main benefit of the
+change-of-numeraire method is that it provides flexibility.
+
+The no-arbitrage price of a contingent claim is unique, but the way we
+represent that price may vary depending on the numeraire and the
+associated measure.
+A good choice of numeraire can make both the pricing formula and the
+underlying dynamics much simpler.
+
+\paragraph{How to think about it in practice.}
+When pricing a derivative, one may proceed as follows:
+\begin{itemize}[leftmargin=1.4em]
+\item identify the payoff date and the structure of the payoff,
+\item look for a strictly positive traded asset naturally related to
+that payoff,
+\item use this asset as numeraire,
+\item express the payoff in units of the chosen numeraire,
+\item compute the expectation under the associated measure.
+\end{itemize}
+
+This often leads to a much cleaner formula than under the standard
+money-market numeraire.
+
+\paragraph{Typical situations.}
+\begin{itemize}[leftmargin=1.4em]
+\item In equity pricing, the money market account is often the most
+natural choice.
+\item In fixed-income pricing, a zero-coupon bond maturing at the payoff
+date typically leads to a forward measure and a simpler formula.
+\item In FX modeling, domestic and foreign money-market accounts lead to
+different but equivalent pricing measures.
+\end{itemize}
+
+\paragraph{Conceptual summary.}
+The change-of-numeraire method does not change the economic content of
+pricing.
+It simply changes:
+\begin{itemize}[leftmargin=1.4em]
+\item the unit in which prices are measured,
+\item the probability measure under which the martingale property holds.
+\end{itemize}
+
+The price itself remains the same; only its representation changes.
+
+\paragraph{Final takeaway.}
+The change of numeraire is one of the most useful tools in modern
+derivative pricing.
+It provides:
+\begin{itemize}[leftmargin=1.4em]
+\item a deeper understanding of risk-neutral valuation,
+\item a unifying framework for different pricing measures,
+\item and a practical method for simplifying derivative pricing
+problems.
+\end{itemize}
+
+
+\end{document}

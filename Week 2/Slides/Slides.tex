@@ -1,0 +1,2043 @@
+% =====================================================
+% Merged header (Bootcamp palette + Metropolis look)
+% =====================================================
+\documentclass[10pt,aspectratio=169]{beamer}
+
+% -----------------------------
+% Language & encoding
+% -----------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english,french]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{xcolor}
+
+% -----------------------------
+% Math / tables / layout
+% -----------------------------
+\usepackage{amsmath,amssymb,bm,mathtools}
+\usepackage{booktabs}
+\usepackage{multicol}
+\usepackage{changepage}
+
+% -----------------------------
+% Graphics
+% -----------------------------
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc,decorations.pathreplacing}
+
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+
+% -----------------------------
+% Theme (Metropolis)
+% -----------------------------
+\usetheme[numbering=fraction,progressbar=frametitle]{metropolis}
+\setbeamertemplate{frame numbering}[fraction]
+\setbeamertemplate{navigation symbols}{}
+
+% -----------------------------
+% Colors (unified palette)
+% -----------------------------
+\definecolor{BootcampBlueDark}{HTML}{1A3C68}
+\definecolor{BootcampBlue}{RGB}{31,110,178}
+\definecolor{AccentGold}{HTML}{DAA520}
+\definecolor{SoftGray}{RGB}{245,246,248}
+\definecolor{TextBlack}{HTML}{000000}
+\definecolor{Crimson}{HTML}{990000}
+\definecolor{MatrixGreen}{HTML}{228B22}
+\definecolor{MatrixRed}{HTML}{B22222}
+
+% -----------------------------
+% Global formatting
+% -----------------------------
+\setbeamercolor{normal text}{fg=TextBlack,bg=white}
+\setbeamercolor{title}{fg=TextBlack}
+\setbeamercolor{structure}{fg=BootcampBlueDark}
+\setbeamercolor{progress bar}{fg=BootcampBlueDark,bg=gray!30}
+
+% -----------------------------
+% Thick frametitle band (your “Bootcamp” look)
+% -----------------------------
+\setbeamercolor{frametitle}{bg=BootcampBlueDark,fg=white}
+\setbeamerfont{frametitle}{series=\bfseries,size=\large}
+\setbeamertemplate{frametitle}{
+  \nointerlineskip
+  \begin{beamercolorbox}[wd=\paperwidth,ht=3.2ex,dp=1.4ex,leftskip=1em,rightskip=1em]{frametitle}
+    \usebeamerfont{frametitle}\insertframetitle
+  \end{beamercolorbox}
+}
+
+% -----------------------------
+% Blocks (coherent with prior lectures)
+% -----------------------------
+\setbeamercolor{block title example}{bg=BootcampBlueDark!90!black,fg=white}
+\setbeamercolor{block body example}{bg=BootcampBlueDark!5!white,fg=black}
+\setbeamertemplate{blocks}[rounded][shadow=false]
+
+% Custom Definition Block (same API as before)
+\newenvironment{definitionblock}[1]{%
+  \par\vspace{0.4em}%
+  \begin{beamercolorbox}[
+      wd=\textwidth,
+      sep=0.4em,
+      leftskip=0.3em,
+      rightskip=0.6em,
+      rounded=false,
+      shadow=false
+    ]{block title example}%
+    \raisebox{0.15em}{\usebeamerfont{block title example}#1}%
+  \end{beamercolorbox}%
+  \vspace{-0.4em}%
+  \begin{beamercolorbox}[
+      wd=\textwidth,
+      sep=1em,
+      leftskip=0.6em,
+      rightskip=0.6em,
+      rounded=false,
+      shadow=false
+    ]{block body example}%
+    \usebeamerfont{block body example}%
+}{%
+  \end{beamercolorbox}%
+  \par\vspace{0.6em}%
+}
+
+\newenvironment{proofblock}[1][Proof]{%
+  \begin{block}{#1}%
+}{%
+  \end{block}%
+}
+
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\pt}{\par\noindent$\bullet$\hspace{0.6em}}
+% -----------------------------
+% Section / subsection transition pages
+% -----------------------------
+\metroset{
+  sectionpage=progressbar,
+  subsectionpage=progressbar
+}
+\AtBeginSection{
+  \frame[plain]{\sectionpage}
+}
+\AtBeginSubsection{
+  \frame[plain]{\subsectionpage}
+}
+
+% --- Theorem-like blocks (beamer)
+\setbeamertemplate{theorems}[numbered] % or [ams style]
+
+\newenvironment{theoremblock}[1]{%
+  \begin{theorem}[#1]%
+}{%
+  \end{theorem}%
+}
+
+
+% Graphics folder (extracted from the provided PDF)
+\graphicspath{{bm_figs/}}
+
+% =====================================================
+% Metadata
+% =====================================================
+\title{Option Pricing : Brownian Motion and Quadratic Variation}
+\author{}
+\date{}
+
+\AtBeginSection[]{
+  \begin{frame}{\insertsectionhead}
+    \tableofcontents[
+      currentsection,
+      hideothersubsections
+    ]
+  \end{frame}
+}
+
+\begin{document}
+
+
+% =====================================================
+\begin{frame}
+  \titlepage
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{References (chapters/pages)}
+
+\footnotesize
+\textbf{Main references.}
+
+
+\begin{itemize}\setlength{\itemsep}{0.35em}
+  \item \textit{Shreve}, \emph{Stochastic Calculus for Finance II}:
+  Ch.~3 (Brownian Motion), pp.~83--117.
+  \item \textit{Karatzas \& Shreve}, \emph{Brownian Motion}:
+  Ch~2, pp.~47--126.
+  \item \textit{Tomas Bj\"ork}, \emph{Arbitrage Theory in Continuous Time}:
+  Ch.~3, pp.~XX--YY.
+\end{itemize}
+
+\end{frame}
+% =====================================================
+\begin{frame}{Roadmap}
+  \tableofcontents[hideallsubsections]
+\end{frame}
+
+% ======================================================
+\section{Introduction}
+
+% ======================================================
+\subsection{Examples}
+
+% --------------------------------------
+\begin{frame}{Why do we need stochastic models in finance?}
+
+\begin{itemize}
+  \item Many economic quantities evolve over time and are \textbf{uncertain}: prices, rates, demand, production, \dots \pause
+  \item Decisions are taken \textbf{before} uncertainty is resolved (hedging / planning / investment). \pause
+  \item We need models that capture two key empirical features: \pause
+  \begin{itemize}
+    \item \textbf{Randomness}: outcomes cannot be predicted deterministically. \pause
+    \item \textbf{Roughness}: paths look irregular at small time scales (no classical derivative). \pause
+  \end{itemize}
+\end{itemize}
+
+\medskip
+\begin{alertblock}{Goal of the course}
+Model randomness + roughness \;\;\(\Rightarrow\)\;\; build pricing/hedging tools for derivatives.
+\end{alertblock}
+
+\end{frame}
+
+% --------------------------------------
+% Your market examples (kept as you provided)
+\begin{frame}
+\frametitle{Energy prices}
+{\small
+
+\pt Airlines sell tickets several months ahead of flights, but the cost of the flight depends heavily on the kerosene price!
+
+\vspace{5mm}
+
+\pt Retail electricity prices for households is fixed, but market prices vary randomly depending on climate and geopolitical risks.
+}
+
+\vspace{-5mm}
+\begin{figure}[!ht]
+\begin{align*}
+   \includegraphics[width=4.5cm]{Ressources Globales/Stochastic calculus and option pricing/Option Pricing Nizar/Lectures/Lectures 1-2/Oil.png}
+   ~~~~~~~~~~~~
+   \includegraphics[width=3.5cm]{Ressources Globales/Stochastic calculus and option pricing/Option Pricing Nizar/Lectures/Lectures 1-2/electricity.png}
+\end{align*}
+\caption{Trajectories of energy prices}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{Agricultural risks}
+{\small
+\pt Production costs are paid ahead of time, produced quantities are revealed in the future (climate/environmental risks), and revenue depends also on market price revealed later.
+}
+\begin{align*}
+   \includegraphics[width=5cm]{Ressources Globales/Stochastic calculus and option pricing/Option Pricing Nizar/Lectures/Lectures 1-2/ble.jpg}
+   ~~~~~~~~
+   \includegraphics[width=5cm]{Ressources Globales/Stochastic calculus and option pricing/Option Pricing Nizar/Lectures/Lectures 1-2/butter.jpeg}
+\end{align*}
+\end{frame}
+
+\begin{frame}
+\frametitle{Foreign exchange rates (FOREX)}
+
+{\small
+\pt How to face production costs in local currency with sales in foreign currency...
+}
+
+\begin{figure}[!ht]
+\begin{align*}
+   \includegraphics[width=5cm]{Ressources Globales/Stochastic calculus and option pricing/Option Pricing Nizar/Lectures/Lectures 1-2/EuroDollar.png}
+   ~~
+   \includegraphics[width=4cm]{Ressources Globales/Stochastic calculus and option pricing/Option Pricing Nizar/Lectures/Lectures 1-2/YuanDollar.jpg}
+\end{align*}
+\caption{Trajectories of foreign exchange rates}
+\end{figure}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Interest rates risk (fixed income)}
+{\small
+
+\pt How to manage interest rate risk?
+
+\begin{figure}[!ht]
+\begin{align*}
+   \includegraphics[width=4cm]{Ressources Globales/Stochastic calculus and option pricing/Option Pricing Nizar/Lectures/Lectures 1-2/taux10ans.jpeg}
+   ~~
+   \includegraphics[width=4cm]{Ressources Globales/Stochastic calculus and option pricing/Option Pricing Nizar/Lectures/Lectures 1-2/TauxHypothecaires.jpg}
+\end{align*}
+\caption{Interest rate trajectories}
+\end{figure}
+}
+\end{frame}
+
+\begin{frame}
+\frametitle{The stock market}
+{\small
+\vspace{-10mm}
+\begin{figure}[!ht]
+\begin{align*}
+   \includegraphics[width=4cm]{Ressources Globales/Stochastic calculus and option pricing/Option Pricing Nizar/Lectures/Lectures 1-2/Apple.png}
+   ~~~~~~
+   \includegraphics[width=4cm]{Ressources Globales/Stochastic calculus and option pricing/Option Pricing Nizar/Lectures/Lectures 1-2/NasdaqNew.png}
+\end{align*}
+\caption{Trajectories of stock prices}
+\end{figure}
+
+\begin{alertblock}{}
+\begin{center}{\bf
+All of these curves have a very erratic nature. In this course:
+
+how to model such erratic behavior and handle it.
+}
+\end{center}
+\end{alertblock}
+}
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{What kind of “random curve” are we aiming for?}
+
+\begin{itemize}
+  \item In discrete time, randomness is modeled by \textbf{coin tosses / shocks}. \pause
+  \item In continuous time, we want a limit object that keeps randomness \emph{and} becomes a curve in time. \pause
+  \item The canonical building block is \textbf{Brownian motion}: \pause
+  \begin{itemize}
+    \item continuous paths, \pause
+    \item independent Gaussian increments, \pause
+    \item intrinsically \textbf{rough} (not differentiable). \pause
+  \end{itemize}
+\end{itemize}
+
+\medskip
+\textbf{Practical takeaway:}\pause\;
+in finance, we often model prices by \textbf{exponentials of Brownian motion} (log-normality) (Geometric Brownian Motion).
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{(Placeholder) Brownian motion pictures}
+\centering
+
+\includegraphics[width=0.47\linewidth]{Ressources Globales/Stochastic calculus and option pricing/Option Pricing Nizar/Lectures/Lectures 1-2/BM.JPG}
+
+\medskip
+\begin{itemize}
+  \item Irregular at every zoom level (roughness). 
+\end{itemize}
+\end{frame}
+
+% ======================================================
+\subsection{Toy model: Discrete-Time model}
+
+% --------------------------------------
+\begin{frame}{A discrete-time toy world}
+
+Fix a maturity \(T>0\) and a time grid:
+\[
+0=t_0<t_1<\cdots<t_N=T,
+\qquad \Delta t := t_{k+1}-t_k.
+\]
+\pause
+
+\begin{itemize}
+  \item At each date \(t_k\), new information arrives. \pause
+  \item We model information by a filtration \((\mathcal{F}_{t_k})_{k=0,\dots,N}\). \pause
+  \item A price process is a sequence \((S_{t_k})_{k=0,\dots,N}\) of random variables. \pause
+\end{itemize}
+
+\medskip
+\begin{block}{Key constraint (no look-ahead)}
+Any trading decision at time \(t_k\) must be \(\mathcal{F}_{t_k}\)-measurable.
+\end{block}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{A binomial stock model (one-step)}
+
+At each step, the stock either goes \textbf{up} or \textbf{down}:
+\[
+S_{t_{k+1}} =
+\begin{cases}
+u\,S_{t_k} & \text{(up) with probability $p$}\\
+d\,S_{t_k} & \text{(down) with probability $1-p$}
+\end{cases}
+\qquad \text{with } 0<d<1<u.
+\]
+\pause
+
+\begin{itemize}
+  \item This is the cleanest setting to understand replication and hedging. \pause
+  \item The risk-free asset grows deterministically:
+  \[
+  B_{t_{k+1}}=(1+r\Delta t)\,B_{t_k}.
+  \]
+  \pause
+\end{itemize}
+
+\medskip
+\textbf{Next:}\pause\;
+draw the tree for \(N=2,3\), then price claims by backward induction.
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Tree picture for \(N=2\) (template)}
+
+\centering
+\begin{tikzpicture}[scale=0.95]
+\node (S0) at (0,0) {\(S_0\)};
+\node (Su) at (2,1.2) {\(uS_0\)};
+\node (Sd) at (2,-1.2) {\(dS_0\)};
+\node (Suu) at (4,2.2) {\(u^2S_0\)};
+\node (Sud) at (4,0) {\(udS_0\)};
+\node (Sdd) at (4,-2.2) {\(d^2S_0\)};
+
+\draw[->] (S0) -- (Su) node[midway, above] {\small up};
+\draw[->] (S0) -- (Sd) node[midway, below] {\small down};
+\draw[->] (Su) -- (Suu) node[midway, above] {\small up};
+\draw[->] (Su) -- (Sud) node[midway, below] {\small down};
+\draw[->] (Sd) -- (Sud) node[midway, above] {\small up};
+\draw[->] (Sd) -- (Sdd) node[midway, below] {\small down};
+\end{tikzpicture}
+
+\medskip
+\begin{itemize}
+  \item A claim payoff is a function of the terminal node(s). \pause
+  \item Pricing will become a \textbf{backward recursion}. 
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{From many tosses to a continuous-time limit (idea)}
+
+To approach continuous time, we accelerate the steps:\pause
+\begin{itemize}
+  \item \(n\) steps per unit time, so \([0,t]\) contains \(nt\) tosses, \pause
+  \item step size becomes of order \(1/\sqrt{n}\), so the CLT applies. \pause
+\end{itemize}
+
+\medskip
+A canonical scaling for a symmetric random walk \((X_k)\) is:\pause
+\[
+B^{(n)}(t) := \frac{1}{\sqrt{n}}\,S_{\lfloor nt\rfloor}
+\quad
+\text{(with linear interpolation when needed).}
+\]
+\pause
+
+\begin{block}{Message}
+As \(n\to\infty\), the scaled random walk behaves like a Brownian motion.
+\end{block}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{From binomial prices to geometric Brownian motion}
+
+A standard “diffusion scaling” for the binomial model is:\pause
+\[
+u_n = 1+\frac{\sigma}{\sqrt{n}},
+\qquad
+d_n = 1-\frac{\sigma}{\sqrt{n}},
+\qquad
+\text{(with \(n\) steps per unit time).}
+\]
+\pause
+
+The resulting stock price at time \(t\) can be written (heads/tails count):\pause
+\[
+S_n(t) = S(0)\,u_n^{H_{nt}}\,d_n^{T_{nt}}.
+\]
+\pause
+
+\begin{alertblock}{Limit (heuristic)}
+As \(n\to\infty\), \(S_n(t)\) converges (in distribution) to
+\[
+S(t)=S(0)\exp\!\Big(\sigma W_t - \tfrac12\sigma^2 t\Big),
+\]
+i.e. a \textbf{geometric Brownian motion}.
+\end{alertblock}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Takeaways of the introduction}
+
+\begin{itemize}
+  \item Real financial curves are \textbf{random} and \textbf{rough}. \pause
+  \item Continuous-time limits lead to \textbf{Brownian motion} and \textbf{geometric Brownian motion}.
+\end{itemize}
+
+\end{frame}
+
+% =====================================================
+% =====================================================
+% INTRODUCTION (completed)
+% =====================================================
+% ======================================================
+\section{Brownian Motion}
+
+% ======================================================
+\subsection{Random Walk}
+
+% --------------------------------------
+\begin{frame}{Random Walk (Discrete Time)}
+
+\begin{definitionblock}{Simple Symmetric Random Walk}
+Let \((\varepsilon_k)_{k\ge 1}\) be i.i.d. with
+\[
+\mathbb{P}(\varepsilon_k=+1)=\mathbb{P}(\varepsilon_k=-1)=\tfrac12.
+\]\pause
+Define
+\[
+S_0=0,
+\qquad
+S_n := \sum_{k=1}^n \varepsilon_k,\quad n\ge 1.
+\]
+\end{definitionblock}\pause
+
+\begin{itemize}
+  \item \((S_n)\) is a discrete-time stochastic process.\pause
+  \item Increments are \(\Delta S_n = S_n-S_{n-1}=\varepsilon_n\).\pause
+  \item Natural filtration: \(\mathcal{F}_n:=\sigma(\varepsilon_1,\dots,\varepsilon_n)=\sigma(S_0,\dots,S_n)\).
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Illustrations (Random Walk Paths)}
+
+\begin{itemize}
+  \item Different outcomes \(\omega\) produce different sample paths \(n\mapsto S_n(\omega)\).\pause
+  \item Typical behavior:\pause
+  \begin{itemize}
+    \item oscillates up and down,\pause
+    \item wanders away from 0 at scale \(\sqrt{n}\).\pause
+  \end{itemize}
+\end{itemize}
+
+\medskip
+\begin{center}
+% (Replace with your figure, or keep as a placeholder.)
+\includegraphics[width=0.45\linewidth]{Ressources Globales/Stochastic calculus and option pricing/Option Pricing Nizar/Lectures/Lectures 1-2/random-walk.png}
+\end{center}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Basic Properties and Continuous Interpolation}
+
+\begin{itemize}
+  \item \textbf{Mean and variance:}\pause
+  \[
+  \mathbb{E}[S_n]=0,
+  \qquad
+  \mathrm{Var}(S_n)=n.
+  \]
+  \item \textbf{Independent increments:}\pause
+  \(S_{n+m}-S_n = \sum_{k=n+1}^{n+m}\varepsilon_k\) is independent of \(\mathcal{F}_n\).\pause
+  \item \textbf{Martingale property:}\pause
+  \[
+  \mathbb{E}[S_{n+1}\mid \mathcal{F}_n]=S_n.
+  \]
+\end{itemize}
+\pause
+\medskip
+
+\textbf{Continuous interpolation:}\pause\;
+define a continuous-time process \(\widetilde S(t)\) by linear interpolation:
+\[
+\widetilde S(t) := S_k + (t-k)(S_{k+1}-S_k),
+\quad t\in[k,k+1].
+\]
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Rescaled Continuous Interpolation}
+
+We now introduce a small time step \(1/n\) and accelerate time.\pause
+
+\medskip
+\textbf{Rescaled process:}\pause
+\[
+W^{(n)}(t)
+:=
+\frac{1}{\sqrt{n}}\,
+\widetilde S(nt),
+\qquad t\in[0,T].
+\]
+\pause
+
+\begin{itemize}
+  \item Time is sped up by a factor \(n\) (many steps per unit time).\pause
+  \item Space is scaled by \(1/\sqrt{n}\) (CLT scaling).\pause
+  \item Typical fluctuations over \([0,t]\) stay of order \(\sqrt{t}\).\pause
+\end{itemize}
+
+\medskip
+\begin{block}{Goal}
+Understand the limit of \(W^{(n)}\) as \(n\to\infty\).
+\end{block}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Behavior of Increments (Heuristic)}
+
+Fix \(0\le s<t\).\pause
+
+\medskip
+The increment of the rescaled walk is approximately:
+\[
+W^{(n)}(t)-W^{(n)}(s)
+\approx
+\frac{1}{\sqrt{n}}\Big(S_{\lfloor nt\rfloor}-S_{\lfloor ns\rfloor}\Big).
+\]
+\pause
+
+\begin{itemize}
+  \item It is a sum of \(\lfloor n(t-s)\rfloor\) i.i.d.\ \(\pm1\) variables.\pause
+  \item Mean \(0\), variance \(\approx t-s\).\pause
+  \item By the CLT, it should look Gaussian:\pause
+  \[
+  W^{(n)}(t)-W^{(n)}(s)\ \approx\ \mathcal{N}(0,t-s).
+  \]
+\end{itemize}
+
+\medskip
+\textbf{Key intuition:}\pause\;
+many tiny independent shocks \(\Rightarrow\) Gaussian fluctuations.
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Convergence as the Time Step Goes to 0 (Donsker)}
+
+\begin{theoremblock}{Donsker's Invariance Principle (Informal)}
+As \(n\to\infty\), the rescaled interpolated random walk \(W^{(n)}\) converges in distribution
+to a continuous-time process \((W_t)_{t\ge 0}\) called \textbf{Brownian motion}.
+\end{theoremblock}\pause
+
+\begin{itemize}
+  \item This is the continuous-time analogue of the CLT.\pause
+  \item Brownian motion is the universal scaling limit of many random walks.\pause
+\end{itemize}
+
+\medskip
+\textbf{Interpretation:}\pause\;
+Brownian motion is the canonical model of continuous-time randomness.
+
+\end{frame}
+
+% ======================================================
+\subsection{Definition of Brownian Motion}
+
+% --------------------------------------
+\begin{frame}{Definition of Brownian Motion}
+
+\begin{definitionblock}{Standard Brownian Motion}
+A process \((W_t)_{t\ge 0}\) is a \emph{standard Brownian motion} if:\pause
+\begin{itemize}
+  \item \(W_0=0\),\pause
+  \item \textbf{independent increments},\pause
+  \item \textbf{Gaussian increments:} for \(0\le s<t\),
+  \[
+  W_t-W_s \sim \mathcal{N}(0,t-s),\pause
+  \]
+  \item \textbf{continuous paths} \(t\mapsto W_t(\omega)\) (a.s.).
+\end{itemize}
+\end{definitionblock}
+
+\end{frame}
+
+
+
+% --------------------------------------
+\begin{frame}{Gaussian Density and the Heat Equation}
+
+For each \(t>0\), the random variable \(W_t\) admits a density:
+\[
+W_t \sim \mathcal{N}(0,t)
+\qquad\Longrightarrow\qquad
+p(t,x)
+=
+\frac{1}{\sqrt{2\pi t}}
+\exp\!\Big(-\frac{x^2}{2t}\Big).
+\]
+\pause
+
+\medskip
+\begin{itemize}
+  \item More generally, for \(0\le s<t\),
+  \[
+  W_t \mid W_s=x \sim \mathcal{N}(x,\ t-s),
+  \quad\text{with transition density}\quad
+  p(t-s,y-x).
+  \]\pause
+  \item The density \(p(t,x)\) solves the \textbf{heat equation}:
+  \[
+  \partial_t p(t,x)
+  =
+  \frac12\,\partial_{xx}p(t,x),
+  \qquad t>0,\ x\in\mathbb{R},
+  \]
+  with initial condition \(p(0,x)=\delta_0(x)\) (Dirac mass at \(0\)).\pause
+\end{itemize}
+
+\medskip
+\begin{block}{Preview (PDE link)}
+Many pricing PDEs (e.g.\ Black--Scholes) are perturbations of the heat equation.
+\end{block}
+
+\end{frame}
+
+
+% --------------------------------------
+\begin{frame}{Brownian Motion as a Gaussian Process}
+
+\begin{itemize}
+  \item Brownian motion is a \textbf{Gaussian process}:\pause
+  any finite vector \((W_{t_1},\dots,W_{t_m})\) is multivariate normal.\pause
+  \item It is fully characterized by:\pause
+  \begin{itemize}
+    \item mean function \(m(t)=\mathbb{E}[W_t]=0\),\pause
+    \item covariance kernel \(K(s,t)=\mathrm{Cov}(W_s,W_t)=\min(s,t).\pause\)
+  \end{itemize}
+\end{itemize}
+
+\medskip
+\begin{block}{Key consequence}
+For \(0\le s<t\),
+\[
+W_t = W_s + (W_t-W_s),
+\]
+where \(W_s\) and \(W_t-W_s\) are independent Gaussian variables.
+\end{block}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Transformations of Brownian Motion}
+
+Let \((W_t)_{t\ge0}\) be a Brownian motion.\pause
+
+\begin{itemize}
+  \item \textbf{Symmetry:}\pause\;
+  \((-W_t)_{t\ge0}\) is also Brownian motion.\pause
+  \item \textbf{Scaling:}\pause\;
+  for any \(c>0\),
+  \[
+  \widetilde W_t := \frac{1}{\sqrt{c}}W_{ct}
+  \quad \text{is Brownian motion.}
+  \]
+  \pause
+  \item \textbf{Time inversion (advanced but useful):}\pause\;
+  the process
+  \[
+  \widehat W_t := t\, W_{1/t}, \qquad t>0,
+  \]
+  is again a Brownian motion (in law).\pause
+  \item \textbf{Time reversal on \([0,T]\):}\pause\;
+  \[
+  \big(W_T - W_{T-t}\big)_{0\le t\le T}
+  \quad \text{is Brownian motion.}
+  \]
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Continuity (What to Assume vs What to Prove?)}
+
+\begin{itemize}
+  \item One can \textbf{define} Brownian motion by finite-dimensional distributions (Gaussian increments).\pause
+  \item A deep theorem (Kolmogorov) guarantees existence of a \textbf{continuous version}.\pause
+  \item For this course, we will:\pause
+  \begin{itemize}
+    \item take continuity as part of the definition,\pause
+    \item and focus on consequences for calculus and finance.\pause
+  \end{itemize}
+\end{itemize}
+
+\medskip
+\begin{block}{Practical viewpoint}
+The main “new” phenomenon is not continuity itself,
+but the \textbf{roughness} of paths (non-differentiability, quadratic variation).
+\end{block}
+
+\end{frame}
+
+% ======================================================
+\subsection{Markovian Properties of Brownian Motion}
+
+\subsubsection{Weak Markov property }
+% --------------------------------------
+\begin{frame}{Markov Property (What it means)}
+
+\begin{definitionblock}{Markov Property (informal)}
+A process is Markov if \textbf{the future depends on the past only through the present}.
+\end{definitionblock}\pause
+
+\medskip
+For Brownian motion, for \(s<t\):\pause
+\[
+\mathbb{P}(W_t\in A \mid \mathcal{F}_s)
+=
+\mathbb{P}(W_t\in A \mid W_s),
+\]
+for all Borel sets \(A\).\pause
+
+\medskip
+\begin{itemize}
+  \item The increment \(W_t-W_s\) is independent of \(\mathcal{F}_s\).\pause
+  \item The conditional law is Gaussian:\pause
+  \[
+  W_t \mid W_s \sim \mathcal{N}(W_s,\ t-s).
+  \]
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Weak Markov Property}
+
+Let $t \geq 0$.
+
+\begin{definitionblock}{Weak Markov Property}
+Conditionally on \(\mathcal{F}_t\), the shifted process
+\[
+\big(W_{s+t}-W_t\big)_{s\ge0}
+\]
+is a Brownian motion independent of \(\mathcal{F}_t\).
+\end{definitionblock}\pause
+
+\begin{itemize}
+  \item The Markov property holds even if the “present time” is random.\pause
+  \item This is fundamental for hitting times, barrier events, and American options.
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Weak Markov Property (Test-Functions Formulation)}
+
+% Fix \(t\ge 0\).\pause
+
+\begin{definitionblock}{Weak Markov Property (via test functions)}
+For any \(n\in\mathbb{N}\), any times \(0\le s_1<\cdots<s_n\), and any bounded measurable
+\(\varphi:\mathbb{R}^n\to\mathbb{R}\), we have almost surely
+\[
+\mathbb{E}\!\left[
+\varphi\!\big(W_{t+s_1}-W_t,\dots,W_{t+s_n}-W_t\big)
+\,\Big|\,\mathcal{F}_t
+\right]
+=
+\mathbb{E}\!\left[
+\varphi\!\big(W_{s_1},\dots,W_{s_n}\big)
+\right].
+\]
+\end{definitionblock}\pause
+
+\begin{itemize}
+  \item Future increments after time \(t\) have the \emph{same law} as a fresh Brownian motion.\pause
+  \item The conditional law given \(\mathcal{F}_t\) is independent of the past.\pause
+  \item Strong Markov: the same statement with \(t\) replaced by a stopping time \(\tau\).
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Weak Markov Property}
+
+\begin{definitionblock}{Weak Markov Property}
+For \(0\le s<t\) and any bounded measurable \(f\),\pause
+\[
+\mathbb{E}\big[f(W_t)\mid \mathcal{F}_s\big]
+=
+u_{t-s}(W_s),
+\]
+where
+\[
+u_{h}(x)
+:=
+\mathbb{E}\big[f(x+Z)\big],
+\quad Z\sim\mathcal{N}(0,h).
+\]
+This is equivalent to say that $W_t - W_s$
+\end{definitionblock}\pause
+
+\begin{itemize}
+  \item The conditional expectation depends on the past only through \(W_s\).\pause
+  \item This is already enough to derive many transition formulas and PDE links.
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Brownian Motion is a Martingale}
+
+Let $(W_t)_{t\ge 0}$ be a standard Brownian motion and let
+\[
+\mathcal{F}_t:=\sigma(W_s:\ 0\le s\le t)
+\qquad\text{(natural filtration).}
+\]
+
+\begin{theoremblock}{Martingale property}
+$(W_t)_{t\ge 0}$ is a martingale with respect to $(\mathcal{F}_t)_{t\ge 0}$, i.e.
+for all $0\le s\le t$,
+\[
+\mathbb{E}\!\left[\,W_t \mid \mathcal{F}_s\,\right]=W_s
+\qquad\text{a.s.}
+\]
+\end{theoremblock}\pause
+
+\begin{proofblock}{Proof (one line)}
+Write $W_t=W_s+(W_t-W_s)$; the increment $(W_t-W_s)$ is independent of $\mathcal{F}_s$
+and centered, hence
+\[\mathbb{E}\!\left[W_t\mid\mathcal{F}_s\right]
+=
+W_s+\mathbb{E}\!\left[W_t-W_s\mid\mathcal{F}_s\right]
+=
+W_s.
+\]
+\end{proofblock}
+\end{frame}
+
+\subsubsection{Strong Markov Property}
+% --------------------------------------
+\begin{frame}{Strong Markov Property (Stopping Times)}
+
+Let \(\tau\) be a stopping time w.r.t.\ \((\mathcal{F}_t)\).\pause
+
+\begin{definitionblock}{Strong Markov Property}
+Conditionally on \(\mathcal{F}_\tau\), the shifted process
+\[
+\big(W_{\tau+t}-W_\tau\big)_{t\ge0}
+\]
+is a Brownian motion independent of \(\mathcal{F}_\tau\).
+\end{definitionblock}\pause
+
+\begin{itemize}
+  \item The Markov property holds even if the “present time” is random.\pause
+  \item This is fundamental for hitting times, barrier events, and American options.
+\end{itemize}
+
+\end{frame}
+
+
+% --------------------------------------
+\begin{frame}{Brownian Motion is a Martingale}
+
+Let $(W_t)_{t\ge 0}$ be a standard Brownian motion and let
+\[
+\mathcal{F}_t:=\sigma(W_s:\ 0\le s\le t)
+\qquad\text{(natural filtration).}
+\]
+
+\begin{theoremblock}{Martingale property}
+$(W_t)_{t\ge 0}$ is a martingale with respect to $(\mathcal{F}_t)_{t\ge 0}$, i.e.
+for all $0\le s\le t$,
+\[
+\mathbb{E}\!\left[\,W_t \mid \mathcal{F}_s\,\right]=W_s
+\qquad\text{a.s.}
+\]
+\end{theoremblock}\pause
+
+\begin{proofblock}{Proof (one line)}
+Write $W_t=W_s+(W_t-W_s)$; the increment $(W_t-W_s)$ is independent of $\mathcal{F}_s$
+and centered, hence
+\[\mathbb{E}\!\left[W_t\mid\mathcal{F}_s\right]
+=
+W_s+\mathbb{E}\!\left[W_t-W_s\mid\mathcal{F}_s\right]
+=
+W_s.
+\]
+\end{proofblock}
+\end{frame}
+% --------------------------------------
+\begin{frame}{Strong Markov Property (Test-Functions Formulation)}
+
+ Let \(\tau\) be a stopping time w.r.t.\ \((\mathcal{F}_t)\).\pause
+
+\begin{definitionblock}{Strong Markov Property (via test functions)}
+ For any \(n\in\mathbb{N}\), any times \(0\le t_1<\cdots<t_n\), and any bounded measurable
+\(\varphi:\mathbb{R}^n\to\mathbb{R}\), we have almost surely
+\[
+\mathbb{E}\!\left[
+\varphi\!\big(W_{\tau+t_1}-W_\tau,\dots,W_{\tau+t_n}-W_\tau\big)
+\,\Big|\,\mathcal{F}_\tau
+\right]
+=
+\mathbb{E}\!\left[
+\varphi\!\big(W_{t_1},\dots,W_{t_n}\big)
+\right].
+\]
+\end{definitionblock}\pause
+
+% \begin{itemize}
+%   \item The future increments after \(\tau\) have the \emph{same law} as a fresh Brownian motion.\pause
+%   \item The conditional law given \(\mathcal{F}_\tau\) does \emph{not} depend on the past.\pause
+%   \item Key tool for hitting times, barrier events, and American options.\pause
+% \end{itemize}
+
+\end{frame}
+
+
+
+% ======================================================
+% ======================================================
+\subsection{Reflection Principle}
+
+% --------------------------------------
+\begin{frame}{Reflection Principle: Why it matters}
+
+\begin{itemize}
+  \item Define the running maximum
+  \[
+  M_t := \sup_{0\le s\le t} W_s .
+  \]
+  \item The pair \((M_t,W_t)\) is central for \textbf{barrier options} and for \textbf{default / first-passage} modeling. 
+  \item Key idea: events of the form \(\{M_t\ge a\}\) are the same as hitting events
+  \[
+  \{M_t\ge a\} \iff \{\tau_a \le t\},
+  \qquad
+  \tau_a := \inf\{s\ge 0:\ W_s=a\}. 
+  \]
+\end{itemize}
+
+\medskip
+\begin{block}{What we gain}
+The reflection principle converts \(\{M_t\ge a,\,W_t\le w\}\) into a \emph{simple Gaussian tail event},
+hence explicit formulas.
+\end{block}
+
+\end{frame}
+
+
+
+% --------------------------------------
+\begin{frame}{Reflection Map (Informal Geometric Picture)}
+
+Fix \(a>0\) and \(t>0\). Consider a path \(\omega\) such that it hits level \(a\) before \(t\)
+(i.e. \(\tau_a(\omega)\le t\)). Define a reflected path \(\omega^\star\) by
+\[
+\omega^\star(s)=
+\begin{cases}
+\omega(s), & 0\le s\le \tau_a(\omega),\\
+2a-\omega(s), & \tau_a(\omega) < s\le t.
+\end{cases}
+\]
+\medskip
+
+\begin{itemize}
+  \item \(\omega^\star\) coincides with \(\omega\) up to the first hit of \(a\), then mirrors it around \(a\).
+  \item Reflection swaps “ending below \(a\)” with “ending above \(a\)” among paths that \emph{did hit} \(a\).
+\end{itemize}
+
+
+\end{frame}
+
+
+% --------------------------------------
+\begin{frame}{Reflection Map (Why Wiener measure is preserved)}
+
+Fix \(a>0\) and \(t>0\). For a continuous path \(\omega:[0,t]\to\mathbb{R}\), define
+\[
+\tau_a(\omega):=\inf\{s\in[0,t]:\ \omega(s)=a\}
+\quad (\inf\emptyset:=+\infty).
+\]
+On the event \(\{\tau_a(\omega)\le t\}\), define the reflected path \(\omega^\star\) by
+\[
+\omega^\star(s)=
+\begin{cases}
+\omega(s), & 0\le s\le \tau_a(\omega),\\
+2a-\omega(s), & \tau_a(\omega) < s\le t.
+\end{cases}
+\]
+
+\medskip
+\begin{itemize}
+  \item \textbf{Geometric effect:}\pause\;
+  after the first hit of level \(a\), we mirror the future trajectory around the horizontal line \(y=a\).\pause
+
+  \item \textbf{Involution:}\pause\;
+  applying the map twice gives back the original path:
+  \((\omega^\star)^\star=\omega\).
+
+  \end{itemize}
+
+\end{frame}
+
+
+\begin{frame}{Why Wiener measure is preserved (informal but key): }
+    
+  \begin{itemize}
+    \item Brownian increments are \textbf{symmetric}: for any \(h>0\),
+    \(\Delta W := W_{u+h}-W_u\) has the same law as \(-\Delta W\).\pause
+    \item Conditioned on the past up to \(\tau_a\), the future increments
+    \((W_{\tau_a+s}-W_{\tau_a})_{0\le s\le t-\tau_a}\)
+    have the same law as their sign-flipped version.\pause
+    \item Reflection is exactly this sign flip after \(\tau_a\), shifted to keep continuity at level \(a\):
+    \(W_{\tau_a+s}\mapsto 2a-W_{\tau_a+s}\).\pause
+    \item Hence the mapping \(\omega\mapsto\omega^\star\) sends Brownian paths to Brownian paths
+    with the \textbf{same probability weight} (Wiener measure is invariant under this reflection).\pause
+\item \textbf{Consequence:}\pause\;
+  on the event \(\{\tau_a\le t\}\), reflection sends \(W_t\) to \(W_t^\star=2a-W_t\), hence it swaps
+  \[
+  \{W_t\le a\}\quad \longleftrightarrow \quad \{W_t^\star\ge a\},
+  \]
+  (up to the null boundary \(\{W_t=a\}\)), which is the key step behind the reflection principle.
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Reflection Principle (Event-Level Statement)}
+
+Let \(a>0\), \(t>0\), and \(w\le a\). Then the reflection principle yields
+\[
+\mathbb{P}\big(M_t > a,\ W_t < w\big)
+=
+\mathbb{P}\big(W_t > 2a-w\big),
+\qquad (w\le a). \]
+
+\pause
+\medskip
+\begin{block}{Most useful special case}
+Taking \(w=a\) gives
+\[
+\mathbb{P}(M_t \ge a)
+=
+2\,\mathbb{P}(W_t \ge a).
+\]
+\end{block}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Joint Law of \texorpdfstring{$(M_t,W_t)$}{(M_t,W_t)}}
+
+A powerful refinement is the explicit joint density of \((M_t,W_t)\):  )
+\[
+f_{M_t,W_t}(m,w)
+=
+\frac{2(2m-w)}{t\sqrt{2\pi t}}
+\exp\!\Big(-\frac{(2m-w)^2}{2t}\Big),
+\qquad (m>0,\ w\le m). 
+\]
+
+\pause
+\medskip
+\begin{itemize}
+  \item It comes from differentiating the reflection identity
+  \[
+  \mathbb{P}(M_t\ge m,\ W_t\le w)=\mathbb{P}(W_t\ge 2m-w),
+  \quad w\le m.  
+  \]
+  \item From this, you can derive many useful quantities:
+  \(\mathcal L(M_t)\), conditional laws \(M_t\mid W_t=w\), barrier probabilities, etc.  
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Finance Link: Barrier Events = Maxima / Hitting Times}
+
+\begin{itemize}
+  \item A (toy) up-and-out barrier event typically looks like
+  \[
+  \{\text{option survives to }t\}
+  =
+  \{M_t < H\}.
+  \]
+  \item Credit/default via first-passage often models default as
+  \[
+  \tau_H := \inf\{t\ge 0:\ X_t \le H\}
+  \quad \text{or} \quad
+  \inf\{t\ge 0:\ X_t \ge H\},
+  \]
+  i.e. again a barrier / hitting time.
+\end{itemize}
+
+\end{frame}
+
+\subsection{Pathwise Properties of Brownian Motion}
+
+% --------------------------------------
+\begin{frame}{Oscillations at Every Time}
+
+Let \((W_t)_{t\ge 0}\) be Brownian motion.\pause
+
+\begin{theoremblock}{Local oscillation at scale \(\sqrt{h}\)}
+For every fixed \(t\ge 0\), with probability \(1\),
+\[
+\limsup_{h\downarrow 0}\frac{W_{t+h}-W_t}{\sqrt{h}}=+\infty,
+\qquad
+\liminf_{h\downarrow 0}\frac{W_{t+h}-W_t}{\sqrt{h}}=-\infty.
+\]
+\end{theoremblock}\pause
+
+\begin{itemize}
+  \item Brownian motion crosses above and below its current level infinitely often on any interval.\pause
+  \item No flat pieces, no monotone pieces, and no local trend that persists at small scales.\pause
+\end{itemize}
+
+\medskip
+\begin{theoremblock}{Nowhere differentiability}
+With probability \(1\), the path \(t\mapsto W_t(\omega)\) is nowhere differentiable.
+\end{theoremblock}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Behavior at Infinity: \texorpdfstring{$\limsup=+\infty$}{limsup=+infty} and \texorpdfstring{$\liminf=-\infty$}{liminf=-infty}}
+
+\begin{theoremblock}{Recurrence and unbounded oscillations {\color{blue}\textbf{(See Homework)}}}
+With probability \(1\),
+\[
+\limsup_{t\to\infty} W_t = +\infty,
+\qquad
+\liminf_{t\to\infty} W_t = -\infty.
+\]
+and 
+\[
+\lim_{t\to\infty} \frac{W_t}{t} = 0,
+\]
+\end{theoremblock}\pause
+
+\begin{itemize}
+  \item Brownian motion does not drift to \(+\infty\) or \(-\infty\): it keeps coming back and overshooting.\pause
+  \item In fact, it hits every level infinitely many times (recurrence in 1D).\pause
+\end{itemize}
+
+\medskip
+\begin{block}{Interpretation}
+Over long horizons, fluctuations grow like \(\sqrt{t}\), so the process eventually reaches arbitrarily large positive and negative values.
+\end{block}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Law of the Iterated Logarithm (Sharp Envelope)}
+
+\begin{theoremblock}{LIL (as \(t\to\infty\))}
+With probability \(1\),
+\[
+\limsup_{t\to\infty}\frac{W_t}{\sqrt{2t\log\log t}} = 1,
+\qquad
+\liminf_{t\to\infty}\frac{W_t}{\sqrt{2t\log\log t}} = -1.
+\]
+\end{theoremblock}\pause
+
+\begin{itemize}
+  \item \(\sqrt{t}\) gives the correct scale, but the \(\sqrt{\log\log t}\) factor is the \emph{sharp} correction.\pause
+  \item This is the precise “envelope” of Brownian motion at infinity.
+\end{itemize}
+
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Modulus of Continuity (Small-Time Envelope)}
+
+\begin{theoremblock}{LIL near 0 (modulus of continuity)}
+If $\alpha<1/2$, then almost surely Brownian motion
+is everywhere locally $\alpha$ Holder continuous : 
+\[
+  |W_t(\omega)-W_s(\omega)|
+  \le
+  C_{\alpha,T}(\omega)\,|t-s|^{\alpha},
+  \qquad \forall\,s,t\in[0,T].
+  \]
+  \pause
+ For \(\alpha=\tfrac12\), this fails: Brownian motion is \emph{not} Holder-\(\tfrac12\).\pause
+\end{theoremblock}
+
+\medskip
+\begin{block}{Interpretation}
+Brownian motion is ``almost'' \(1/2\)-Holder: it is Holder for every exponent strictly below \(1/2\),
+but never as regular as \(1/2\) itself.
+\end{block}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Hitting Times and Level Crossings (Pathwise Consequence)}
+
+For \(a\in\mathbb{R}\), define the hitting time
+\[
+\tau_a := \inf\{t\ge 0:\ W_t=a\}.
+\]\pause
+
+\begin{theoremblock}{Almost sure hitting (1D) {\color{blue}\textbf{(See Homework)}} }
+For any \(a\in\mathbb{R}\),\quad \(\mathbb{P}(\tau_a<\infty)=1\).
+\end{theoremblock}\pause
+
+\begin{itemize}
+  \item Brownian motion hits every level with probability 1.\pause
+  \item Combined with independent increments, it implies repeated crossings and strong oscillations.\pause
+  \item This is the starting point for barrier options and first-passage computations.
+\end{itemize}
+
+\end{frame}
+
+
+% ======================================================
+\section{Quadratic Variation}
+
+% ======================================================
+\subsection{Motivation}
+
+% --------------------------------------
+\begin{frame}{Why Quadratic Variation? (Financial Motivation)}
+
+\textbf{Goal:} define the gain of a \emph{self-financing} trading strategy in continuous time.\pause
+
+\medskip
+In discrete time (rebalancing dates \(0=t_0<t_1<\dots<t_n=T\)):\pause
+\[
+\text{Gain}(T)
+=
+\sum_{k=0}^{n-1} \Delta_k \big(S_{t_{k+1}}-S_{t_k}\big),
+\]
+where \(\Delta_k\) is the number of shares held on \([t_k,t_{k+1})\).\pause
+
+\medskip
+\textbf{Continuous-time limit:}\pause\;
+we want to make sense of
+\[
+\int_0^T \Delta_t \, dS_t
+\qquad
+\text{as a limit of discrete sums.}
+\]
+
+\medskip
+\begin{alertblock}{Key difficulty}
+If \(S\) is driven by Brownian motion, its paths are \emph{very rough} (nowhere differentiable).\pause\\
+Usual Riemann--Stieltjes integrals do \emph{not} apply.
+\end{alertblock}
+
+\end{frame}
+
+% % --------------------------------------
+% \begin{frame}{A Toy Warning: ``\texorpdfstring{$dW_t$}{dW} is of order \texorpdfstring{$\sqrt{dt}$}{sqrt(dt)}''}
+
+% Let \(W\) be Brownian motion.\pause
+% Over a small time step \(\Delta t\):\pause
+% \[
+% W_{t+\Delta t}-W_t \sim \mathcal{N}(0,\Delta t)
+% \quad\Rightarrow\quad
+% |W_{t+\Delta t}-W_t|\ \text{typically of size } \sqrt{\Delta t}.
+% \]\pause
+
+% \medskip
+% So if we try to treat \(W\) as differentiable,\pause
+% \[
+% \frac{W_{t+\Delta t}-W_t}{\Delta t}
+% \sim
+% \frac{\sqrt{\Delta t}}{\Delta t}
+% =
+% \frac{1}{\sqrt{\Delta t}}
+% \to \infty,
+% \]
+% which hints that ``\(\dot W_t\)'' does not exist.\pause
+
+% \medskip
+% \textbf{But:} squared increments behave nicely!\pause
+% \[
+% (W_{t+\Delta t}-W_t)^2
+% \ \text{is of size } \Delta t.
+% \]
+
+% \medskip
+% This is the origin of \textbf{quadratic variation}.
+
+% \end{frame}
+
+% --------------------------------------
+\begin{frame}{From Discrete Trading to Stochastic Integrals}
+
+\textbf{Self-financing idea (informal).}\pause\;
+A portfolio \((V_t)\) holding \(\Delta_t\) shares and the rest in cash satisfies:\pause
+\[
+dV_t \approx \Delta_t\, dS_t
+\quad\text{(no external cash injection).}
+\]\pause
+
+\medskip
+To make \(\int_0^T \Delta_t\, dS_t\) rigorous when \(S\) is Brownian-driven,\pause
+we need a limit theory for sums of the form\pause
+\[
+\sum_{k} \Delta_{t_k}\big(S_{t_{k+1}}-S_{t_k}\big).
+\]\pause
+
+\medskip
+\begin{itemize}
+  \item The limit will be the \textbf{It\^o integral} (defined first for simple strategies).\pause
+  \item Its second-moment behavior is governed by \textbf{quadratic variation}.\pause
+\end{itemize}
+
+\medskip
+\textbf{Punchline:}\pause\;
+quadratic variation is the mechanism behind the extra ``\(dt\)'' term in It\^o calculus.
+
+\end{frame}
+
+% ======================================================
+\subsection{Definition of Quadratic Variation}
+
+% --------------------------------------
+\begin{frame}{Quadratic Variation: Definition Along a Partition}
+
+Let \(X=(X_t)_{0\le t\le T}\) be a real-valued process.\pause
+
+\medskip
+A partition \(\pi\) of \([0,T]\) is\pause
+\[
+\pi:\ 0=t_0<t_1<\dots<t_n=T,
+\qquad
+|\pi|:=\max_k (t_{k+1}-t_k).
+\]\pause
+
+\begin{definitionblock}{Quadratic Variation Along \(\pi\)}
+Define the quadratic sum
+\[
+[X]^{\pi}_T
+:=
+\sum_{k=0}^{n-1}\big(X_{t_{k+1}}-X_{t_k}\big)^2.
+\]
+\end{definitionblock}\pause
+
+If \([X]^{\pi}_T\) converges (in probability, or in \(L^2\)) as \(|\pi|\to 0\),
+we call the limit the \textbf{quadratic variation} of \(X\) on \([0,T]\), denoted \([X]_T\).
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{First Examples: Smooth vs.\ Rough}
+
+\textbf{Smooth case (finite variation).}\pause\;
+If \(X_t=\int_0^t v_s\,ds\) with \(v\) integrable,\pause
+then increments are of order \(\Delta t\), hence\pause
+\[
+[X]^{\pi}_T
+=
+\sum_k O((\Delta t_k)^2)
+\ \longrightarrow\ 0.
+\]\pause
+
+\medskip
+So\ \(\boxed{[X]_T=0}\) for finite-variation processes.\pause
+
+\medskip
+\textbf{Rough case (random walk intuition).}\pause\;
+For a nearest-neighbor random walk \(S_i=\sum_{j=1}^i Y_j\) with \(Y_j\in\{\pm1\}\),\pause
+\[
+\sum_{j=1}^i (S_j-S_{j-1})^2
+=
+\sum_{j=1}^i Y_j^2
+=
+i,
+\]
+a deterministic growth.\pause
+
+\medskip
+Brownian motion is the continuous-time analogue: squared increments accumulate to time.
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Quadratic Variation of Brownian Motion: The Statement}
+
+Let \(W\) be a standard Brownian motion.\pause
+
+\begin{theoremblock}{Quadratic Variation of \(W\)}
+For any \(T>0\), as \(|\pi|\to 0\),
+\[
+[W]^{\pi}_T
+=
+\sum_{k=0}^{n-1}\big(W_{t_{k+1}}-W_{t_k}\big)^2
+\ \longrightarrow\ T
+\quad
+\text{in } L^2\ \text{(hence in probability).}
+\]
+In other words,\quad \(\boxed{[W]_T=T}\).
+\end{theoremblock}\pause
+
+\medskip
+\textbf{Interpretation:}\pause
+\begin{itemize}
+  \item Brownian paths are not differentiable.\pause
+  \item Yet their squared increments ``average out'' to elapsed time.
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{A Key Consequence: A Martingale Built from \texorpdfstring{$W^2$}{W2}}
+
+Quadratic variation explains why \(W_t^2\) is \emph{not} a martingale.\pause
+
+\medskip
+Compute for \(s<t\):\pause
+\[
+\mathbb{E}\big[W_t^2 \mid \mathcal{F}_s\big]
+=
+\mathbb{E}\big[(W_s+(W_t-W_s))^2 \mid \mathcal{F}_s\big]
+=
+W_s^2 + \mathbb{E}\big[(W_t-W_s)^2\big].
+\]\pause
+
+But \(\mathbb{E}[(W_t-W_s)^2]=t-s\), so\pause
+\[
+\mathbb{E}\big[W_t^2 \mid \mathcal{F}_s\big]
+=
+W_s^2 + (t-s).
+\]\pause
+
+\begin{block}{Conclusion}
+\[
+\boxed{\,W_t^2 - t \text{ is a martingale.}\,}
+\]
+This is the simplest glimpse of It\^o’s formula.
+\end{block}
+
+\end{frame}
+
+
+
+% --------------------------------------
+\begin{frame}{Quadratic (Co)Variation: A Useful Extension}
+
+For two processes \(X,Y\), define along \(\pi\):\pause
+\[
+[X,Y]^{\pi}_T
+:=
+\sum_{k=0}^{n-1}\big(X_{t_{k+1}}-X_{t_k}\big)\big(Y_{t_{k+1}}-Y_{t_k}\big).
+\]\pause
+
+\medskip
+\textbf{Examples.}\pause
+\begin{itemize}
+  \item If \(Y=X\), we recover \([X]^{\pi}_T\).\pause
+  \item If \(A\) has finite variation and \(W\) is Brownian, then typically\pause
+  \[
+  [A,W]_T=0.
+  \]
+\end{itemize}
+
+\medskip
+\begin{block}{Finance preview}
+In multi-factor models, \([W^{(i)},W^{(j)}]_t\) encodes instantaneous correlation,
+and drives hedging and risk aggregation.
+\end{block}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Preview: Why Quadratic Variation Creates It\^o Terms}
+
+Heuristic rule for Brownian increments:\pause
+\[
+(\Delta W)^2 \approx \Delta t,
+\qquad
+\Delta W \cdot \Delta t \approx 0,
+\qquad
+(\Delta t)^2 \approx 0.
+\]\pause
+
+\medskip
+So when expanding \(f(W_{t+\Delta t})\) by Taylor,\pause
+\[
+f(W+\Delta W)
+\approx
+f(W) + f'(W)\Delta W + \tfrac12 f''(W)(\Delta W)^2,
+\]\pause
+and since \((\Delta W)^2\) accumulates to \(dt\), we expect\pause
+\[
+df(W_t)
+=
+f'(W_t)\,dW_t
++
+\frac12 f''(W_t)\,dt.
+\]\pause
+
+\begin{alertblock}{Key message}
+Quadratic variation is the rigorous reason why stochastic calculus
+is \emph{not} ordinary calculus.
+\end{alertblock}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Heuristic Notation: $dW_t$ and $dt$}
+
+Think of $\Delta W_k$ as a small increment $dW$ over a small time step $\Delta t_k=dt$.\pause
+
+\medskip
+\begin{block}{Quadratic variation as a rule of computation}
+The limit $Q_t^\pi=\sum (\Delta W)^2 \to t$ is encoded as
+\[
+(dW_t)^2 = dt.
+\]
+\end{block}\pause
+
+\begin{block}{Mixed and time terms are negligible}
+The limits
+\[
+\sum \Delta W\,\Delta t \to 0,
+\qquad
+\sum (\Delta t)^2 \to 0
+\]
+are encoded as
+\[
+dW_t\,dt = 0,
+\qquad
+(dt)^2 = 0.
+\]
+\end{block}\pause
+
+\begin{itemize}
+  \item This is \textbf{not} algebra on infinitesimals: it is a compact way to remember
+  which discrete sums vanish and which ones accumulate.\pause
+  \item These rules will become rigorous once the It\^o integral and quadratic variation
+  are defined.
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{The It\^o Multiplication Table (One-Dimensional)}
+
+Whenever you expand expressions and keep terms up to order $dt$, use:\pause
+
+\begin{theoremblock}{It\^o table (formal but reliable)}
+\[
+\boxed{
+(dW_t)^2 = dt,
+\qquad
+dW_t\,dt = 0,
+\qquad
+(dt)^2 = 0.
+}
+\]
+\end{theoremblock}\pause
+
+\medskip
+\begin{itemize}
+  \item Rule of thumb: $\Delta W = O(\sqrt{\Delta t})$, so
+  $(\Delta W)^2 = O(\Delta t)$ but $\Delta W\,\Delta t = O((\Delta t)^{3/2})$.\pause
+  \item Hence, in Taylor expansions, \textbf{keep} $(\Delta W)^2$ but \textbf{drop}
+  $\Delta W\,\Delta t$ and $(\Delta t)^2$.
+\end{itemize}
+
+\end{frame}
+
+
+% ======================================================
+\section{Geometric Brownian Motion (GBM)}
+
+% ======================================================
+\subsection{Motivation: why multiplicative models?}
+
+% --------------------------------------
+\begin{frame}{Why Not Model Prices with an Additive Brownian Motion?}
+
+A first naive idea would be
+\[
+S_t = S_0 + \mu t + \sigma W_t.
+\]\pause
+
+\begin{itemize}
+  \item \textbf{Problem 1 (negativity):}\pause\;
+  an additive Gaussian model can make \(S_t<0\), which is unrealistic for most assets.\pause
+  \item \textbf{Problem 2 (scale):}\pause\;
+  a \$1 move does not mean the same thing for a \$10 stock vs a \$1000 stock.\pause
+  \item \textbf{Empirical cue:}\pause\;
+  returns are closer to being \emph{scale-free} than prices.
+\end{itemize}
+
+\medskip
+\begin{block}{Idea}
+Model \textbf{relative changes} (returns) rather than absolute changes.
+\end{block}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Log-Returns: Additive and (Approximately) Gaussian}
+
+Define the \textbf{log-price} and \textbf{log-return}:
+\[
+X_t := \log S_t,
+\qquad
+\log\frac{S_{t+\Delta t}}{S_t} = X_{t+\Delta t}-X_t.
+\]\pause
+
+\begin{itemize}
+  \item Log-returns are additive over time: \(\log(S_T/S_0)=\sum \log(S_{t_{k+1}}/S_{t_k})\).\pause
+  \item In simple models, log-returns have \textbf{stationary increments}:\pause\;
+  distribution depends mainly on \(\Delta t\).\pause
+  \item This naturally suggests:
+  \[
+  S_t = S_0 e^{ (\mu - \frac{\sigma^2}{2})t + \sigma W_t}
+  \]
+\end{itemize}
+
+\end{frame}
+
+\subsection{Distributional properties}
+
+% --------------------------------------
+\begin{frame}{Lognormal Distribution (Marginal and Conditional Laws)}
+
+Since \(W_t\sim\mathcal N(0,t)\), we obtain\pause
+\[
+\log S_t \sim \mathcal N\!\Big(
+\log S_0 + (\mu-\tfrac12\sigma^2)t,\ \sigma^2 t
+\Big).
+\]\pause
+
+Hence \(S_t\) is \textbf{lognormal}.\pause
+
+\medskip
+\textbf{Conditional distribution (Markov + independent increments):}\pause\;
+for \(0\le s<t\),
+\[
+\log\frac{S_t}{S_s}
+=
+\Big(\mu-\tfrac12\sigma^2\Big)(t-s)
++
+\sigma (W_t-W_s),
+\]
+so\pause
+\[
+\log\frac{S_t}{S_s}\ \Big|\ \mathcal F_s
+\sim
+\mathcal N\!\Big(
+(\mu-\tfrac12\sigma^2)(t-s),\ \sigma^2(t-s)
+\Big).
+\]
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Moments and Volatility Scaling (Quick Facts)}
+
+From the explicit form,\pause
+\[
+\mathbb E[S_t]
+=
+S_0 e^{\mu t},
+\qquad
+\mathrm{Var}(S_t)
+=
+S_0^2 e^{2\mu t}\big(e^{\sigma^2 t}-1\big).
+\]\pause
+
+\begin{itemize}
+  \item Over a short interval \(\Delta t\), log-return satisfies\pause
+  \[
+  \log\frac{S_{t+\Delta t}}{S_t}
+  \approx
+  \mathcal N\!\Big((\mu-\tfrac12\sigma^2)\Delta t,\ \sigma^2\Delta t\Big).
+  \]\pause
+  \item This is the origin of the common rule: \(\text{vol} \propto \sqrt{\Delta t}\).
+\end{itemize}
+
+\end{frame}
+
+% ======================================================
+\subsection{Calibration (Geometric Brownian Motion)}
+
+% --------------------------------------
+\begin{frame}{Calibration of GBM: from data to \texorpdfstring{$\sigma$}{sigma} (historical volatility)}
+
+Assume the GBM model
+\[
+S(t)=S(0)\exp\!\Big((\mu-\tfrac12\sigma^2)t+\sigma W_t\Big),
+\]
+so that \textbf{log-returns} satisfy, for a partition \(0=t_0<\cdots<t_n=T\),\pause
+\[
+R_j
+:=\log\!\frac{S_{t_{j+1}}}{S_{t_j}}
+=
+\sigma\big(W_{t_{j+1}}-W_{t_j}\big)
++
+\Big(\mu-\tfrac12\sigma^2\Big)(t_{j+1}-t_j).
+\]
+
+\medskip
+\begin{block}{Idea: use quadratic variation}
+Since \([W]_T=T\), the leading term in \(\sum_j R_j^2\) is
+\[
+\sum_{j=0}^{n-1} R_j^2
+\;\approx\;
+\sigma^2\sum_{j=0}^{n-1}(W_{t_{j+1}}-W_{t_j})^2
+\;\approx\;
+\sigma^2 T,
+\]
+while the cross-terms and drift terms vanish as \(|\pi|\to 0\).\pause
+\end{block}
+
+\begin{alertblock}{Practical estimator (realized variance)}
+\[
+\widehat{\sigma}^2
+=
+\frac{1}{T}\sum_{j=0}^{n-1}
+\Big(\log\!\frac{S_{t_{j+1}}}{S_{t_j}}\Big)^2,
+\qquad
+\widehat{\sigma}=\sqrt{\widehat{\sigma}^2}.
+\]
+(If data are daily, take \(t\) in \emph{years} to annualize automatically.)
+\end{alertblock}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Calibration: historical vs implied (risk-neutral)}
+
+\begin{itemize}
+  \item \textbf{Historical calibration (under \( \mathbb{P}\))}: estimate \(\sigma\) (and sometimes \(\mu\)) from a time series of prices using log-returns and realized variance.\pause
+  \item \textbf{Implied calibration (under \( \mathbb{Q}\))}: choose \(\sigma\) so that Black--Scholes prices match observed option prices (implied volatility surface).\pause
+\end{itemize}
+
+\medskip
+\begin{block}{Important message for pricing}
+\begin{itemize}
+  \item In no-arbitrage pricing, \(\mu\) disappears and is replaced by \(r\) under \(\mathbb{Q}\).\pause
+  \item In practice, \(\sigma\) from \(\mathbb{P}\) (historical) and \(\sigma\) from \(\mathbb{Q}\) (implied) typically differ.\pause
+\end{itemize}
+\end{block}
+
+\medskip
+\textbf{Takeaway:}\pause\;
+\(\sigma\) is the key parameter to \emph{calibrate}.
+
+\end{frame}
+
+% ======================================================
+
+
+
+% --------------------------------------
+\begin{frame}{What GBM Gets Right / Wrong}
+
+\begin{itemize}
+  \item \textbf{Gets right (as a first model):}\pause
+  positivity, tractability, volatility scaling, closed forms.\pause
+  \item \textbf{Gets wrong (empirically):}\pause
+  constant volatility, Gaussian tails, no jumps, no volatility clustering.\pause
+  \item Still, GBM is the \textbf{baseline} on top of which richer models are built.
+\end{itemize}
+
+
+\end{frame}
+
+
+\section*{Discussion on stopping times and stopped Martingales}
+
+
+% --------------------------------------
+\begin{frame}{Stopping Times and Stopped Processes}
+
+Let $(M_t)_{t\ge 0}$ be an $(\mathcal F_t)$-martingale and let $\tau$ be a stopping time.\pause
+
+\begin{definitionblock}{Stopped process}
+For $t\ge 0$, define
+\[
+M^{\tau}_t := M_{t\wedge \tau}.
+\]
+\end{definitionblock}\pause
+
+\begin{itemize}
+  \item $M^{\tau}$ follows $M$ up to time $\tau$, then stays constant.\pause
+  \item If $\tau$ is finite a.s., then $M^\tau_t$ converges a.s. to $M_\tau$ as $t\to\infty$.\pause
+\end{itemize}
+
+\medskip
+\begin{block}{Goal}
+Show that stopping a martingale at a stopping time preserves the martingale property.
+\end{block}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Optional Stopping: A Basic Martingale Preservation Result}
+
+Let $(M_t)_{t\ge 0}$ be an $(\mathcal F_t)$-martingale.\pause
+
+\begin{theoremblock}{Stopped martingale}
+For any stopping time $\tau$, the stopped process $(M_{t\wedge\tau})_{t\ge 0}$
+is an $(\mathcal F_t)$-martingale, i.e.\ for all $0\le s\le t$,
+\[
+\E\!\left[M_{t\wedge\tau}\mid \mathcal F_s\right]=M_{s\wedge\tau}
+\qquad\text{a.s.}
+\]
+\end{theoremblock}\pause
+
+\begin{proofblock}{Proof (clean decomposition)}
+Decompose the event $\{\tau\le s\}$ vs.\ $\{\tau>s\}$:\pause
+\[
+M_{t\wedge\tau}
+=
+M_\tau\,\mathbf 1_{\{\tau\le s\}}
++
+M_{t\wedge\tau}\,\mathbf 1_{\{\tau>s\}}.
+\]
+On $\{\tau\le s\}$, we have $t\wedge\tau=s\wedge\tau=\tau$, hence the conditional expectation is $M_\tau$.
+
+\end{proofblock}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Optional Stopping Theorem (OST): When Can We Replace $t\wedge\tau$ by $\tau$?}
+
+The stopped-process result holds for \emph{any} stopping time.\pause
+
+\medskip
+But to conclude something about $\E[M_\tau]$ (or $\E[M_\tau\mid \mathcal F_s]$),
+we need integrability/uniform integrability assumptions.\pause
+
+\begin{theoremblock}{Optional Stopping (typical safe versions)}
+Let $(M_t)$ be a martingale and $\tau$ a stopping time.\pause
+
+\begin{itemize}
+  \item If $\tau$ is \textbf{bounded} (i.e.\ $\tau\le T$ a.s.), then
+  \[
+  \E[M_\tau]=\E[M_0].
+  \]\pause
+
+  \item If $\tau$ is \textbf{integrable} and $M$ has \textbf{bounded increments} (discrete time),
+  then still $\E[M_\tau]=\E[M_0]$.\pause
+
+  \item If $(M_{t\wedge\tau})_{t\ge 0}$ is \textbf{uniformly integrable} (UI), then
+  \[
+  \E[M_\tau]=\E[M_0]
+  \quad\text{and}\quad
+  \E[M_\tau\mid \mathcal F_s]=M_{s\wedge\tau}.
+  \]
+\end{itemize}
+\end{theoremblock}
+
+\begin{alertblock}{Warning}
+``$\tau<\infty$ a.s.'' alone is \textbf{not} enough to justify $\E[M_\tau]=\E[M_0]$.
+\end{alertblock}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Why the Warning Matters (A Brownian Motion Example)}
+
+Let $(W_t)$ be Brownian motion, a martingale.\pause
+
+\medskip
+Take the hitting time $\tau_a:=\inf\{t\ge 0:\ W_t=a\}$ for $a>0$.\pause
+
+\begin{itemize}
+  \item We know $\mathbb{P}(\tau_a<\infty)=1$.\pause
+  \item But $\E[\tau_a]=+\infty$ (heavy tail), and $W_{\tau_a}=a$ a.s.\pause
+\end{itemize}
+
+\medskip
+If we (incorrectly) applied $\E[W_{\tau_a}]=\E[W_0]$, we would get $a=0$, absurd.\pause
+
+\begin{block}{Correct statement}
+For each $t$, optional stopping is safe for the bounded time $t\wedge\tau_a$:
+\[
+\E[W_{t\wedge\tau_a}] = \E[W_0]=0.
+\]
+But taking $t\to\infty$ requires UI / integrability assumptions.
+\end{block}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{A Handy result: $M_{t\wedge\tau}$ is a Martingale in Practice}
+
+Let $(M_t)$ be a martingale and $\tau$ a stopping time.\pause
+
+\begin{itemize}
+  \item For any $t\ge 0$,
+  \[
+  \E[M_{t\wedge\tau}] = \E[M_0].
+  \]
+  (Just take $s=0$ in the stopped-martingale property.)\pause
+
+  \item If $M$ is nonnegative (or bounded below), then $(M_{t\wedge\tau})_{t\ge 0}$
+  is a supermartingale-dominated family, and one can often pass to limits using Fatou.\pause
+\end{itemize}
+
+\end{frame}
+
+
+% --------------------------------------
+\begin{frame}{Laplace Transform of the First Hitting Time}
+
+Let $(W_t)_{t\ge0}$ be a Brownian motion and, for $a\in\mathbb{R}$,
+$
+\tau_a := \inf\{t\ge0:\ W_t=a\}.
+$
+\vspace{-6mm}
+\pause 
+\begin{theoremblock}{Laplace transform of $\tau_a$}
+For every $\lambda>0$,
+\vspace{-3mm}
+\[
+\E\!\left[e^{-\lambda \tau_a}\right]
+=
+\exp\!\left(-|a|\sqrt{2\lambda}\right).
+\vspace{-6mm}
+\]
+\end{theoremblock}
+\pause
+
+\textbf{Sketch of computation (exponential martingale).}\pause
+For $\theta\in\mathbb{R}$, define
+\[
+M_t^{(\theta)} := \exp\!\Big(\theta W_t-\tfrac12\theta^2 t\Big),
+\qquad t\ge0,
+\vspace{-3mm}
+\]
+then $(M_t^{(\theta)})_{t\ge0}$ is a martingale. \pause
+Apply optional stopping to $\tau_a\wedge t$:
+\[
+1=\E[M_{\tau_a\wedge t}^{(\theta)}]
+=
+\E\!\left[\exp\!\Big(\theta W_{\tau_a\wedge t}-\tfrac12\theta^2(\tau_a\wedge t)\Big)\right].
+\vspace{-3mm}
+\]
+\pause
+On $\{\tau_a\le t\}$, $W_{\tau_a}=a$, hence
+\[
+1 \ge \E\!\left[\exp\!\Big(\theta a-\tfrac12\theta^2\tau_a\Big)\mathbf{1}_{\{\tau_a\le t\}}\right].
+\vspace{-3mm}
+\]
+Let $t\to\infty$ (monotone convergence) and choose $\theta=\sqrt{2\lambda}$ to get
+\[
+\E\!\left[e^{-\lambda \tau_a}\right]\le e^{-\sqrt{2\lambda}\,a}\quad(a>0).
+\vspace{-3mm}
+\]
+\pause
+Apply the same argument to $-W$ to recover the $|a|$ and obtain the stated formula.
+
+\end{frame}
+
+\end{document}

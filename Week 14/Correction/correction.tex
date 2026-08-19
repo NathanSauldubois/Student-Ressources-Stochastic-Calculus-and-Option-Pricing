@@ -1,0 +1,2669 @@
+\documentclass[11pt]{article}
+
+% ============================================================
+% Packages
+% ============================================================
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,mathtools,amsthm}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{microtype}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+% ============================================================
+% Macros
+% ============================================================
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Pbb}{\mathbb{P}}
+\newcommand{\Qbb}{\mathbb{Q}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\dd}{\,\mathrm{d}}
+\newcommand{\F}{\mathcal{F}}
+
+\newcommand{\1}{\mathbf{1}}
+\newcommand{\Var}{\mathrm{Var}}
+\newcommand{\Cov}{\mathrm{Cov}}
+
+% ============================================================
+% Environments
+% ============================================================
+\theoremstyle{definition}
+\newtheorem{exercise}{Exercise}[section]
+
+\newenvironment{solution}
+{\par\medskip\noindent\textbf{Solution.}\par\medskip}
+{\hfill$\square$\par\medskip}
+
+\newenvironment{solutionpart}[1]
+{\par\medskip\noindent\textbf{#1.}\par\smallskip}
+{\par\medskip}
+
+% ============================================================
+% Title
+% ============================================================
+\title{Option Pricing --- Correction Sheet}
+\author{Nathan Sauldubois}
+\date{MSFE6233 --- Refresher}
+
+\begin{document}
+
+\maketitle
+\vspace{-1em}
+
+\noindent\textbf{Lecture title.}
+\emph{Brownian Motion, Stochastic Calculus, Girsanov Theorem, Option Pricing and Delta Hedging}
+
+\vspace{0.5em}
+\hrule
+\vspace{1em}
+
+\tableofcontents
+\bigskip
+
+% ============================================================
+\section{Brownian Motion}
+% ============================================================
+\begin{solution} \noindent 
+\textbf{Compute $\int_0^t e^{B_s}\,\mathrm{d} B_s$ without $\mathrm{d} B$}
+
+\noindent Let
+\[
+f(x)=e^x.
+\]
+Then
+\[
+f'(x)=e^x,
+\qquad
+f''(x)=e^x.
+\]
+By It\^o's formula,
+\[
+\dd e^{B_t}
+=
+e^{B_t}\,\dd B_t
++
+\frac12 e^{B_t}\,\dd t.
+\]
+Integrating from $0$ to $t$, we get
+\[
+e^{B_t}-e^{B_0}
+=
+\int_0^t e^{B_s}\,\dd B_s
++
+\frac12\int_0^t e^{B_s}\,\dd s.
+\]
+Since $B_0=0$, we have $e^{B_0}=1$. Therefore,
+\[
+e^{B_t}-1
+=
+\int_0^t e^{B_s}\,\dd B_s
++
+\frac12\int_0^t e^{B_s}\,\dd s.
+\]
+Hence
+\[
+\boxed{
+\int_0^t e^{B_s}\,\dd B_s
+=
+e^{B_t}-1
+-
+\frac12\int_0^t e^{B_s}\,\dd s.
+}
+\]
+\end{solution}
+
+% -----------------------------------------------------------
+
+\begin{solution}
+\textbf{Compute $e^{\int_0^t f(s)\,\mathrm{d} B_s}$ without $\mathrm{d} B$}
+Assume that $f:[0,T]\to\mathbb{R}$ is deterministic and satisfies
+\[
+\int_0^T f(s)^2\,\dd s<\infty.
+\]
+Define
+\[
+X_t:=\int_0^t f(s)\,\dd B_s.
+\]
+Then $X$ is a continuous martingale with quadratic variation
+\[
+\langle X\rangle_t
+=
+\int_0^t f(s)^2\,\dd s.
+\]
+
+We want to compute
+\[
+e^{\int_0^t f(s)\,\dd B_s}
+=
+e^{X_t}
+\]
+in a form where the stochastic integral is isolated or expressed using an exponential martingale.
+
+By It\^o's formula applied to the function $x\mapsto e^x$, we get
+\[
+\dd e^{X_t}
+=
+e^{X_t}\,\dd X_t
++
+\frac12 e^{X_t}\,\dd\langle X\rangle_t.
+\]
+Since
+\[
+\dd X_t=f(t)\,\dd B_t
+\qquad\text{and}\qquad
+\dd\langle X\rangle_t=f(t)^2\,\dd t,
+\]
+we obtain
+\[
+\dd e^{X_t}
+=
+e^{X_t}f(t)\,\dd B_t
++
+\frac12 e^{X_t}f(t)^2\,\dd t.
+\]
+Therefore,
+\[
+e^{X_t}
+=
+1
++
+\int_0^t e^{X_s}f(s)\,\dd B_s
++
+\frac12\int_0^t e^{X_s}f(s)^2\,\dd s.
+\]
+
+This identity still contains a stochastic integral. The standard way to remove the drift term is to introduce the exponential martingale
+\[
+M_t
+:=
+\exp\left(
+\int_0^t f(s)\,\dd B_s
+-
+\frac12\int_0^t f(s)^2\,\dd s
+\right).
+\]
+Equivalently,
+\[
+M_t
+=
+e^{X_t-\frac12\langle X\rangle_t}.
+\]
+
+Let us verify that $M$ is indeed a local martingale. Applying It\^o's formula to
+\[
+M_t=\exp\left(X_t-\frac12\langle X\rangle_t\right),
+\]
+we get
+\[
+\dd M_t
+=
+M_t\,\dd X_t
+=
+M_t f(t)\,\dd B_t.
+\]
+Hence
+\[
+M_t
+=
+1+\int_0^t M_s f(s)\,\dd B_s.
+\]
+In particular, $M$ has no drift term. Under standard integrability assumptions, for example Novikov's condition, $M$ is a true martingale. Since $f$ is deterministic and square-integrable on $[0,T]$, this is satisfied.
+
+Thus,
+\[
+\boxed{
+\exp\left(
+\int_0^t f(s)\,\dd B_s
+-
+\frac12\int_0^t f(s)^2\,\dd s
+\right)
+}
+\]
+is the exponential martingale associated with $\int_0^t f(s)\,\dd B_s$.
+
+Finally, rearranging the definition of $M_t$, we obtain
+\[
+\boxed{
+e^{\int_0^t f(s)\,\dd B_s}
+=
+\exp\left(
+\frac12\int_0^t f(s)^2\,\dd s
+\right)
+M_t.
+}
+\]
+Equivalently,
+\[
+\boxed{
+e^{\int_0^t f(s)\,\dd B_s}
+=
+\exp\left(
+\frac12\int_0^t f(s)^2\,\dd s
+\right)
+\exp\left(
+\int_0^t f(s)\,\dd B_s
+-
+\frac12\int_0^t f(s)^2\,\dd s
+\right).
+}
+\]
+
+In particular,
+\[
+\int_0^t f(s)\,\dd B_s
+\sim
+\mathcal{N}\left(
+0,\int_0^t f(s)^2\,\dd s
+\right),
+\]
+and therefore
+\[
+\E\left[
+e^{\int_0^t f(s)\,\dd B_s}
+\right]
+=
+\exp\left(
+\frac12\int_0^t f(s)^2\,\dd s
+\right).
+\]
+\end{solution}
+
+% ============================================================
+\section{Girsanov}
+% ============================================================
+
+
+\begin{solution}\textbf{Girsanov and the inverse Gaussian law}
+We consider
+\[
+X_t=\mu t+\sigma B_t,
+\qquad
+\mu>0,\quad \sigma>0,
+\]
+and
+\[
+\tau_a:=\inf\{t\ge 0:X_t=a\},
+\qquad a>0.
+\]
+
+\begin{solutionpart}{Question (a)}
+We show that
+\[
+\tau_a<\infty
+\qquad \mathbb{P}\text{-a.s.}
+\]
+
+Since
+\[
+X_t=\mu t+\sigma B_t,
+\]
+we have
+\[
+\frac{X_t}{t}
+=
+\mu+\sigma\frac{B_t}{t}.
+\]
+It is a standard property of Brownian motion that
+\[
+\frac{B_t}{t}\longrightarrow 0
+\qquad \mathbb{P}\text{-a.s.}
+\]
+as $t\to\infty$. Hence
+\[
+\frac{X_t}{t}\longrightarrow \mu>0
+\qquad \mathbb{P}\text{-a.s.}
+\]
+Therefore,
+\[
+X_t\longrightarrow +\infty
+\qquad \mathbb{P}\text{-a.s.}
+\]
+Since $X$ has continuous paths and $X_0=0<a$, the intermediate value theorem implies that $X$ must hit the level $a$ in finite time. Thus
+\[
+\tau_a<\infty
+\qquad \mathbb{P}\text{-a.s.}
+\]
+\end{solutionpart}
+
+\begin{solutionpart}{Question (b)}
+Define
+\[
+\theta:=\frac{\mu}{\sigma},
+\qquad
+Z_t:=\exp\left(-\theta B_t-\frac12\theta^2t\right).
+\]
+This is the exponential martingale associated with the Brownian integral
+\[
+-\int_0^t \theta\,\dd B_s.
+\]
+Since $\theta$ is constant, Novikov's condition is satisfied:
+\[
+\E^\mathbb{P}\left[
+\exp\left(\frac12\int_0^T \theta^2\,\dd s\right)
+\right]
+=
+\exp\left(\frac12\theta^2T\right)
+<\infty.
+\]
+Therefore, $(Z_t)_{0\le t\le T}$ is a true martingale for every $T>0$.
+
+We recall Girsanov Theorem : 
+
+\begin{theorem}[Girsanov theorem with Novikov's condition]
+Let $(\Omega,\mathcal F,(\mathcal F_t)_{0\le t\le T},\mathbb P)$ be a filtered probability space satisfying the usual conditions, and let
+$B=(B_t)_{0\le t\le T}$ be a $d$-dimensional Brownian motion under $\mathbb P$.
+
+Let $\theta=(\theta_t)_{0\le t\le T}$ be an $\mathbb R^d$-valued progressively measurable process such that
+\[
+\int_0^T |\theta_s|^2\,\mathrm ds<\infty,
+\qquad \mathbb P\text{-a.s.}
+\]
+Assume moreover that Novikov's condition holds:
+\[
+\mathbb E^{\mathbb P}\left[
+\exp\left(
+\frac12\int_0^T |\theta_s|^2\,\mathrm ds
+\right)
+\right]<\infty.
+\]
+Define the stochastic exponential
+\[
+Z_t
+:=
+\exp\left(
+-\int_0^t \theta_s\cdot \mathrm dB_s
+-\frac12\int_0^t |\theta_s|^2\,\mathrm ds
+\right),
+\qquad 0\le t\le T.
+\]
+Then $(Z_t)_{0\le t\le T}$ is a true $\mathbb P$-martingale, and one may define a probability measure $\mathbb Q$ on $\mathcal F_T$ by
+\[
+\frac{\mathrm d\mathbb Q}{\mathrm d\mathbb P}
+=
+Z_T.
+\]
+Under $\mathbb Q$, the process
+\[
+\widetilde B_t
+:=
+B_t+\int_0^t \theta_s\,\mathrm ds,
+\qquad 0\le t\le T,
+\]
+is a $d$-dimensional Brownian motion.
+\end{theorem}
+
+We define a new probability measure $\mathbb{Q}$ on $\mathcal{F}_t$ by
+\[
+\frac{\dd\mathbb{Q}}{\dd\mathbb{P}}\Big|_{\mathcal{F}_t}
+=
+Z_t.
+\]
+By Girsanov's theorem, the process
+\[
+\widetilde B_t
+:=
+B_t+\theta t
+\]
+is a standard Brownian motion under $\mathbb{Q}$.
+\end{solutionpart}
+
+\begin{solutionpart}{Question (c)}
+We rewrite $X_t$ in terms of $\widetilde B_t$.
+Since
+\[
+\widetilde B_t=B_t+\theta t,
+\]
+we have
+\[
+B_t=\widetilde B_t-\theta t.
+\]
+Therefore,
+\[
+X_t
+=
+\mu t+\sigma B_t
+=
+\mu t+\sigma(\widetilde B_t-\theta t).
+\]
+Using $\theta=\mu/\sigma$, this becomes
+\[
+X_t
+=
+\mu t+\sigma\widetilde B_t-\sigma\frac{\mu}{\sigma}t
+=
+\sigma\widetilde B_t.
+\]
+Hence, under $\mathbb{Q}$,
+\[
+X_t=\sigma\widetilde B_t.
+\]
+
+Therefore,
+\[
+\tau_a
+=
+\inf\{t\ge0:X_t=a\}
+=
+\inf\{t\ge0:\sigma\widetilde B_t=a\}
+=
+\inf\{t\ge0:\widetilde B_t=a/\sigma\}.
+\]
+Thus, under $\mathbb{Q}$, $\tau_a$ is the first hitting time of the level
+\[
+b:=\frac{a}{\sigma}
+\]
+by a standard Brownian motion.
+\end{solutionpart}
+
+\begin{solutionpart}{Question (d)}
+
+\begin{theorem}[Reflection principle]
+Let $(B_t)_{t\ge 0}$ be a standard Brownian motion and let
+\[
+M_t:=\sup_{0\le s\le t} B_s.
+\]
+Then, for every $a>0$ and every $t>0$,
+\[
+\mathbb{P}(M_t\ge a)
+=
+2\,\mathbb{P}(B_t\ge a).
+\]
+Equivalently,
+\[
+\mathbb{P}\left(\sup_{0\le s\le t}B_s\ge a\right)
+=
+2\left(1-\Phi\left(\frac{a}{\sqrt t}\right)\right),
+\]
+where $\Phi$ is the standard normal cumulative distribution function.
+\end{theorem}
+
+
+Let
+\[
+\tau_b^0:=\inf\{t\ge0:\widetilde B_t=b\},
+\qquad b>0.
+\]
+We recall the standard density of the first hitting time of level $b$ by a Brownian motion:
+\[
+f_{\tau_b^0}(t)
+=
+\frac{b}{\sqrt{2\pi t^3}}
+\exp\left(-\frac{b^2}{2t}\right),
+\qquad t>0.
+\]
+
+Let us briefly derive it from the reflection principle. For $t>0$,
+\[
+\{\tau_b^0\le t\}
+=
+\left\{\sup_{0\le s\le t}\widetilde B_s\ge b\right\}.
+\]
+By the reflection principle,
+\[
+\mathbb{Q}(\tau_b^0\le t)
+=
+\mathbb{Q}\left(\sup_{0\le s\le t}\widetilde B_s\ge b\right)
+=
+2\mathbb{Q}(\widetilde B_t\ge b).
+\]
+Since $\widetilde B_t\sim \mathcal{N}(0,t)$ under $\mathbb{Q}$,
+\[
+\mathbb{Q}(\tau_b^0\le t)
+=
+2\left(1-\Phi\left(\frac{b}{\sqrt t}\right)\right).
+\]
+Differentiating with respect to $t$ gives the density:
+\[
+f_{\tau_b^0}(t)
+=
+2\frac{\dd}{\dd t}
+\left[
+1-\Phi\left(\frac{b}{\sqrt t}\right)
+\right].
+\]
+Now
+\[
+\frac{\dd}{\dd t}\left(\frac{b}{\sqrt t}\right)
+=
+-\frac{b}{2t^{3/2}},
+\]
+and
+\[
+\Phi'(x)=\frac{1}{\sqrt{2\pi}}e^{-x^2/2}.
+\]
+Thus,
+\[
+f_{\tau_b^0}(t)
+=
+2
+\left[
+-\Phi'\left(\frac{b}{\sqrt t}\right)
+\left(-\frac{b}{2t^{3/2}}\right)
+\right]
+=
+\frac{b}{\sqrt{2\pi t^3}}
+\exp\left(-\frac{b^2}{2t}\right).
+\]
+\end{solutionpart}
+
+\begin{solutionpart}{Question (e)}
+We now compute the density of $\tau_a$ under the original measure $\mathbb{P}$.
+
+From Question (c), under $\mathbb{Q}$, $\tau_a$ has the same law as the first hitting time of level
+\[
+b=\frac{a}{\sigma}
+\]
+by a standard Brownian motion. Hence its density under $\mathbb{Q}$ is
+\[
+f_{\tau_a}^{\mathbb{Q}}(t)
+=
+\frac{a/\sigma}{\sqrt{2\pi t^3}}
+\exp\left(-\frac{a^2}{2\sigma^2t}\right),
+\qquad t>0.
+\]
+
+We now transform back to $\mathbb{P}$. Since
+\[
+\frac{\dd\mathbb{Q}}{\dd\mathbb{P}}\Big|_{\mathcal{F}_t}
+=
+Z_t,
+\]
+we have
+\[
+\frac{\dd\mathbb{P}}{\dd\mathbb{Q}}\Big|_{\mathcal{F}_t}
+=
+Z_t^{-1}.
+\]
+Moreover,
+\[
+Z_t^{-1}
+=
+\exp\left(\theta B_t+\frac12\theta^2t\right).
+\]
+
+On the event $\{\tau_a=t\}$, one has
+\[
+X_t=a.
+\]
+Since
+\[
+X_t=\mu t+\sigma B_t,
+\]
+this gives
+\[
+B_t=\frac{a-\mu t}{\sigma}.
+\]
+Therefore,
+\[
+Z_t^{-1}
+=
+\exp\left(
+\theta\frac{a-\mu t}{\sigma}
++
+\frac12\theta^2t
+\right).
+\]
+Using $\theta=\mu/\sigma$, we get
+\[
+Z_t^{-1}
+=
+\exp\left(
+\frac{\mu(a-\mu t)}{\sigma^2}
++
+\frac12\frac{\mu^2}{\sigma^2}t
+\right).
+\]
+Hence
+\[
+Z_t^{-1}
+=
+\exp\left(
+\frac{\mu a}{\sigma^2}
+-
+\frac12\frac{\mu^2}{\sigma^2}t
+\right).
+\]
+
+Thus, informally but rigorously justified by applying the change of measure to the event
+$\{\tau_a\in \dd t\}$, we obtain
+\[
+f_{\tau_a}^{\mathbb{P}}(t)
+=
+\exp\left(
+\frac{\mu a}{\sigma^2}
+-
+\frac12\frac{\mu^2}{\sigma^2}t
+\right)
+f_{\tau_a}^{\mathbb{Q}}(t).
+\]
+Therefore,
+\[
+f_{\tau_a}^{\mathbb{P}}(t)
+=
+\exp\left(
+\frac{\mu a}{\sigma^2}
+-
+\frac12\frac{\mu^2}{\sigma^2}t
+\right)
+\frac{a/\sigma}{\sqrt{2\pi t^3}}
+\exp\left(-\frac{a^2}{2\sigma^2t}\right).
+\]
+\end{solutionpart}
+
+\begin{solutionpart}{Question (f)}
+We simplify the expression obtained above:
+\[
+f_{\tau_a}^{\mathbb{P}}(t)
+=
+\frac{a}{\sigma\sqrt{2\pi t^3}}
+\exp\left(
+-\frac{a^2}{2\sigma^2t}
++
+\frac{\mu a}{\sigma^2}
+-
+\frac{\mu^2 t}{2\sigma^2}
+\right).
+\]
+We now combine the terms in the exponential. Observe that
+\[
+-\frac{(a-\mu t)^2}{2\sigma^2 t}
+=
+-\frac{a^2-2\mu at+\mu^2t^2}{2\sigma^2t}
+=
+-\frac{a^2}{2\sigma^2t}
++
+\frac{\mu a}{\sigma^2}
+-
+\frac{\mu^2t}{2\sigma^2}.
+\]
+Therefore,
+\[
+f_{\tau_a}^{\mathbb{P}}(t)
+=
+\frac{a}{\sigma\sqrt{2\pi t^3}}
+\exp\left(
+-\frac{(a-\mu t)^2}{2\sigma^2t}
+\right),
+\qquad t>0.
+\]
+
+Thus,
+\[
+\boxed{
+f_{\tau_a}(t)
+=
+\frac{a}{\sigma\sqrt{2\pi t^3}}
+\exp\left(
+-\frac{(a-\mu t)^2}{2\sigma^2t}
+\right),
+\qquad t>0.
+}
+\]
+This is the density of an inverse Gaussian distribution. More precisely,
+\[
+\tau_a
+\sim
+\operatorname{IG}\left(
+\frac{a}{\mu},
+\frac{a^2}{\sigma^2}
+\right),
+\]
+with the convention that an inverse Gaussian random variable with parameters
+$(m,\lambda)$ has density
+\[
+f(t)
+=
+\left(\frac{\lambda}{2\pi t^3}\right)^{1/2}
+\exp\left(
+-\frac{\lambda(t-m)^2}{2m^2t}
+\right),
+\qquad t>0.
+\]
+\end{solutionpart}
+\end{solution}
+
+% ============================================================
+\section{Martingale Pricing}
+% ============================================================
+
+% To be completed.
+\begin{solution}
+\textbf{Asian option: arithmetic average}
+We work under the risk-neutral measure $\mathbb{Q}$. The stock price follows
+\[
+\frac{\dd S_t}{S_t}=r\,\dd t+\sigma\,\dd B_t,
+\qquad S_0>0,
+\]
+or equivalently
+\[
+\dd S_t=rS_t\,\dd t+\sigma S_t\,\dd B_t.
+\]
+The payoff of the arithmetic-average Asian call is
+\[
+H=
+\left(
+\frac1T\int_0^T S_u\,\dd u-K
+\right)^+.
+\]
+We define the running integral
+\[
+I_t:=\int_0^t S_u\,\dd u.
+\]
+
+\begin{solutionpart}{Question (a)}
+By the risk-neutral pricing formula, the value at time $t$ is the discounted conditional expectation of the payoff:
+\[
+V_t
+=
+\E^\mathbb{Q}\left[
+e^{-r(T-t)}
+\left(
+\frac1T\int_0^T S_u\,\dd u-K
+\right)^+
+\Bigm|\F_t
+\right].
+\]
+Since $r$ is constant, the discount factor is deterministic and can also be written outside the conditional expectation:
+\[
+V_t
+=
+e^{-r(T-t)}
+\E^\mathbb{Q}\left[
+\left(
+\frac1T\int_0^T S_u\,\dd u-K
+\right)^+
+\Bigm|\F_t
+\right].
+\]
+\end{solutionpart}
+
+\begin{solutionpart}{Question (b)}
+For any $t\in[0,T]$, we decompose the integral as
+\[
+\int_0^T S_u\,\dd u
+=
+\int_0^t S_u\,\dd u
++
+\int_t^T S_u\,\dd u.
+\]
+By definition of $I_t$, this gives
+\[
+\int_0^T S_u\,\dd u
+=
+I_t+\int_t^T S_u\,\dd u.
+\]
+
+The future evolution after time $t$ depends on the past only through the current stock value $S_t$, because $S$ is a Markov diffusion. However, the payoff also depends on the accumulated past average, summarized by $I_t$.
+
+Therefore, the price can be written as a deterministic function of the two state variables $(S_t,I_t)$:
+\[
+V_t=v(t,S_t,I_t),
+\]
+where
+\[
+v(t,s,i)
+:=
+\E_{t,s,i}^{\mathbb{Q}}\left[
+e^{-r(T-t)}
+\left(
+\frac1T
+\left(
+i+\int_t^T S_u\,\dd u
+\right)
+-K
+\right)^+
+\right].
+\]
+Here $\E_{t,s,i}^{\mathbb{Q}}$ means that the process starts at time $t$ from
+\[
+S_t=s,
+\qquad
+I_t=i.
+\]
+\end{solutionpart}
+
+\begin{solutionpart}{Question (c)}
+The stock dynamics under $\mathbb{Q}$ are
+\[
+\dd S_t=rS_t\,\dd t+\sigma S_t\,\dd B_t.
+\]
+Since
+\[
+I_t=\int_0^t S_u\,\dd u,
+\]
+we have
+\[
+\dd I_t=S_t\,\dd t.
+\]
+Therefore, the two-dimensional process $(S_t,I_t)$ satisfies
+\[
+\boxed{
+\begin{aligned}
+\dd S_t &= rS_t\,\dd t+\sigma S_t\,\dd B_t,\\
+\dd I_t &= S_t\,\dd t.
+\end{aligned}
+}
+\]
+
+The process $(S_t,I_t)$ is Markov because its future dynamics depend only on the current values
+$(S_t,I_t)$ and not on the full past trajectory. More precisely, given $(S_t,I_t)=(s,i)$, the future stock process is generated from $s$, and the future value of the running integral is obtained by adding
+\[
+\int_t^u S_\ell\,\dd \ell
+\]
+to the current value $i$.
+
+By contrast, $S_t$ alone is not enough to price the Asian option, because the payoff depends on the historical average
+\[
+\frac1T\int_0^T S_u\,\dd u.
+\]
+At time $t$, two paths may have the same current stock price $S_t$ but different accumulated integrals $I_t$, leading to different option values.
+\end{solutionpart}
+
+\begin{solutionpart}{Question (d)}
+Assume that
+\[
+V_t=v(t,S_t,I_t)
+\]
+for a sufficiently smooth function
+\[
+v\in C^{1,2,1}.
+\]
+Applying It\^o's formula to $v(t,S_t,I_t)$ gives
+\[
+\dd v(t,S_t,I_t)
+=
+\partial_t v\,\dd t
++
+\partial_s v\,\dd S_t
++
+\partial_i v\,\dd I_t
++
+\frac12\partial_{ss}v\,\dd\langle S\rangle_t.
+\]
+There is no second-order term in $I$ because $I$ has finite variation, and no cross-variation term because
+\[
+\dd\langle S,I\rangle_t=0.
+\]
+Now
+\[
+\dd S_t=rS_t\,\dd t+\sigma S_t\,\dd B_t,
+\qquad
+\dd I_t=S_t\,\dd t,
+\]
+and
+\[
+\dd\langle S\rangle_t=\sigma^2S_t^2\,\dd t.
+\]
+Therefore,
+\[
+\begin{aligned}
+\dd V_t
+&=
+\bigg(
+\partial_t v
++
+rS_t\partial_s v
++
+S_t\partial_i v
++
+\frac12\sigma^2S_t^2\partial_{ss}v
+\bigg)\dd t
++
+\sigma S_t\partial_s v\,\dd B_t.
+\end{aligned}
+\]
+
+Under the risk-neutral measure, the discounted option price
+\[
+e^{-rt}V_t
+\]
+must be a martingale. Equivalently, the drift of $V_t$ must be equal to $rV_t\,\dd t$. Thus
+\[
+\partial_t v
++
+rs\,\partial_s v
++
+s\,\partial_i v
++
+\frac12\sigma^2s^2\partial_{ss}v
+=
+rv.
+\]
+Hence the PDE is
+\[
+\boxed{
+\partial_t v
++
+rs\,\partial_s v
++
+s\,\partial_i v
++
+\frac12\sigma^2s^2\partial_{ss}v
+-
+rv
+=0.
+}
+\]
+
+At maturity,
+\[
+V_T=H
+=
+\left(
+\frac1T\int_0^T S_u\,\dd u-K
+\right)^+
+=
+\left(
+\frac{I_T}{T}-K
+\right)^+.
+\]
+Thus the terminal condition is
+\[
+\boxed{
+v(T,s,i)=\left(\frac{i}{T}-K\right)^+.
+}
+\]
+\end{solutionpart}
+
+\begin{solutionpart}{Question (e)}
+Define the discounted price process
+\[
+\bar V_t:=e^{-rt}V_t.
+\]
+Using the risk-neutral pricing formula,
+\[
+V_t
+=
+\E^\mathbb{Q}\left[
+e^{-r(T-t)}H
+\Bigm|\F_t
+\right].
+\]
+Multiplying both sides by $e^{-rt}$ gives
+\[
+e^{-rt}V_t
+=
+e^{-rt}
+\E^\mathbb{Q}\left[
+e^{-r(T-t)}H
+\Bigm|\F_t
+\right].
+\]
+Since
+\[
+e^{-rt}e^{-r(T-t)}=e^{-rT},
+\]
+we get
+\[
+\bar V_t
+=
+\E^\mathbb{Q}\left[
+e^{-rT}H
+\Bigm|\F_t
+\right].
+\]
+Therefore,
+\[
+\bar V_t
+=
+\E^\mathbb{Q}\left[
+e^{-rT}
+\left(
+\frac1T\int_0^T S_u\,\dd u-K
+\right)^+
+\Bigm|\F_t
+\right].
+\]
+This is a conditional expectation of a fixed integrable random variable. Hence, by the tower property, $(\bar V_t)_{0\le t\le T}$ is a $\mathbb{Q}$-martingale.
+
+Indeed, for $0\le s\le t\le T$,
+\[
+\E^\mathbb{Q}\left[\bar V_t\mid \F_s\right]
+=
+\E^\mathbb{Q}\left[
+\E^\mathbb{Q}\left[
+e^{-rT}H
+\mid \F_t
+\right]
+\Bigm|\F_s
+\right]
+=
+\E^\mathbb{Q}\left[
+e^{-rT}H
+\mid \F_s
+\right]
+=
+\bar V_s.
+\]
+\end{solutionpart}
+
+\begin{solutionpart}{Question (f)}
+We propose a Monte Carlo estimator for $V_0$.
+
+Let
+\[
+0=t_0<t_1<\cdots<t_n=T,
+\qquad
+\Delta t=\frac{T}{n}.
+\]
+Under $\mathbb{Q}$, simulate $M$ independent paths of the Black--Scholes dynamics
+\[
+\dd S_t=rS_t\,\dd t+\sigma S_t\,\dd B_t.
+\]
+For example, using the exact discretization,
+\[
+S_{t_{k+1}}^{(m)}
+=
+S_{t_k}^{(m)}
+\exp\left(
+\left(r-\frac12\sigma^2\right)\Delta t
++
+\sigma\sqrt{\Delta t}\,Z_{k+1}^{(m)}
+\right),
+\]
+where
+\[
+Z_{k+1}^{(m)}\sim \mathcal{N}(0,1)
+\]
+are independent.
+
+For each simulated path, approximate the time integral by a Riemann sum:
+\[
+\int_0^T S_u^{(m)}\,\dd u
+\approx
+\sum_{k=0}^{n-1} S_{t_k}^{(m)}\Delta t.
+\]
+The corresponding simulated payoff is
+\[
+H^{(m)}_n
+:=
+\left(
+\frac1T
+\sum_{k=0}^{n-1} S_{t_k}^{(m)}\Delta t
+-K
+\right)^+.
+\]
+Then the Monte Carlo estimator is
+\[
+\boxed{
+\widehat V_0^{\,M,n}
+=
+e^{-rT}
+\frac1M\sum_{m=1}^M H_n^{(m)}.
+}
+\]
+
+Thus:
+\begin{itemize}[leftmargin=1.4em]
+\item We simulate the stock price process under the risk-neutral measure $\mathbb{Q}$.
+\item We average the simulated discounted payoffs.
+\item The discount factor $e^{-rT}$ appears outside the Monte Carlo average, since $r$ is constant.
+\end{itemize}
+
+If one uses the Euler scheme instead of the exact Black--Scholes discretization, one simulates
+\[
+S_{t_{k+1}}^{(m)}
+=
+S_{t_k}^{(m)}
++
+rS_{t_k}^{(m)}\Delta t
++
+\sigma S_{t_k}^{(m)}\sqrt{\Delta t}\,Z_{k+1}^{(m)}.
+\]
+However, for a geometric Brownian motion, the exact lognormal discretization is usually preferred because it preserves positivity.
+\end{solutionpart}
+
+\begin{solutionpart}{Question (g)}
+The geometric average is defined by
+\[
+G
+:=
+\exp\left(
+\frac1T\int_0^T \log S_u\,\dd u
+\right).
+\]
+In the Black--Scholes model,
+\[
+S_t
+=
+S_0
+\exp\left(
+\left(r-\frac12\sigma^2\right)t+\sigma B_t
+\right).
+\]
+Therefore,
+\[
+\log S_t
+=
+\log S_0
++
+\left(r-\frac12\sigma^2\right)t
++
+\sigma B_t.
+\]
+Hence
+\[
+\frac1T\int_0^T \log S_u\,\dd u
+=
+\log S_0
++
+\left(r-\frac12\sigma^2\right)\frac{1}{T}\int_0^T u\,\dd u
++
+\frac{\sigma}{T}\int_0^T B_u\,\dd u.
+\]
+Since
+\[
+\int_0^T u\,\dd u=\frac{T^2}{2},
+\]
+we get
+\[
+\frac1T\int_0^T \log S_u\,\dd u
+=
+\log S_0
++
+\frac12\left(r-\frac12\sigma^2\right)T
++
+\frac{\sigma}{T}\int_0^T B_u\,\dd u.
+\]
+The random variable
+\[
+\int_0^T B_u\,\dd u
+\]
+is Gaussian because it is a linear functional of the Brownian path. Its mean is $0$ and its variance is
+\[
+\Var\left(\int_0^T B_u\,\dd u\right)
+=
+\int_0^T\int_0^T \Cov(B_u,B_v)\,\dd u\,\dd v
+=
+\int_0^T\int_0^T \min(u,v)\,\dd u\,\dd v.
+\]
+Now
+\[
+\int_0^T\int_0^T \min(u,v)\,\dd u\,\dd v
+=
+2\int_0^T\int_0^v u\,\dd u\,\dd v
+=
+2\int_0^T \frac{v^2}{2}\,\dd v
+=
+\frac{T^3}{3}.
+\]
+Therefore,
+\[
+\frac{\sigma}{T}\int_0^T B_u\,\dd u
+\sim
+\mathcal{N}\left(0,\frac{\sigma^2T}{3}\right).
+\]
+
+Thus,
+\[
+\log G
+\sim
+\mathcal{N}\left(
+\log S_0+\frac12\left(r-\frac12\sigma^2\right)T,
+\frac{\sigma^2T}{3}
+\right).
+\]
+Hence $G$ is lognormally distributed. This is why the geometric-average Asian option is analytically tractable in the Black--Scholes model.
+
+In particular, a call option with payoff
+\[
+(G-K)^+
+\]
+can be priced using a Black--Scholes type formula with an adjusted mean and volatility.
+
+This can be used as a control variate for the arithmetic Asian option. Let
+\[
+H_A
+=
+\left(
+\frac1T\int_0^T S_u\,\dd u-K
+\right)^+
+\]
+be the arithmetic Asian payoff and
+\[
+H_G=(G-K)^+
+\]
+be the geometric Asian payoff. Since the price of $H_G$ is known explicitly, one can estimate
+\[
+V_A
+=
+e^{-rT}\E^\mathbb{Q}[H_A]
+\]
+using
+\[
+\widehat V_A^{\,CV}
+=
+e^{-rT}
+\left[
+\frac1M\sum_{m=1}^M
+\left(
+H_A^{(m)}
+-
+\beta\left(H_G^{(m)}-\E^\mathbb{Q}[H_G]\right)
+\right)
+\right],
+\]
+where $\beta$ is chosen to reduce variance, ideally
+\[
+\beta^\star
+=
+\frac{\Cov(H_A,H_G)}{\Var(H_G)}.
+\]
+Because the arithmetic and geometric averages are highly correlated, this control variate is usually very effective.
+\end{solutionpart}
+\end{solution}
+
+% ------------------------------------------------------------
+
+
+\begin{solution}
+\textbf{Continuous-time lookback digital one-touch in Black--Scholes}
+We work under the risk-neutral measure $\mathbb{Q}$. The stock price satisfies
+\[
+\frac{\dd S_t}{S_t}=(r-q)\,\dd t+\sigma\,\dd B_t,
+\qquad S_0>0,\quad \sigma>0.
+\]
+The payoff is
+\[
+\Pi=\mathbf 1_{\left\{\sup_{0\le t\le T}S_t\ge H\right\}},
+\qquad H>S_0.
+\]
+Hence the no-arbitrage price is
+\[
+V_0=e^{-rT}\mathbb{Q}\left(\sup_{0\le t\le T}S_t\ge H\right).
+\]
+
+\begin{solutionpart}{Question (a)}
+Define
+\[
+X_t:=\ln\left(\frac{S_t}{S_0}\right).
+\]
+Since
+\[
+\dd S_t=(r-q)S_t\,\dd t+\sigma S_t\,\dd B_t,
+\]
+It\^o's formula applied to $\log S_t$ gives
+\[
+\dd \log S_t
+=
+\frac{1}{S_t}\,\dd S_t
+-
+\frac12\frac{1}{S_t^2}\,\dd\langle S\rangle_t.
+\]
+Now
+\[
+\dd\langle S\rangle_t=\sigma^2 S_t^2\,\dd t.
+\]
+Therefore,
+\[
+\dd \log S_t
+=
+(r-q)\,\dd t+\sigma\,\dd B_t
+-
+\frac12\sigma^2\,\dd t.
+\]
+Thus
+\[
+\dd \log S_t
+=
+\left(r-q-\frac12\sigma^2\right)\dd t+\sigma\,\dd B_t.
+\]
+Integrating from $0$ to $t$ gives
+\[
+\log S_t-\log S_0
+=
+\left(r-q-\frac12\sigma^2\right)t+\sigma B_t.
+\]
+Hence
+\[
+X_t
+=
+\ln\left(\frac{S_t}{S_0}\right)
+=
+\left(r-q-\frac12\sigma^2\right)t+\sigma B_t.
+\]
+If we define
+\[
+\mu:=r-q-\frac12\sigma^2,
+\]
+then
+\[
+\boxed{
+X_t=\mu t+\sigma B_t.
+}
+\]
+
+Now, since the logarithm is increasing,
+\[
+S_t\ge H
+\quad\Longleftrightarrow\quad
+\ln\left(\frac{S_t}{S_0}\right)\ge \ln\left(\frac{H}{S_0}\right).
+\]
+Define
+\[
+a:=\ln\left(\frac{H}{S_0}\right).
+\]
+Since $H>S_0$, we have $a>0$. Therefore,
+\[
+\left\{\sup_{0\le t\le T}S_t\ge H\right\}
+=
+\left\{\sup_{0\le t\le T}X_t\ge a\right\}.
+\]
+So the pricing problem is reduced to computing
+\[
+\mathbb{Q}\left(\sup_{0\le t\le T}(\mu t+\sigma B_t)\ge a\right).
+\]
+\end{solutionpart}
+
+\begin{solutionpart}{Question (b)}
+We now prove the hitting probability formula for the drifted Brownian motion
+\[
+Y_t:=\mu t+\sigma B_t.
+\]
+We want to show that, for $a>0$,
+\[
+\mathbb{Q}\left(\sup_{0\le t\le T}Y_t\ge a\right)
+=
+\Phi\left(\frac{\mu T-a}{\sigma\sqrt T}\right)
++
+\exp\left(\frac{2\mu a}{\sigma^2}\right)
+\Phi\left(\frac{-\mu T-a}{\sigma\sqrt T}\right).
+\]
+
+\medskip
+
+First, consider the driftless case $\mu=0$. Then
+\[
+Y_t=\sigma B_t.
+\]
+By the reflection principle,
+\[
+\mathbb{Q}\left(\sup_{0\le t\le T}\sigma B_t\ge a\right)
+=
+2\mathbb{Q}(\sigma B_T\ge a).
+\]
+Since $B_T\sim \mathcal N(0,T)$,
+\[
+\sigma B_T\sim \mathcal N(0,\sigma^2T),
+\]
+and therefore
+\[
+\mathbb{Q}(\sigma B_T\ge a)
+=
+1-\Phi\left(\frac{a}{\sigma\sqrt T}\right).
+\]
+Thus
+\[
+\mathbb{Q}\left(\sup_{0\le t\le T}\sigma B_t\ge a\right)
+=
+2\left[
+1-\Phi\left(\frac{a}{\sigma\sqrt T}\right)
+\right].
+\]
+Using the identity $1-\Phi(x)=\Phi(-x)$, this becomes
+\[
+\mathbb{Q}\left(\sup_{0\le t\le T}\sigma B_t\ge a\right)
+=
+2\Phi\left(-\frac{a}{\sigma\sqrt T}\right).
+\]
+This is exactly the previous formula when $\mu=0$, since
+\[
+\Phi\left(\frac{-a}{\sigma\sqrt T}\right)
++
+\Phi\left(\frac{-a}{\sigma\sqrt T}\right)
+=
+2\Phi\left(-\frac{a}{\sigma\sqrt T}\right).
+\]
+
+\medskip
+
+Now assume $\mu\neq 0$. Define
+\[
+\theta:=\frac{\mu}{\sigma}
+\]
+and
+\[
+Z_T:=
+\exp\left(
+-\theta B_T-\frac12\theta^2T
+\right).
+\]
+Define a new probability measure $\widetilde{\mathbb{Q}}$ by
+\[
+\frac{\dd\widetilde{\mathbb{Q}}}{\dd\mathbb{Q}}
+=
+Z_T.
+\]
+By Girsanov's theorem,
+\[
+\widetilde B_t:=B_t+\theta t
+\]
+is a Brownian motion under $\widetilde{\mathbb{Q}}$.
+
+Since
+\[
+B_t=\widetilde B_t-\theta t,
+\]
+we have
+\[
+Y_t
+=
+\mu t+\sigma B_t
+=
+\mu t+\sigma(\widetilde B_t-\theta t).
+\]
+Using $\theta=\mu/\sigma$, we obtain
+\[
+Y_t=\sigma\widetilde B_t.
+\]
+Thus, under $\widetilde{\mathbb{Q}}$, the event
+\[
+\left\{\sup_{0\le t\le T}Y_t\ge a\right\}
+\]
+becomes
+\[
+\left\{\sup_{0\le t\le T}\sigma\widetilde B_t\ge a\right\}.
+\]
+
+However, we need the probability of this event under the original measure $\mathbb{Q}$.
+Let
+\[
+\tau_a:=\inf\{t\ge0:Y_t=a\}.
+\]
+Then
+\[
+\left\{\sup_{0\le t\le T}Y_t\ge a\right\}
+=
+\{\tau_a\le T\}.
+\]
+Using the change of measure,
+\[
+\mathbb{Q}(\tau_a\le T)
+=
+\mathbb{E}^{\widetilde{\mathbb{Q}}}
+\left[
+Z_T^{-1}\mathbf 1_{\{\tau_a\le T\}}
+\right].
+\]
+Now
+\[
+Z_T^{-1}
+=
+\exp\left(
+\theta B_T+\frac12\theta^2T
+\right).
+\]
+Since
+\[
+B_T=\widetilde B_T-\theta T,
+\]
+we get
+\[
+Z_T^{-1}
+=
+\exp\left(
+\theta\widetilde B_T-\frac12\theta^2T
+\right).
+\]
+Therefore,
+\[
+\mathbb{Q}(\tau_a\le T)
+=
+\mathbb{E}^{\widetilde{\mathbb{Q}}}
+\left[
+\exp\left(
+\theta\widetilde B_T-\frac12\theta^2T
+\right)
+\mathbf 1_{\{\sup_{0\le t\le T}\sigma\widetilde B_t\ge a\}}
+\right].
+\]
+
+Let
+\[
+b:=\frac{a}{\sigma}.
+\]
+Then
+\[
+\{\sup_{0\le t\le T}\sigma\widetilde B_t\ge a\}
+=
+\{\sup_{0\le t\le T}\widetilde B_t\ge b\}.
+\]
+Hence
+\[
+\mathbb{Q}(\tau_a\le T)
+=
+e^{-\frac12\theta^2T}
+\mathbb{E}^{\widetilde{\mathbb{Q}}}
+\left[
+e^{\theta\widetilde B_T}
+\mathbf 1_{\{\sup_{0\le t\le T}\widetilde B_t\ge b\}}
+\right].
+\]
+
+We now use the reflection principle in its density form. For Brownian motion,
+on the event that the maximum crosses $b$, the endpoint distribution is reflected across $b$.
+Thus
+\[
+\mathbb{E}^{\widetilde{\mathbb{Q}}}
+\left[
+e^{\theta\widetilde B_T}
+\mathbf 1_{\{\sup_{0\le t\le T}\widetilde B_t\ge b\}}
+\right]
+=
+\int_b^\infty e^{\theta x}\frac{1}{\sqrt{2\pi T}}e^{-\frac{x^2}{2T}}\,\dd x
++
+\int_{-\infty}^b e^{\theta x}
+\frac{1}{\sqrt{2\pi T}}
+e^{-\frac{(2b-x)^2}{2T}}\,\dd x.
+\]
+Call these two terms $I_1$ and $I_2$.
+
+For the first integral,
+\[
+I_1
+=
+\int_b^\infty e^{\theta x}\frac{1}{\sqrt{2\pi T}}e^{-\frac{x^2}{2T}}\,\dd x.
+\]
+Complete the square:
+\[
+\theta x-\frac{x^2}{2T}
+=
+-\frac{(x-\theta T)^2}{2T}
++
+\frac12\theta^2T.
+\]
+Hence
+\[
+I_1
+=
+e^{\frac12\theta^2T}
+\int_b^\infty
+\frac{1}{\sqrt{2\pi T}}
+e^{-\frac{(x-\theta T)^2}{2T}}\,\dd x.
+\]
+Therefore
+\[
+I_1
+=
+e^{\frac12\theta^2T}
+\Phi\left(\frac{\theta T-b}{\sqrt T}\right).
+\]
+
+For the second integral,
+\[
+I_2
+=
+\int_{-\infty}^b e^{\theta x}
+\frac{1}{\sqrt{2\pi T}}
+e^{-\frac{(2b-x)^2}{2T}}\,\dd x.
+\]
+Make the change of variables
+\[
+y=2b-x,
+\qquad
+\dd y=-\dd x.
+\]
+When $x\le b$, we have $y\ge b$. Hence
+\[
+I_2
+=
+\int_b^\infty
+e^{\theta(2b-y)}
+\frac{1}{\sqrt{2\pi T}}
+e^{-\frac{y^2}{2T}}\,\dd y.
+\]
+Thus
+\[
+I_2
+=
+e^{2\theta b}
+\int_b^\infty
+e^{-\theta y}
+\frac{1}{\sqrt{2\pi T}}
+e^{-\frac{y^2}{2T}}\,\dd y.
+\]
+Again complete the square:
+\[
+-\theta y-\frac{y^2}{2T}
+=
+-\frac{(y+\theta T)^2}{2T}
++
+\frac12\theta^2T.
+\]
+Therefore
+\[
+I_2
+=
+e^{2\theta b}
+e^{\frac12\theta^2T}
+\int_b^\infty
+\frac{1}{\sqrt{2\pi T}}
+e^{-\frac{(y+\theta T)^2}{2T}}\,\dd y.
+\]
+This gives
+\[
+I_2
+=
+e^{2\theta b}
+e^{\frac12\theta^2T}
+\Phi\left(
+\frac{-b-\theta T}{\sqrt T}
+\right).
+\]
+
+Combining $I_1$ and $I_2$, we find
+\[
+\begin{aligned}
+\mathbb{Q}(\tau_a\le T)
+&=
+e^{-\frac12\theta^2T}(I_1+I_2)\\
+&=
+\Phi\left(\frac{\theta T-b}{\sqrt T}\right)
++
+e^{2\theta b}
+\Phi\left(\frac{-b-\theta T}{\sqrt T}\right).
+\end{aligned}
+\]
+Recalling that
+\[
+\theta=\frac{\mu}{\sigma},
+\qquad
+b=\frac{a}{\sigma},
+\]
+we get
+\[
+\frac{\theta T-b}{\sqrt T}
+=
+\frac{\mu T-a}{\sigma\sqrt T},
+\]
+and
+\[
+\frac{-b-\theta T}{\sqrt T}
+=
+\frac{-a-\mu T}{\sigma\sqrt T}.
+\]
+Moreover,
+\[
+2\theta b
+=
+2\frac{\mu}{\sigma}\frac{a}{\sigma}
+=
+\frac{2\mu a}{\sigma^2}.
+\]
+Therefore,
+\[
+\boxed{
+\mathbb{Q}\left(\sup_{0\le t\le T}Y_t\ge a\right)
+=
+\Phi\left(\frac{\mu T-a}{\sigma\sqrt T}\right)
++
+\exp\left(\frac{2\mu a}{\sigma^2}\right)
+\Phi\left(\frac{-\mu T-a}{\sigma\sqrt T}\right).
+}
+\]
+\end{solutionpart}
+
+\begin{solutionpart}{Question (c)}
+From Question (a), we have
+\[
+\left\{\sup_{0\le t\le T}S_t\ge H\right\}
+=
+\left\{\sup_{0\le t\le T}X_t\ge a\right\},
+\]
+where
+\[
+X_t=\mu t+\sigma B_t,
+\qquad
+\mu=r-q-\frac12\sigma^2,
+\qquad
+a=\ln\left(\frac{H}{S_0}\right).
+\]
+Using the hitting probability formula from Question (b), we obtain
+\[
+\mathbb{Q}\left(\sup_{0\le t\le T}S_t\ge H\right)
+=
+\Phi\left(\frac{\mu T-a}{\sigma\sqrt T}\right)
++
+\exp\left(\frac{2\mu a}{\sigma^2}\right)
+\Phi\left(\frac{-\mu T-a}{\sigma\sqrt T}\right).
+\]
+Therefore the time-$0$ price is
+\[
+\boxed{
+V_0
+=
+e^{-rT}
+\left[
+\Phi\left(\frac{\mu T-a}{\sigma\sqrt T}\right)
++
+\exp\left(\frac{2\mu a}{\sigma^2}\right)
+\Phi\left(\frac{-\mu T-a}{\sigma\sqrt T}\right)
+\right],
+}
+\]
+where
+\[
+\mu=r-q-\frac12\sigma^2,
+\qquad
+a=\ln\left(\frac{H}{S_0}\right).
+\]
+
+Let us check the limiting cases.
+
+If $H\downarrow S_0$, then
+\[
+a=\ln(H/S_0)\downarrow0.
+\]
+The event
+\[
+\left\{\sup_{0\le t\le T}S_t\ge S_0\right\}
+\]
+has probability $1$, since $S_0$ is already reached at time $0$. Thus
+\[
+V_0\to e^{-rT}.
+\]
+This is also consistent with the formula, since when $a=0$,
+\[
+\Phi\left(\frac{\mu T}{\sigma\sqrt T}\right)
++
+\Phi\left(\frac{-\mu T}{\sigma\sqrt T}\right)
+=
+\Phi(x)+\Phi(-x)=1.
+\]
+
+If $H\uparrow\infty$, then
+\[
+a=\ln(H/S_0)\to\infty.
+\]
+The probability of hitting such a large barrier before the fixed maturity $T$ tends to $0$.
+Therefore,
+\[
+V_0\to0.
+\]
+\end{solutionpart}
+
+\begin{solutionpart}{Question (d)}
+For a Monte Carlo verification, simulate the stock price under $\mathbb{Q}$ on a grid
+\[
+0=t_0<t_1<\cdots<t_N=T.
+\]
+Using the exact Black--Scholes discretization,
+\[
+S_{t_{k+1}}^{(m)}
+=
+S_{t_k}^{(m)}
+\exp\left(
+\left(r-q-\frac12\sigma^2\right)\Delta t
++
+\sigma\sqrt{\Delta t}\,Z_{k+1}^{(m)}
+\right),
+\]
+where
+\[
+Z_{k+1}^{(m)}\sim\mathcal N(0,1)
+\]
+are independent.
+
+For each path, approximate the event
+\[
+\left\{\sup_{0\le t\le T}S_t\ge H\right\}
+\]
+by the discretely monitored event
+\[
+\left\{\max_{0\le k\le N}S_{t_k}^{(m)}\ge H\right\}.
+\]
+The Monte Carlo estimator is
+\[
+\boxed{
+\widehat V_0^{(N,M)}
+=
+e^{-rT}\frac1M
+\sum_{m=1}^M
+\mathbf 1_{\left\{\max_{0\le k\le N}S_{t_k}^{(m)}\ge H\right\}}.
+}
+\]
+
+This estimator converges, as $M\to\infty$, to the price of the discretely monitored one-touch option. It is generally biased downward relative to the continuously monitored price, because the simulated grid may miss barrier crossings occurring between two consecutive time points.
+
+As $N$ increases, the time grid becomes finer, and the discretely monitored event better approximates the continuously monitored event. Hence the bias decreases as $N\to\infty$.
+\end{solutionpart}
+\end{solution}
+% ============================================================
+\section{American Options}
+% ============================================================
+
+\begin{solution}
+We consider a three-period binomial model with
+\[
+S_0=100,
+\qquad
+u=1.1,
+\qquad
+d=0.9,
+\qquad
+1+r=1.02,
+\]
+and strike
+\[
+K=100.
+\]
+
+The risk-neutral probability $p$ is determined by
+\[
+S_0
+=
+\frac{1}{1+r}
+\left(
+p\,uS_0+(1-p)dS_0
+\right).
+\]
+Equivalently,
+\[
+1+r=pu+(1-p)d.
+\]
+Thus
+\[
+1.02=1.1p+0.9(1-p).
+\]
+Hence
+\[
+1.02=0.9+0.2p,
+\]
+so
+\[
+p=\frac{1.02-0.9}{1.1-0.9}=0.6.
+\]
+Therefore,
+\[
+\boxed{p=0.6,\qquad 1-p=0.4.}
+\]
+
+\begin{solutionpart}{Question (a): European put price}
+
+At maturity $T=3$, the possible stock prices are
+\[
+S_3^{uuu}=100(1.1)^3=133.1,
+\]
+\[
+S_3^{uud}=100(1.1)^2(0.9)=108.9,
+\]
+\[
+S_3^{udd}=100(1.1)(0.9)^2=89.1,
+\]
+and
+\[
+S_3^{ddd}=100(0.9)^3=72.9.
+\]
+
+The European put payoff is
+\[
+(K-S_3)^+.
+\]
+Therefore, the terminal payoffs are
+\[
+P_3^{uuu}=(100-133.1)^+=0,
+\]
+\[
+P_3^{uud}=(100-108.9)^+=0,
+\]
+\[
+P_3^{udd}=(100-89.1)^+=10.9,
+\]
+and
+\[
+P_3^{ddd}=(100-72.9)^+=27.1.
+\]
+
+The European put price is the discounted risk-neutral expectation:
+\[
+P_0^{\mathrm{Eur}}
+=
+\frac{1}{(1+r)^3}
+\E^{\mathbb{Q}}\left[(K-S_3)^+\right].
+\]
+Using the binomial probabilities,
+\[
+\mathbb{Q}(uuu)=p^3,
+\]
+\[
+\mathbb{Q}(uud)=3p^2(1-p),
+\]
+\[
+\mathbb{Q}(udd)=3p(1-p)^2,
+\]
+and
+\[
+\mathbb{Q}(ddd)=(1-p)^3.
+\]
+Hence
+\[
+P_0^{\mathrm{Eur}}
+=
+\frac{1}{1.02^3}
+\left[
+p^3\cdot 0
++
+3p^2(1-p)\cdot 0
++
+3p(1-p)^2\cdot 10.9
++
+(1-p)^3\cdot 27.1
+\right].
+\]
+With $p=0.6$, this gives
+\[
+P_0^{\mathrm{Eur}}
+=
+\frac{1}{1.02^3}
+\left[
+3(0.6)(0.4)^2(10.9)
++
+(0.4)^3(27.1)
+\right].
+\]
+Now
+\[
+3(0.6)(0.4)^2(10.9)
+=
+3(0.6)(0.16)(10.9)
+=
+3.1392,
+\]
+and
+\[
+(0.4)^3(27.1)=0.064(27.1)=1.7344.
+\]
+Thus
+\[
+\E^{\mathbb{Q}}\left[(K-S_3)^+\right]
+=
+3.1392+1.7344
+=
+4.8736.
+\]
+Therefore,
+\[
+\boxed{
+P_0^{\mathrm{Eur}}
+=
+\frac{4.8736}{1.02^3}
+\approx 4.5918.
+}
+\]
+\end{solutionpart}
+
+\begin{solutionpart}{Question (b): American put price}
+
+\begin{theorem}[Dynamic programming principle for American options]
+Consider a discrete-time financial model with dates
+\[
+0=t_0<t_1<\cdots<t_N=T.
+\]
+Let $(\mathcal F_n)_{0\le n\le N}$ be the market filtration, and assume that under the risk-neutral measure
+$\mathbb Q$, discounted asset prices are martingales.
+
+Let $r$ be the constant interest rate per period, so that the one-period discount factor is
+\[
+\frac{1}{1+r}.
+\]
+Let the American payoff process be
+\[
+G_n:=g(n,S_n),
+\qquad n=0,\dots,N.
+\]
+The value process $(V_n)_{0\le n\le N}$ of the American option is defined backward by
+\[
+V_N=G_N,
+\]
+and, for $n=N-1,\dots,0$,
+\[
+\boxed{
+V_n
+=
+\max\left(
+G_n,
+\frac{1}{1+r}\,
+\mathbb E^{\mathbb Q}\left[V_{n+1}\mid \mathcal F_n\right]
+\right).
+}
+\]
+Equivalently,
+\[
+\boxed{
+V_n
+=
+\max\left(
+\text{immediate exercise value},
+\text{continuation value}
+\right).
+}
+\]
+\end{theorem}
+
+
+For the American put, we compute the value by backward induction. At each node, the value is the maximum between:
+
+\begin{itemize}[leftmargin=1.4em]
+\item the immediate exercise value,
+\[
+(K-S)^+,
+\]
+\item the continuation value,
+\[
+\frac{1}{1+r}
+\left(
+pV^{u}+(1-p)V^{d}
+\right).
+\]
+\end{itemize}
+
+At maturity, the American and European values coincide:
+\[
+V_3^{uuu}=0,
+\qquad
+V_3^{uud}=0,
+\qquad
+V_3^{udd}=10.9,
+\qquad
+V_3^{ddd}=27.1.
+\]
+
+\medskip
+
+\noindent\textbf{Step 2.}
+
+At time $2$, the possible stock prices are
+\[
+S_2^{uu}=100(1.1)^2=121,
+\]
+\[
+S_2^{ud}=100(1.1)(0.9)=99,
+\]
+and
+\[
+S_2^{dd}=100(0.9)^2=81.
+\]
+
+At node $uu$, the immediate exercise value is
+\[
+(100-121)^+=0.
+\]
+The continuation value is
+\[
+\frac{1}{1.02}
+\left(
+0.6\cdot 0+0.4\cdot 0
+\right)=0.
+\]
+Therefore,
+\[
+V_2^{uu}=0.
+\]
+
+At node $ud$, the immediate exercise value is
+\[
+(100-99)^+=1.
+\]
+The continuation value is
+\[
+\frac{1}{1.02}
+\left(
+0.6\cdot 0+0.4\cdot 10.9
+\right)
+=
+\frac{4.36}{1.02}
+\approx 4.2745.
+\]
+Hence continuation is better, and
+\[
+V_2^{ud}
+=
+\max(1,4.2745)
+=
+4.2745.
+\]
+
+At node $dd$, the immediate exercise value is
+\[
+(100-81)^+=19.
+\]
+The continuation value is
+\[
+\frac{1}{1.02}
+\left(
+0.6\cdot 10.9+0.4\cdot 27.1
+\right).
+\]
+Compute
+\[
+0.6\cdot 10.9+0.4\cdot 27.1
+=
+6.54+10.84
+=
+17.38.
+\]
+Thus the continuation value is
+\[
+\frac{17.38}{1.02}
+\approx 17.0392.
+\]
+Since
+\[
+19>17.0392,
+\]
+immediate exercise is optimal. Therefore,
+\[
+V_2^{dd}=19.
+\]
+
+So at time $2$,
+\[
+\boxed{
+V_2^{uu}=0,
+\qquad
+V_2^{ud}\approx 4.2745,
+\qquad
+V_2^{dd}=19.
+}
+\]
+
+\medskip
+
+\noindent\textbf{Step 1.}
+
+At time $1$, the possible stock prices are
+\[
+S_1^u=100(1.1)=110,
+\]
+and
+\[
+S_1^d=100(0.9)=90.
+\]
+
+At node $u$, the immediate exercise value is
+\[
+(100-110)^+=0.
+\]
+The continuation value is
+\[
+\frac{1}{1.02}
+\left(
+0.6V_2^{uu}+0.4V_2^{ud}
+\right)
+=
+\frac{1}{1.02}
+\left(
+0.6\cdot 0+0.4\cdot 4.2745
+\right).
+\]
+Thus
+\[
+\text{continuation value}
+=
+\frac{1.7098}{1.02}
+\approx 1.6763.
+\]
+Hence
+\[
+V_1^u
+=
+\max(0,1.6763)
+=
+1.6763.
+\]
+
+At node $d$, the immediate exercise value is
+\[
+(100-90)^+=10.
+\]
+The continuation value is
+\[
+\frac{1}{1.02}
+\left(
+0.6V_2^{ud}+0.4V_2^{dd}
+\right).
+\]
+Therefore,
+\[
+\text{continuation value}
+=
+\frac{1}{1.02}
+\left(
+0.6\cdot 4.2745+0.4\cdot 19
+\right).
+\]
+Compute
+\[
+0.6\cdot 4.2745+0.4\cdot 19
+=
+2.5647+7.6
+=
+10.1647.
+\]
+Thus
+\[
+\text{continuation value}
+=
+\frac{10.1647}{1.02}
+\approx 9.9654.
+\]
+Since
+\[
+10>9.9654,
+\]
+immediate exercise is optimal. Therefore,
+\[
+V_1^d=10.
+\]
+
+So at time $1$,
+\[
+\boxed{
+V_1^u\approx 1.6763,
+\qquad
+V_1^d=10.
+}
+\]
+
+\medskip
+
+\noindent\textbf{Step 0.}
+
+At time $0$, the immediate exercise value is
+\[
+(100-100)^+=0.
+\]
+The continuation value is
+\[
+\frac{1}{1.02}
+\left(
+0.6V_1^u+0.4V_1^d
+\right).
+\]
+Hence
+\[
+V_0^{\mathrm{Am}}
+=
+\frac{1}{1.02}
+\left(
+0.6\cdot 1.6763+0.4\cdot 10
+\right).
+\]
+Compute
+\[
+0.6\cdot 1.6763+0.4\cdot 10
+=
+1.0058+4
+=
+5.0058.
+\]
+Therefore,
+\[
+\boxed{
+V_0^{\mathrm{Am}}
+=
+\frac{5.0058}{1.02}
+\approx 4.9077.
+}
+\]
+\end{solutionpart}
+
+\begin{solutionpart}{Question (c): Early exercise premium}
+
+The European put price is
+\[
+P_0^{\mathrm{Eur}}\approx 4.5918.
+\]
+The American put price is
+\[
+P_0^{\mathrm{Am}}\approx 4.9077.
+\]
+Therefore, the early exercise premium is
+\[
+P_0^{\mathrm{Am}}-P_0^{\mathrm{Eur}}
+\approx
+4.9077-4.5918
+=
+0.3159.
+\]
+Thus
+\[
+\boxed{
+P_0^{\mathrm{Am}}-P_0^{\mathrm{Eur}}
+\approx 0.316.
+}
+\]
+
+The American put is more valuable than the European put because the holder has the additional right to exercise before maturity. For a put option, early exercise can be optimal when the stock price is sufficiently low.
+\end{solutionpart}
+
+\begin{solutionpart}{Question (d): Optimal exercise nodes}
+
+We identify the nodes where immediate exercise is optimal.
+
+At time $2$:
+\[
+S_2^{uu}=121,
+\qquad
+S_2^{ud}=99,
+\qquad
+S_2^{dd}=81.
+\]
+We found:
+\[
+V_2^{uu}=0,
+\]
+with immediate exercise value $0$ and continuation value $0$.
+This is an indifference node.
+
+At node $ud$,
+\[
+S_2^{ud}=99,
+\]
+the immediate exercise value is $1$, while the continuation value is approximately $4.2745$. Therefore, continuation is optimal.
+
+At node $dd$,
+\[
+S_2^{dd}=81,
+\]
+the immediate exercise value is $19$, while the continuation value is approximately $17.0392$. Therefore, immediate exercise is optimal.
+
+At time $1$:
+\[
+S_1^u=110,
+\qquad
+S_1^d=90.
+\]
+At node $u$, continuation is optimal because the immediate exercise value is $0$ and the continuation value is approximately $1.6763$.
+
+At node $d$,
+\[
+S_1^d=90,
+\]
+the immediate exercise value is $10$, while the continuation value is approximately $9.9654$. Therefore, immediate exercise is optimal.
+
+At time $0$, the immediate exercise value is $0$, while the continuation value is approximately $4.9077$, so continuation is optimal.
+
+Hence the strict early exercise nodes are
+\[
+\boxed{
+S_1^d=90
+\quad\text{and}\quad
+S_2^{dd}=81.
+}
+\]
+At the node
+\[
+S_2^{uu}=121,
+\]
+the holder is indifferent between exercise and continuation, since both values are $0$, but this is not economically a meaningful early exercise node.
+\end{solutionpart}
+\end{solution}
+% ============================================================
+\section{Numerics}
+% ============================================================
+\begin{solution}
+This section recalls the basic numerical ideas used to simulate stochastic differential equations,
+stochastic integrals, and Monte Carlo estimators.
+
+\begin{solutionpart}{Euler--Maruyama scheme}
+
+Consider a one-dimensional stochastic differential equation
+\[
+\dd X_t=b(t,X_t)\,\dd t+\sigma(t,X_t)\,\dd B_t,
+\qquad X_0=x_0.
+\]
+Let
+\[
+0=t_0<t_1<\cdots<t_N=T,
+\qquad
+\Delta t=\frac{T}{N}.
+\]
+The Euler--Maruyama scheme is defined by
+\[
+\boxed{
+X_{t_{k+1}}^{\Delta}
+=
+X_{t_k}^{\Delta}
++
+b(t_k,X_{t_k}^{\Delta})\Delta t
++
+\sigma(t_k,X_{t_k}^{\Delta})\Delta B_k,
+}
+\]
+where
+\[
+\Delta B_k:=B_{t_{k+1}}-B_{t_k}.
+\]
+Since Brownian increments are independent and Gaussian, we simulate
+\[
+\Delta B_k=\sqrt{\Delta t}\,Z_k,
+\qquad
+Z_k\sim\mathcal N(0,1),
+\]
+with the variables $(Z_k)_{k=0}^{N-1}$ independent.
+
+Thus the implementable form is
+\[
+\boxed{
+X_{t_{k+1}}^{\Delta}
+=
+X_{t_k}^{\Delta}
++
+b(t_k,X_{t_k}^{\Delta})\Delta t
++
+\sigma(t_k,X_{t_k}^{\Delta})\sqrt{\Delta t}\,Z_k.
+}
+\]
+
+For a geometric Brownian motion,
+\[
+\dd S_t=\mu S_t\,\dd t+\sigma S_t\,\dd B_t,
+\]
+Euler--Maruyama gives
+\[
+S_{t_{k+1}}^{\Delta}
+=
+S_{t_k}^{\Delta}
++
+\mu S_{t_k}^{\Delta}\Delta t
++
+\sigma S_{t_k}^{\Delta}\sqrt{\Delta t}\,Z_k.
+\]
+However, in the Black--Scholes model one often uses the exact discretization
+\[
+\boxed{
+S_{t_{k+1}}
+=
+S_{t_k}
+\exp\left(
+\left(\mu-\frac12\sigma^2\right)\Delta t
++
+\sigma\sqrt{\Delta t}\,Z_k
+\right),
+}
+\]
+which preserves positivity and has no time-discretization error for the marginal dynamics.
+\end{solutionpart}
+
+\begin{solutionpart}{Simulation of ordinary time integrals}
+
+Many payoffs involve integrals of the form
+\[
+\int_0^T g(t,X_t)\,\dd t.
+\]
+Once a path has been simulated on the grid $(t_k)$, a simple left-point Riemann approximation is
+\[
+\boxed{
+\int_0^T g(t,X_t)\,\dd t
+\approx
+\sum_{k=0}^{N-1} g(t_k,X_{t_k}^{\Delta})\Delta t.
+}
+\]
+For example, for an arithmetic Asian option,
+\[
+\int_0^T S_t\,\dd t
+\approx
+\sum_{k=0}^{N-1} S_{t_k}^{\Delta}\Delta t.
+\]
+One could also use a trapezoidal approximation,
+\[
+\int_0^T g(t,X_t)\,\dd t
+\approx
+\sum_{k=0}^{N-1}
+\frac{
+g(t_k,X_{t_k}^{\Delta})
++
+g(t_{k+1},X_{t_{k+1}}^{\Delta})
+}{2}
+\Delta t.
+\]
+\end{solutionpart}
+
+\begin{solutionpart}{Simulation of It\^o stochastic integrals}
+
+For an It\^o integral
+\[
+\int_0^T H_t\,\dd B_t,
+\]
+where $H_t$ is adapted, the natural discretization is the left-point approximation
+\[
+\boxed{
+\int_0^T H_t\,\dd B_t
+\approx
+\sum_{k=0}^{N-1} H_{t_k}^{\Delta}\Delta B_k.
+}
+\]
+Equivalently,
+\[
+\int_0^T H_t\,\dd B_t
+\approx
+\sum_{k=0}^{N-1}
+H_{t_k}^{\Delta}\sqrt{\Delta t}\,Z_k.
+\]
+
+The left-point rule is important: it reflects the fact that the It\^o integral uses information available before the Brownian increment is realized. In particular,
+\[
+H_{t_k}^{\Delta}
+\]
+must be measurable with respect to the information available at time $t_k$.
+
+For example, if
+\[
+H_t=f(t,X_t),
+\]
+then the It\^o integral is approximated by
+\[
+\boxed{
+\int_0^T f(t,X_t)\,\dd B_t
+\approx
+\sum_{k=0}^{N-1}
+f(t_k,X_{t_k}^{\Delta})\sqrt{\Delta t}\,Z_k.
+}
+\]
+\end{solutionpart}
+
+\begin{solutionpart}{Monte Carlo pricing}
+
+Suppose a derivative has payoff $H$ at maturity $T$. Under the risk-neutral measure
+$\mathbb Q$, its time-$0$ price is
+\[
+V_0=e^{-rT}\mathbb E^{\mathbb Q}[H].
+\]
+Monte Carlo consists in simulating $M$ independent paths under $\mathbb Q$, computing one payoff
+for each path,
+\[
+H^{(1)},\dots,H^{(M)},
+\]
+and estimating the expectation by the empirical average:
+\[
+\boxed{
+\widehat V_0
+=
+e^{-rT}\frac1M\sum_{m=1}^M H^{(m)}.
+}
+\]
+
+For example, for an arithmetic Asian call,
+\[
+H
+=
+\left(
+\frac1T\int_0^T S_t\,\dd t-K
+\right)^+,
+\]
+we approximate
+\[
+H^{(m)}
+\approx
+\left(
+\frac1T\sum_{k=0}^{N-1} S_{t_k}^{(m)}\Delta t-K
+\right)^+,
+\]
+and use
+\[
+\boxed{
+\widehat V_0
+=
+e^{-rT}
+\frac1M\sum_{m=1}^M
+\left(
+\frac1T\sum_{k=0}^{N-1} S_{t_k}^{(m)}\Delta t-K
+\right)^+.
+}
+\]
+
+For a one-touch or lookback digital payoff,
+\[
+H=\mathbf 1_{\{\sup_{0\le t\le T}S_t\ge L\}},
+\]
+we approximate the supremum by the grid maximum:
+\[
+\sup_{0\le t\le T}S_t
+\approx
+\max_{0\le k\le N}S_{t_k}.
+\]
+The estimator becomes
+\[
+\boxed{
+\widehat V_0
+=
+e^{-rT}
+\frac1M\sum_{m=1}^M
+\mathbf 1_{\left\{\max_{0\le k\le N}S_{t_k}^{(m)}\ge L\right\}}.
+}
+\]
+This estimator has a discretization bias because the simulated grid can miss barrier crossings between two time points.
+\end{solutionpart}
+
+\begin{solutionpart}{Accuracy and sources of error}
+
+There are two main sources of error.
+
+First, there is a \emph{statistical Monte Carlo error}. Even if the payoff were simulated exactly,
+\[
+\frac1M\sum_{m=1}^M H^{(m)}
+\]
+is only an approximation of $\mathbb E^{\mathbb Q}[H]$. By the central limit theorem,
+\[
+\frac1M\sum_{m=1}^M H^{(m)}
+-
+\mathbb E^{\mathbb Q}[H]
+=
+O_{\mathbb P}\left(\frac1{\sqrt M}\right).
+\]
+
+Second, there is a \emph{time-discretization error}. This comes from approximating the continuous-time
+process, ordinary integrals, stochastic integrals, or running maxima on a finite grid. This error decreases
+as
+\[
+\Delta t=\frac{T}{N}\to0.
+\]
+
+In practice, increasing $M$ reduces statistical error, while increasing $N$ reduces time-discretization error.
+\end{solutionpart}
+\end{solution}
+
+\end{document}

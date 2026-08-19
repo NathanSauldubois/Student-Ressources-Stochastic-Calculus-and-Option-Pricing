@@ -1,0 +1,297 @@
+\documentclass[11pt]{article}
+
+% ============================================================
+% Packages
+% ============================================================
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{microtype}
+
+% ============================================================
+% Macros
+% ============================================================
+
+\newcommand{\Pbb}{\mathbb{P}}
+\newcommand{\Qbb}{\mathbb{Q}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Nbb}{\mathcal{N}}
+\newcommand{\dd}{\,\mathrm{d}}
+\newcommand{\1}{\mathbf{1}}
+
+% Brownian / stochastic calculus
+\newcommand{\F}{\mathcal{F}}
+\newcommand{\Filtration}{(\mathcal{F}_t)_{t\ge 0}}
+
+% ============================================================
+% Environments
+% ============================================================
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+\newtheorem{lemma}{Lemma}
+
+\newtheorem{definition}{Definition}
+\newtheorem{remark}{Remark}
+
+% ============================================================
+% Title
+% ============================================================
+
+\title{\textbf{Pricing and fundamental Principles}\\
+\large Lecture Notes}
+\author{Nathan Sauldubois}
+\date{MSFE6233 --- Option Pricing}
+
+\begin{document}
+\maketitle
+\vspace{-1.2em}
+
+
+% ============================================================
+\section{No-arbitrage principles and the Fundamental Theorems of Asset Pricing}
+% ============================================================
+
+\subsection{The dominance principle (first no-arbitrage principle)}
+
+A very simple but fundamental no-arbitrage idea is the following:
+if one contract always pays at least as much as another one, then it cannot cost less.
+
+\paragraph{Set-up.}
+Consider two contracts maturing at the same date \(T\), with payoffs \(A\) and \(B\),
+and current prices \(a\) and \(b\), respectively.
+If
+$$
+A \ge B
+\qquad \text{in every state of the world,}
+$$
+then no-arbitrage requires
+$$
+\boxed{\ a \ge b.\ }
+$$
+
+\paragraph{Why?}
+If instead \(a<b\), then one can:
+\begin{itemize}[leftmargin=1.4em]
+    \item buy the cheaper contract with larger payoff \(A\),
+    \item sell the more expensive contract with smaller payoff \(B\).
+\end{itemize}
+The initial cashflow is
+$$
+-b+a<0,
+$$
+so the strategy generates a positive amount of cash at time \(0\),
+while the terminal payoff is
+$$
+A-B\ge 0
+$$
+in every state.
+This is an arbitrage. The slides present this as the first and most basic no-arbitrage argument. 
+\paragraph{Interpretation.}
+The dominance principle is the most elementary form of monotonicity of prices:
+$$
+\text{larger payoff} \quad \Longrightarrow \quad \text{larger price.}
+$$
+It is often the quickest way to derive pricing inequalities and bounds.
+
+\subsection{Law of one price}
+
+A second basic no-arbitrage principle is the \emph{law of one price}:
+
+\begin{quote}
+If two trading strategies generate exactly the same terminal cashflows in all states,
+then they must have the same initial cost.
+\end{quote}
+
+Indeed, if two portfolios \(X\) and \(Y\) satisfy
+$$
+X_T=Y_T \quad \text{a.s.}
+$$
+but have different initial costs \(X_0\neq Y_0\), then buying the cheaper one and selling the more expensive one yields:
+\begin{itemize}[leftmargin=1.4em]
+    \item a strictly positive gain at time \(0\),
+    \item zero payoff at maturity.
+\end{itemize}
+This is a pure arbitrage.
+
+\paragraph{Why it matters for derivatives.}
+If a derivative payoff \(H\) can be replicated by a self-financing strategy,
+then its arbitrage-free price is uniquely determined:
+it must equal the initial cost of the replicating portfolio.
+This is the conceptual bridge between \emph{replication pricing} and \emph{martingale pricing}.
+
+\subsection{Example: forward price from no-arbitrage}
+
+\paragraph{Forward payoff.}
+A forward contract delivering one share of stock at time \(T\) for a fixed delivery price \(K_t\)
+has payoff
+$$
+S_T-K_t
+$$
+at maturity.
+
+\paragraph{Replicating strategy (no dividends).}
+The same payoff can be produced by:
+\begin{itemize}[leftmargin=1.4em]
+    \item buying one share today (cost \(S_t\)),
+    \item borrowing the present value of \(K_t\), i.e.\ selling \(K_t\) units of the zero-coupon bond maturing at \(T\).
+\end{itemize}
+If \(P_t(T)\) denotes the price at time \(t\) of a zero-coupon bond paying \(1\) at time \(T\), then the initial cost is
+$$
+S_t-K_t P_t(T).
+$$
+
+Since a forward contract is entered at zero initial cost in equilibrium, no-arbitrage implies
+$$
+S_t-K_tP_t(T)=0,
+$$
+hence
+$$
+\boxed{\ K_t=\frac{S_t}{P_t(T)}. \ }
+$$
+
+\paragraph{Constant-rate case.}
+If the short rate is constant \(r\), then \(P_t(T)=e^{-r(T-t)}\), and therefore
+$$
+\boxed{\ K_t=S_t e^{r(T-t)}. \ }
+$$
+
+\subsection{Arbitrage-free market and equivalent martingale measures}
+
+The martingale pricing formula from Part A is not just a computational trick:
+it is tied to the deep structure of arbitrage-free markets.
+
+\paragraph{Informal principle.}
+A market is arbitrage-free precisely when there exists a probability measure under which discounted traded asset prices are martingales.
+Such a measure is called an \emph{equivalent martingale measure} (EMM).
+
+This is exactly the role played by the risk-neutral measure \(\Qbb\) in the Black--Scholes model:
+under \(\Qbb\), the discounted stock price \(D_tS_t\) is a martingale, and prices are computed by conditional expectation.
+
+\paragraph{Why ``equivalent''?}
+Equivalence means
+$$
+\Qbb \sim \Pbb,
+$$
+so \(\Pbb\) and \(\Qbb\) have the same null events.
+In particular, the change of measure does not create or remove possible states of the world;
+it only changes their probabilities.
+
+\subsection{First Fundamental Theorem of Asset Pricing (informal statement)}
+
+A standard form of the first fundamental theorem is:
+
+\begin{theorem}[FTAP I --- informal]
+A financial market is arbitrage-free if and only if there exists
+an equivalent martingale measure \(\Qbb\) such that every discounted traded asset price process is a \(\Qbb\)-martingale
+(or, in more general formulations, a local martingale).
+\end{theorem}
+
+\paragraph{How to read this theorem.}
+\begin{itemize}[leftmargin=1.4em]
+    \item \textbf{No arbitrage} is an economic condition.
+    \item \textbf{Existence of an EMM} is a probabilistic condition.
+    \item The theorem says these are two faces of the same idea.
+\end{itemize}
+
+\paragraph{Connection with your course.}
+In Black--Scholes, Girsanov is precisely the tool used to construct this EMM:
+starting from the physical measure \(\Pbb\), one changes probability so that the drift of the discounted stock disappears.
+
+\subsection{Second Fundamental Theorem of Asset Pricing (informal statement)}
+
+A second fundamental theorem links \emph{uniqueness} of the martingale measure to \emph{completeness} of the market.
+
+\begin{theorem}[FTAP II --- informal]
+In an arbitrage-free market, the following are essentially equivalent:
+\begin{itemize}[leftmargin=1.4em]
+    \item the market is complete (every claim can be replicated),
+    \item the equivalent martingale measure is unique.
+\end{itemize}
+\end{theorem}
+
+\paragraph{Interpretation.}
+\begin{itemize}[leftmargin=1.4em]
+    \item If the EMM is unique, then the arbitrage-free price of any replicable claim is uniquely determined.
+    \item If there are many EMMs, then no-arbitrage alone typically gives only a range of admissible prices.
+\end{itemize}
+
+This matches the conclusion already emphasized in your notes:
+$$
+\text{complete market} \quad \Longrightarrow \quad \text{unique price by replication}.
+$$
+
+\subsection{Dominance, superhedging, and price bounds}
+
+The dominance principle also leads naturally to \emph{superhedging} bounds.
+
+\paragraph{Superhedging idea.}
+Suppose a self-financing strategy with wealth \(X\) satisfies
+$$
+X_T \ge H
+\qquad \text{a.s.}
+$$
+for a claim payoff \(H\).
+Then \(X\) dominates the claim at maturity, so no-arbitrage implies that the initial cost of this strategy must be at least as large as the claim price:
+$$
+\boxed{\ V_0 \le X_0. \ }
+$$
+
+Similarly, if another strategy satisfies
+$$
+Y_T \le H,
+$$
+then its initial cost provides a lower bound:
+$$
+\boxed{\ Y_0 \le V_0. \ }
+$$
+
+\paragraph{Consequence.}
+If one can find:
+\begin{itemize}[leftmargin=1.4em]
+    \item an upper replicating / superhedging strategy,
+    \item and a lower subhedging strategy,
+\end{itemize}
+then one obtains rigorous no-arbitrage price bounds for the claim.
+
+\paragraph{Special case: exact replication.}
+If
+$$
+X_T=H,
+$$
+then both upper and lower bounds coincide, and the price is uniquely pinned down:
+$$
+V_0=X_0.
+$$
+
+\subsection{Practical takeaway for students}
+
+The logical structure is:
+
+\begin{enumerate}[leftmargin=1.6em]
+    \item \textbf{No-arbitrage principles} (dominance, law of one price) rule out inconsistent prices.
+    \item \textbf{Replication} gives exact prices when a payoff can be synthesized.
+    \item \textbf{Equivalent martingale measures} translate no-arbitrage into a probabilistic statement.
+    \item \textbf{Completeness} determines whether the price is unique.
+\end{enumerate}
+
+\paragraph{Big picture.}
+The dominance principle is the first building block.
+The fundamental theorems of asset pricing are the abstract global version of the same idea:
+$$
+\text{no-arbitrage}
+\quad \Longleftrightarrow \quad
+\text{martingale pricing under a suitable measure.}
+$$
+
+\begin{remark}
+Pedagogically, the dominance principle is the simplest local no-arbitrage check,
+whereas the fundamental theorems explain the full mathematical architecture behind risk-neutral valuation.
+\end{remark}
+
+
+\end{document}

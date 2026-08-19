@@ -1,0 +1,2518 @@
+\documentclass[11pt]{article}
+
+% ============================================================
+% Packages
+% ============================================================
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,mathtools,amsthm}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{microtype}
+\usepackage{graphicx}
+
+% ============================================================
+% Macros
+% ============================================================
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Pbb}{\mathbb{P}}
+\newcommand{\Qbb}{\mathbb{Q}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\dd}{\,\mathrm{d}}
+
+% ============================================================
+% Environments
+% ============================================================
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+\newtheorem{remark}{Remark}
+
+\theoremstyle{plain}
+\newtheorem{proposition}{Proposition}
+\newtheorem{theorem}{Theorem}
+
+% ============================================================
+% Title
+% ============================================================
+\title{\textbf{American Options}\\
+\large MSFE6233 --- Option Pricing}
+\author{Nathan Sauldubois}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\vspace{-1em}
+
+% ============================================================
+% ============================================================
+\section{Introduction}
+% ============================================================
+
+\subsection{Motivation}
+
+In the previous lectures we studied the pricing of \emph{European options},
+whose main characteristic is that they can only be exercised at the
+maturity date \(T\).
+
+In many financial contracts, however, the holder of the option is allowed
+to exercise the option \emph{before} the maturity date.
+Such contracts are called \emph{American options}.
+
+An American option therefore gives its holder the right to exercise the
+contract at \emph{any time} between the initial date \(t\) and the maturity
+date \(T\).
+
+This additional flexibility makes American options more complex to price.
+Indeed, the holder must decide \emph{when} it is optimal to exercise the
+option.
+
+The pricing problem therefore involves two ingredients:
+\begin{itemize}[leftmargin=1.4em]
+\item the evolution of the underlying asset,
+\item the optimal timing of the exercise decision.
+\end{itemize}
+
+From a mathematical perspective, this leads to an \emph{optimal stopping problem}.
+
+Understanding American options is important for several reasons:
+
+\begin{itemize}[leftmargin=1.4em]
+\item many options traded on exchanges are American-style;
+\item several financial contracts embed early exercise features;
+\item the pricing problem illustrates fundamental ideas in dynamic
+programming and optimal stopping.
+\end{itemize}
+
+
+\subsection{European vs American options}
+
+The key difference between European and American options lies in the
+exercise rule.
+
+\paragraph{European option.}
+A European option can only be exercised at the maturity date \(T\).
+Its payoff therefore depends only on the value of the underlying asset
+at that date.
+
+For example, the payoff of a European call is
+\[
+(S_T-K)^+.
+\]
+
+\paragraph{American option.}
+An American option can be exercised at any time
+\[
+t \le \tau \le T,
+\]
+where \(\tau\) is the chosen exercise time.
+
+If the option is exercised at time \(\tau\), the payoff becomes
+\[
+(S_\tau-K)^+
+\]
+for a call, or
+\[
+(K-S_\tau)^+
+\]
+for a put.
+
+The holder of the option must therefore choose the exercise time
+that maximizes the value of the contract.
+
+\medskip
+
+Because the holder has strictly more flexibility, an American option
+is always at least as valuable as the corresponding European option.
+
+\begin{remark}
+The additional value of an American option relative to its European
+counterpart is often called the \emph{early exercise premium}.
+\end{remark}
+
+
+\subsection{Examples of early exercise features}
+
+Early exercise can be optimal in several situations.
+
+\paragraph{American puts.}
+For a put option, exercising early may become optimal when the asset
+price is sufficiently low.
+In that case the holder may prefer to exercise immediately rather than
+wait until maturity.
+
+\paragraph{Dividend-paying assets.}
+For call options written on dividend-paying assets, early exercise may
+also become optimal just before dividend payments.
+
+\paragraph{Non-dividend-paying assets.}
+Interestingly, in the Black--Scholes model without dividends,
+it can be shown that an American call option should \emph{never}
+be exercised early.
+In that case the American call has exactly the same value as the
+European call.
+
+This result provides an important example of how financial intuition
+and mathematical reasoning interact in option pricing.
+
+
+\subsection{Intuition on option pricing of American option}
+
+
+\begin{definition}{American options: pricing and hedging}
+For a European option in a complete market, the price is uniquely determined by replication: one can construct a self-financing strategy that exactly reproduces the payoff at maturity, and the price is therefore the unique no-arbitrage cost of this replication. The risk-neutral expectation formula is then a consequence of this replication argument.
+
+For an American option, the key difference is that the holder may exercise at any stopping time before maturity. The seller must therefore be able to meet the payoff at \emph{any} admissible exercise time. This leads naturally to the following point of view: the price of the American claim is the smallest initial capital for which there exists a self-financing strategy whose wealth process dominates the exercise payoff at all times.
+
+In a complete frictionless market such as the Black--Scholes model, this minimal super-hedging cost is still a unique no-arbitrage price. It can be shown that this price is equal to the \emph{Snell envelope} of the discounted payoff process, that is, the smallest supermartingale dominating the payoff. Equivalently, the American price process admits the representation
+\[
+V_t
+=
+\operatorname*{ess\,sup}_{\tau \in \mathcal{T}_{t,T}}
+\mathbb{E}^{\mathbb{Q}}
+\!\left[
+e^{-r(\tau-t)} \Phi_{\tau}
+\,\middle|\,
+\mathcal{F}_t
+\right],
+\]
+where the supremum is taken over all stopping times with values in $[t,T]$.
+
+Thus, for American options, dynamic programming and optimal stopping do not provide a different notion of price: in a complete market, they are another expression of the same replication-based no-arbitrage principle. In incomplete markets or in the presence of frictions, however, perfect replication may fail, and one must then distinguish between several notions of price, such as super-hedging prices, indifference prices, or model-dependent prices.
+\end{definition}
+
+
+
+\subsection{Main questions of the lecture}
+
+American options introduce a new dimension in option pricing:
+the choice of the optimal exercise time.
+
+Several natural questions arise:
+
+\begin{itemize}[leftmargin=1.4em]
+\item When is it optimal to exercise early?
+
+\item How do we price an American option?
+
+\item How does the possibility of early exercise affect the option value?
+
+\item What mathematical tools are required to analyze these problems?
+\end{itemize}
+
+\vspace{0.5em}
+
+\noindent
+To answer these questions, we will study two main frameworks.
+
+\paragraph{Discrete-time models.}
+In discrete time, the pricing problem can be solved using
+\emph{dynamic programming} and backward induction.
+This approach provides a clear and intuitive introduction to the
+structure of the problem.
+
+\paragraph{Continuous-time models.}
+In continuous time, the pricing problem leads to an
+\emph{optimal stopping problem} for a stochastic process.
+The value of the option can be characterized using
+risk-neutral expectations and partial differential equations.
+
+These two perspectives complement each other:
+the discrete-time framework provides intuition and computational tools,
+while the continuous-time formulation connects the problem with
+stochastic calculus and free-boundary PDEs.
+
+% ============================================================
+\section{American options in discrete time}
+% ============================================================
+
+\subsection{Discrete-time financial model}
+
+We consider a financial market evolving in discrete time
+\[
+t=0,1,2,\dots,T .
+\]
+
+The price of the underlying asset is denoted by
+\[
+(S_t)_{t=0,\dots,T}.
+\]
+
+Information available to investors at time \(t\) is represented by a
+filtration
+\[
+(\mathcal{F}_t)_{t=0,\dots,T},
+\]
+where \(\mathcal{F}_t\) represents all information available up to time \(t\).
+
+As in the previous lectures, we assume the absence of arbitrage and the
+existence of a risk-neutral probability measure \(\Qbb\).
+Under this measure, the discounted asset price is a martingale.
+
+For simplicity, we denote by \(r\) the constant risk-free interest rate
+per period and by
+\[
+\beta = \frac{1}{1+r}
+\]
+the discount factor.
+
+\medskip
+
+The goal is to determine the arbitrage-free price of an American option
+written on the underlying asset \(S\).
+
+\subsection{Definition of an American option}
+
+An American option is a contract that can be exercised at any time
+between the initial date and the maturity date.
+
+Let
+\[
+g(S_t)
+\]
+denote the payoff obtained if the option is exercised at time \(t\).
+
+Typical examples include:
+
+\paragraph{American call}
+\[
+g(S_t) = (S_t-K)^+.
+\]
+
+\paragraph{American put}
+\[
+g(S_t) = (K-S_t)^+.
+\]
+
+The holder of the option is free to choose the exercise time
+\[
+\tau \in \{0,1,\dots,T\}.
+\]
+
+The payoff of the option is therefore
+
+\[
+g(S_\tau).
+\]
+
+The main difficulty is that the optimal exercise time is not known in
+advance and must be determined as part of the pricing problem.
+
+\subsection{Stopping times and exercise policies}
+
+In a dynamic setting, the exercise decision must depend only on the
+information available at the time the decision is taken.
+
+This leads to the notion of a \emph{stopping time}.
+
+\begin{definition}
+A random time \(\tau\) taking values in \(\{0,\dots,T\}\) is called a
+\emph{stopping time} if the event
+\[
+\{\tau = t\}
+\]
+depends only on the information available at time \(t\), that is,
+\[
+\{\tau=t\} \in \mathcal{F}_t.
+\]
+\end{definition}
+
+In other words, the decision to exercise the option at time \(t\)
+can only use information available up to that time.
+
+An exercise strategy for an American option is therefore described by a
+stopping time \(\tau\).
+
+\subsection{Pricing as an optimal stopping problem}
+
+Because the holder can choose the exercise time, the value of the
+American option corresponds to the best expected discounted payoff
+that can be obtained over all possible stopping times.
+
+Under the risk-neutral measure, the arbitrage-free price of the
+American option at time \(0\) is therefore
+
+\[
+V_0
+=
+\sup_{\tau \in \mathcal{T}}
+\E^{\Qbb}
+\left[
+\beta^{\tau} g(S_\tau)
+\right],
+\]
+
+where \(\mathcal{T}\) denotes the set of stopping times taking values in
+\(\{0,\dots,T\}\).
+
+This problem is called an \emph{optimal stopping problem}.
+
+The investor must choose the stopping time that maximizes the expected
+discounted payoff.
+
+\subsection{Dynamic programming principle}
+
+The optimal stopping problem can be solved recursively using dynamic
+programming.
+
+Let \(V_t\) denote the value of the American option at time \(t\).
+
+At time \(t\), the holder has two possible choices:
+
+\begin{itemize}[leftmargin=1.4em]
+\item exercise the option immediately and receive \(g(S_t)\),
+\item keep the option alive and wait until the next period.
+\end{itemize}
+
+The second choice leads to the expected continuation value
+
+\[
+\beta \E^{\Qbb}[V_{t+1} \mid \mathcal{F}_t].
+\]
+
+Therefore the value of the option must satisfy
+
+\[
+V_t
+=
+\max
+\left(
+g(S_t),
+\beta \E^{\Qbb}[V_{t+1} \mid \mathcal{F}_t]
+\right).
+\]
+
+This recursion expresses a fundamental trade-off between
+\emph{immediate exercise} and \emph{continuation}.
+
+\subsection{Backward induction algorithm}
+
+The pricing problem can be solved by working backward in time.
+
+\paragraph{Step 1: terminal condition}
+
+At maturity \(T\), the option must be exercised if it is in the money.
+Therefore
+
+\[
+V_T = g(S_T).
+\]
+
+\paragraph{Step 2: backward recursion}
+
+For \(t=T-1,T-2,\dots,0\),
+
+\[
+V_t
+=
+\max
+\left(
+g(S_t),
+\beta \E^{\Qbb}[V_{t+1} \mid \mathcal{F}_t]
+\right).
+\]
+
+This procedure is called \emph{backward induction}.
+
+At each step, we compare the immediate exercise payoff with the
+continuation value.
+
+\subsection{Example: American option in the binomial model}
+
+The backward induction procedure becomes particularly simple in the
+binomial model.
+
+At each time step, the stock price can move either up or down.
+Therefore the continuation value can be computed using the
+risk-neutral probabilities.
+
+At each node of the tree, the value of the American option is
+
+\[
+V_t
+=
+\max
+\left(
+g(S_t),
+\beta
+\left(
+p V_{t+1}^{u} + (1-p) V_{t+1}^{d}
+\right)
+\right),
+\]
+
+where \(V_{t+1}^{u}\) and \(V_{t+1}^{d}\) denote the option values in the
+up and down states.
+
+This algorithm is widely used in practice to compute American option
+prices.
+
+\subsection{Economic interpretation of early exercise}
+
+The backward induction formula highlights the key economic mechanism
+behind early exercise.
+
+At each time step, the investor compares two quantities:
+
+\begin{itemize}[leftmargin=1.4em]
+\item the \emph{exercise value} \(g(S_t)\),
+\item the \emph{continuation value}
+\(\beta \E^{\Qbb}[V_{t+1} \mid \mathcal{F}_t]\).
+\end{itemize}
+
+Early exercise becomes optimal when the immediate payoff exceeds the
+expected value of holding the option.
+
+In that case, the option lies in the \emph{exercise region}.
+
+Otherwise, it is optimal to keep the option alive.
+
+\subsection{Comparison with European options}
+
+For a European option, the holder cannot exercise early.
+The payoff is therefore always realized at maturity.
+
+The value of a European option is simply
+
+\[
+V_0^{\text{Eur}}
+=
+\E^{\Qbb}
+\left[
+\beta^T g(S_T)
+\right].
+\]
+
+For an American option, the holder has additional flexibility and can
+choose the optimal exercise time.
+
+As a consequence,
+
+\[
+V_0^{\text{Am}} \ge V_0^{\text{Eur}}.
+\]
+
+The difference between these two quantities is called the
+\emph{early exercise premium}.
+
+\subsection{A concrete 3-period example in the binomial model}
+
+We now illustrate the backward induction procedure on a simple
+three-period binomial model.
+
+\paragraph{Model specification.}
+
+We consider dates
+\[
+t=0,1,2,3.
+\]
+
+The stock price evolves according to the binomial rule
+\[
+S_{t+1}=
+\begin{cases}
+u S_t & \text{with an up move},\\
+d S_t & \text{with a down move},
+\end{cases}
+\]
+where we assume a symmetric up/down structure:
+\[
+u=1.25,
+\qquad
+d=0.8=\frac1u.
+\]
+
+We also assume zero interest rate:
+\[
+r=0.
+\]
+
+The initial stock price is
+\[
+S_0=100.
+\]
+
+We consider an American put with strike
+\[
+K=100.
+\]
+
+Its payoff if exercised at time \(t\) is
+\[
+g(S_t)=(K-S_t)^+.
+\]
+
+\paragraph{Risk-neutral probability.}
+
+Since \(r=0\), the discounted stock price must be a martingale under
+the risk-neutral measure.
+Therefore the risk-neutral probability \(p\) must satisfy
+\[
+S_t = p\,uS_t + (1-p)\,dS_t.
+\]
+Equivalently,
+\[
+1=pu+(1-p)d,
+\]
+so
+\[
+p=\frac{1-d}{u-d}.
+\]
+
+With our parameters,
+\[
+p=\frac{1-0.8}{1.25-0.8}
+=\frac{0.2}{0.45}
+=\frac49.
+\]
+Hence
+\[
+1-p=\frac59.
+\]
+
+\paragraph{Stock price tree.}
+
+The stock prices are:
+
+\[
+\begin{array}{c|cccc}
+t & 0 & 1 & 2 & 3 \\ \hline
+& 100 & 125 & 156.25 & 195.3125 \\
+&     & 80  & 100    & 125 \\
+&     &     & 64     & 80 \\
+&     &     &        & 51.2
+\end{array}
+\]
+
+More explicitly:
+\begin{itemize}[leftmargin=1.4em]
+    \item at time \(1\): \(125,80\),
+    \item at time \(2\): \(156.25,100,64\),
+    \item at time \(3\): \(195.3125,125,80,51.2\).
+\end{itemize}
+
+\paragraph{Step 1: terminal payoffs.}
+
+At maturity \(t=3\), the option value equals its payoff:
+\[
+V_3=(K-S_3)^+.
+\]
+
+Hence
+\[
+\begin{array}{c|cccc}
+S_3 & 195.3125 & 125 & 80 & 51.2 \\ \hline
+V_3 & 0 & 0 & 20 & 48.8
+\end{array}
+\]
+
+\paragraph{Step 2: backward induction at time \(t=2\).}
+
+Since \(r=0\), the discount factor is \(1\), so the continuation value is simply
+\[
+pV_{t+1}^u+(1-p)V_{t+1}^d.
+\]
+
+We compare at each node:
+\begin{itemize}[leftmargin=1.4em]
+    \item the immediate exercise value \(g(S_t)\),
+    \item the continuation value.
+\end{itemize}
+
+\medskip
+
+\noindent
+\textbf{Node \(S_2=156.25\).}
+\[
+g(156.25)=(100-156.25)^+=0.
+\]
+The continuation value is
+\[
+\frac49\cdot 0+\frac59\cdot 0=0.
+\]
+Thus
+\[
+V_2(156.25)=0.
+\]
+
+\medskip
+
+\noindent
+\textbf{Node \(S_2=100\).}
+\[
+g(100)=(100-100)^+=0.
+\]
+The continuation value is
+\[
+\frac49\cdot 0+\frac59\cdot 20=\frac{100}{9}\approx 11.11.
+\]
+Thus
+\[
+V_2(100)=11.11.
+\]
+
+\medskip
+
+\noindent
+\textbf{Node \(S_2=64\).}
+\[
+g(64)=100-64=36.
+\]
+The continuation value is
+\[
+\frac49\cdot 20+\frac59\cdot 48.8
+=
+\frac{80}{9}+\frac{244}{9}
+=
+\frac{324}{9}
+=36.
+\]
+Thus
+\[
+V_2(64)=36.
+\]
+
+At this node, the holder is indifferent between exercising immediately
+and continuing.
+
+\paragraph{Step 3: backward induction at time \(t=1\).}
+
+\noindent
+\textbf{Node \(S_1=125\).}
+\[
+g(125)=(100-125)^+=0.
+\]
+The continuation value is
+\[
+\frac49\cdot 0+\frac59\cdot 11.11
+=
+\frac{500}{81}
+\approx 6.17.
+\]
+Thus
+\[
+V_1(125)=6.17.
+\]
+
+\medskip
+
+\noindent
+\textbf{Node \(S_1=80\).}
+\[
+g(80)=100-80=20.
+\]
+The continuation value is
+\[
+\frac49\cdot 11.11+\frac59\cdot 36
+=
+\frac{500}{81}+20
+=
+\frac{2120}{81}
+\approx 26.17.
+\]
+Thus
+\[
+V_1(80)=26.17.
+\]
+
+\paragraph{Step 4: time \(t=0\).}
+
+At time \(0\), the immediate exercise value is
+\[
+g(100)=0.
+\]
+The continuation value is
+\[
+\frac49\cdot 6.17+\frac59\cdot 26.17
+=
+\frac{2740}{729}+\frac{130900}{6561}
+=
+\frac{155560}{6561}
+\approx 23.71.
+\]
+So
+\[
+V_0^{\mathrm{Am}} \approx 23.71.
+\]
+
+\paragraph{Conclusion.}
+
+The price of the American put at time \(0\) is
+\[
+\boxed{
+V_0^{\mathrm{Am}} \approx 23.71.
+}
+\]
+
+This example illustrates the main idea of American option pricing in
+discrete time:
+at each node, one compares the value of immediate exercise with the
+value of continuation, and works backward recursively through the tree.
+
+% ============================================================
+\section{Dynamic programming approach}
+% ============================================================
+
+The discrete-time pricing problem for an American option is a natural
+example of dynamic programming.
+
+At each date, the holder must decide whether to:
+\begin{itemize}[leftmargin=1.4em]
+    \item exercise the option immediately,
+    \item or continue and keep the option alive.
+\end{itemize}
+
+This sequential decision problem leads to a recursive characterization
+of the option value.
+
+% ------------------------------------------------------------
+\subsection{Value function}
+% ------------------------------------------------------------
+
+Let
+\[
+g(S_t)
+\]
+denote the payoff obtained if the option is exercised at time \(t\).
+
+For each time \(t\in\{0,\dots,T\}\), we define the \emph{value function}
+as the best conditional expected discounted payoff that can be achieved
+starting from time \(t\).
+
+More precisely, if
+\[
+\beta=\frac{1}{1+r}
+\]
+denotes the one-period discount factor, then
+\[
+V_t
+=
+\operatorname*{ess\,sup}_{\tau\in\mathcal{T}_t}
+\E^{\Qbb}\!\left[
+\beta^{\tau-t} g(S_\tau)
+\;\middle|\;
+\mathcal{F}_t
+\right],
+\]
+where \(\mathcal{T}_t\) denotes the set of stopping times taking values
+in \(\{t,t+1,\dots,T\}\).
+
+\paragraph{Interpretation.}
+The random variable \(V_t\) represents the value of the American option
+at time \(t\), given the information available at that time.
+
+At maturity, there is no more choice to make, so
+\[
+V_T = g(S_T).
+\]
+
+% ------------------------------------------------------------
+\subsection{Bellman recursion}
+% ------------------------------------------------------------
+
+The key idea of dynamic programming is that the problem can be solved
+recursively backward in time.
+
+At time \(t\), the holder compares two quantities:
+\begin{itemize}[leftmargin=1.4em]
+    \item the immediate exercise value
+    \[
+    g(S_t),
+    \]
+    \item the continuation value
+    \[
+    \beta \E^{\Qbb}[V_{t+1}\mid\mathcal{F}_t].
+    \]
+\end{itemize}
+
+Therefore the value function satisfies the \emph{Bellman recursion}
+\[
+\boxed{
+V_t
+=
+\max\!\left(
+g(S_t),
+\beta \E^{\Qbb}[V_{t+1}\mid\mathcal{F}_t]
+\right),
+\qquad t=0,\dots,T-1.
+}
+\]
+
+Together with the terminal condition
+\[
+V_T=g(S_T),
+\]
+this completely characterizes the price of the American option in
+discrete time.
+
+\paragraph{Interpretation.}
+The Bellman recursion says that at each date, the value of the option is
+the maximum between:
+\begin{itemize}[leftmargin=1.4em]
+    \item exercising now,
+    \item waiting one more period and acting optimally afterward.
+\end{itemize}
+
+% ------------------------------------------------------------
+\subsection{Optimal stopping rule}
+% ------------------------------------------------------------
+
+The Bellman recursion also identifies the optimal exercise policy.
+
+At time \(t\), it is optimal to exercise whenever
+\[
+g(S_t)
+\ge
+\beta \E^{\Qbb}[V_{t+1}\mid\mathcal{F}_t].
+\]
+
+In other words, one should exercise as soon as the immediate payoff is
+at least as large as the continuation value.
+
+This leads to the natural candidate
+\[
+\tau^*
+:=
+\inf\left\{
+t\in\{0,\dots,T\}:
+V_t=g(S_t)
+\right\},
+\]
+that is, the first time at which the value of the option coincides with
+its exercise payoff.
+
+\paragraph{Exercise region and continuation region.}
+
+This suggests splitting the state space into two regions:
+\begin{itemize}[leftmargin=1.4em]
+    \item the \emph{exercise region}, where
+    \[
+    V_t=g(S_t),
+    \]
+    \item the \emph{continuation region}, where
+    \[
+    V_t>g(S_t).
+    \]
+\end{itemize}
+
+In the exercise region, it is optimal to stop immediately.
+In the continuation region, it is optimal to wait.
+
+% ------------------------------------------------------------
+\subsection{Snell envelope interpretation}
+% ------------------------------------------------------------
+
+The dynamic programming recursion admits a very elegant probabilistic
+interpretation.
+
+Define the discounted payoff process
+\[
+Y_t:=\beta^t g(S_t),
+\qquad t=0,\dots,T.
+\]
+
+Also define the discounted value process
+\[
+\widetilde V_t:=\beta^t V_t.
+\]
+
+Then \((\widetilde V_t)\) is the \emph{smallest supermartingale}
+dominating the process \((Y_t)\).
+This process is called the \emph{Snell envelope} of \(Y\).
+
+\paragraph{Recursive form.}
+The Snell envelope satisfies
+\[
+\widetilde V_T=Y_T,
+\]
+and for \(t=T-1,\dots,0\),
+\[
+\widetilde V_t
+=
+\max\!\left(
+Y_t,
+\E^{\Qbb}[\widetilde V_{t+1}\mid\mathcal{F}_t]
+\right).
+\]
+
+This is simply the discounted version of the Bellman recursion.
+
+\paragraph{Why is this useful?}
+The Snell envelope viewpoint emphasizes that American option pricing is
+not only a pricing problem, but also an optimal stopping problem with a
+supermartingale structure.
+
+It also provides the right probabilistic framework for the
+continuous-time theory.
+
+% ------------------------------------------------------------
+\subsection{Connection with martingale pricing}
+% ------------------------------------------------------------
+
+For a European option, the holder has no choice about the exercise time:
+the option is exercised at maturity \(T\).
+Its price is therefore given by the usual risk-neutral pricing formula
+\[
+V_t^{\mathrm{Eur}}
+=
+\E^{\Qbb}\!\left[
+\beta^{T-t} g(S_T)
+\;\middle|\;
+\mathcal{F}_t
+\right].
+\]
+
+For an American option, the exercise date is itself a decision variable.
+The price becomes
+\[
+V_t^{\mathrm{Am}}
+=
+\operatorname*{ess\,sup}_{\tau\in\mathcal{T}_t}
+\E^{\Qbb}\!\left[
+\beta^{\tau-t} g(S_\tau)
+\;\middle|\;
+\mathcal{F}_t
+\right].
+\]
+
+Thus American option pricing is obtained by combining:
+\begin{itemize}[leftmargin=1.4em]
+    \item \emph{risk-neutral valuation},
+    \item \emph{optimal stopping}.
+\end{itemize}
+
+\paragraph{Comparison with the European case.}
+Since the holder of an American option can always choose to wait until
+maturity, we must have
+\[
+V_t^{\mathrm{Am}} \ge V_t^{\mathrm{Eur}}.
+\]
+
+The difference
+\[
+V_t^{\mathrm{Am}} - V_t^{\mathrm{Eur}}
+\]
+is called the \emph{early exercise premium}.
+
+\paragraph{Key message.}
+In discrete time, the American option problem is completely described by
+the Bellman recursion.
+This recursion is the dynamic programming formulation of the optimal
+stopping problem and provides both:
+\begin{itemize}[leftmargin=1.4em]
+    \item the option price,
+    \item the optimal exercise policy.
+\end{itemize}
+
+
+% ============================================================
+\section{Continuous-time formulation}
+% ============================================================
+
+We now move from discrete-time models to a continuous-time framework.
+The key ideas remain the same:
+the holder of an American option may choose the exercise time optimally,
+and the pricing problem is therefore an optimal stopping problem.
+
+The difference is that the choice of the exercise time is now made over
+a continuum of dates, which leads to a richer mathematical structure.
+
+% ------------------------------------------------------------
+\subsection{Black--Scholes market}
+% ------------------------------------------------------------
+
+We work on a filtered probability space
+\[
+(\Omega,\mathbb{F},(\mathcal{F}_t)_{0\le t\le T},\mathbb{Q})
+\]
+supporting a one-dimensional Brownian motion \(W=(W_t)_{0\le t\le T}\).
+
+Under the risk-neutral measure \(\Qbb\), the price of the underlying
+asset is assumed to follow the Black--Scholes dynamics
+\[
+\dd S_t = r S_t\,\dd t + \sigma S_t\,\dd W_t,
+\qquad 0\le t\le T,
+\]
+where
+\begin{itemize}[leftmargin=1.4em]
+    \item \(r\in\R\) is the constant risk-free interest rate,
+    \item \(\sigma>0\) is the volatility,
+    \item \(S_0>0\) is the initial asset price.
+\end{itemize}
+
+The associated money-market account is
+\[
+B_t = e^{rt}.
+\]
+
+As in the European case, the risk-neutral measure is characterized by the
+fact that discounted asset prices are martingales:
+\[
+e^{-rt}S_t
+\quad\text{is a martingale under }\Qbb.
+\]
+
+\paragraph{Remark.}
+The Black--Scholes market provides the simplest continuous-time model in
+which American options can be studied explicitly at a qualitative level.
+However, unlike European options, American options typically do not admit
+closed-form formulas, except in special cases.
+
+% ------------------------------------------------------------
+\subsection{American option as an optimal stopping problem}
+% ------------------------------------------------------------
+
+Let \(g:\R_+\to\R_+\) be the payoff function of the option.
+Typical examples are:
+\[
+g(s)=(s-K)^+
+\qquad\text{for an American call,}
+\]
+and
+\[
+g(s)=(K-s)^+
+\qquad\text{for an American put.}
+\]
+
+An American option gives its holder the right to choose any stopping time
+\[
+\tau\in[t,T]
+\]
+as the exercise date.
+
+If the option is exercised at time \(\tau\), the payoff is
+\[
+g(S_\tau).
+\]
+
+The value of the option at time \(t\) is therefore obtained by optimizing
+over all possible stopping times.
+
+More precisely, if \(\mathcal{T}_{t,T}\) denotes the set of stopping times
+taking values in \([t,T]\), the value process is defined by
+\[
+V_t
+=
+\operatorname*{ess\,sup}_{\tau\in\mathcal{T}_{t,T}}
+\E^{\Qbb}\!\left[
+e^{-r(\tau-t)} g(S_\tau)
+\;\middle|\;
+\mathcal{F}_t
+\right].
+\]
+
+This is the continuous-time counterpart of the discrete-time optimal
+stopping problem studied previously.
+
+\paragraph{Interpretation.}
+At time \(t\), the holder compares:
+\begin{itemize}[leftmargin=1.4em]
+    \item the value of exercising immediately,
+    \[
+    g(S_t),
+    \]
+    \item the value of waiting and keeping the option alive.
+\end{itemize}
+
+The price of the American option is the best value that can be obtained
+by choosing the exercise time optimally.
+
+% ------------------------------------------------------------
+\subsection{Risk-neutral pricing representation}
+% ------------------------------------------------------------
+
+The previous formula provides the fundamental risk-neutral representation
+for American options:
+\[
+\boxed{
+V_t
+=
+\operatorname*{ess\,sup}_{\tau\in\mathcal{T}_{t,T}}
+\E^{\Qbb}\!\left[
+e^{-r(\tau-t)} g(S_\tau)
+\;\middle|\;
+\mathcal{F}_t
+\right].
+}
+\]
+
+This formula should be compared with the European pricing formula
+\[
+V_t^{\mathrm{Eur}}
+=
+\E^{\Qbb}\!\left[
+e^{-r(T-t)} g(S_T)
+\;\middle|\;
+\mathcal{F}_t
+\right].
+\]
+
+The European case corresponds to a fixed exercise date \(T\),
+whereas in the American case the exercise date is chosen optimally.
+
+\paragraph{Immediate consequence.}
+Since the holder of an American option can always decide to wait until
+maturity, we must have
+\[
+V_t^{\mathrm{Am}} \ge V_t^{\mathrm{Eur}}.
+\]
+
+The difference between the two prices is called the
+\emph{early exercise premium}.
+
+\paragraph{Markovian formulation.}
+In the Black--Scholes model, the process \(S\) is Markovian.
+Therefore the option price can typically be written as a deterministic
+function of time and the current stock price:
+\[
+V_t = v(t,S_t),
+\]
+where
+\[
+v(t,s)
+=
+\sup_{\tau\in\mathcal{T}_{t,T}}
+\E^{\Qbb}_{t,s}\!\left[
+e^{-r(\tau-t)} g(S_\tau)
+\right].
+\]
+
+This function \(v(t,s)\) is the value function of the continuous-time
+optimal stopping problem.
+
+\paragraph{Continuation and stopping regions.}
+As in discrete time, one can distinguish:
+\begin{itemize}[leftmargin=1.4em]
+    \item the \emph{stopping region}, where
+    \[
+    v(t,s)=g(s),
+    \]
+    \item the \emph{continuation region}, where
+    \[
+    v(t,s)>g(s).
+    \]
+\end{itemize}
+
+In the stopping region, immediate exercise is optimal.
+In the continuation region, it is better to wait.
+
+% ------------------------------------------------------------
+\subsection{Early exercise boundary}
+% ------------------------------------------------------------
+
+The frontier separating the stopping region from the continuation region
+is called the \emph{early exercise boundary} or \emph{free boundary}.
+
+\paragraph{Definition.}
+In many one-dimensional problems, the stopping region can be described
+in terms of a critical stock price level \(s^*(t)\) such that:
+\begin{itemize}[leftmargin=1.4em]
+    \item if \(S_t\) is on one side of the boundary, it is optimal to exercise,
+    \item if \(S_t\) is on the other side, it is optimal to continue.
+\end{itemize}
+
+For example, in the case of an American put, there is typically a boundary
+\(s^*(t)\) such that
+\[
+\text{exercise if } S_t \le s^*(t),
+\qquad
+\text{continue if } S_t > s^*(t).
+\]
+
+\paragraph{Economic interpretation.}
+If the stock price becomes sufficiently low, the immediate exercise value
+of the put becomes large enough to dominate the continuation value.
+In that case it is optimal to stop.
+
+\paragraph{American call without dividends.}
+A fundamental result in the Black--Scholes model is that an American call
+on a non-dividend-paying stock should never be exercised early.
+Hence, in that case,
+\[
+V_t^{\mathrm{Am\,call}} = V_t^{\mathrm{Eur\,call}}.
+\]
+
+So for a non-dividend-paying stock, there is no non-trivial exercise
+boundary for the American call.
+
+\paragraph{American put.}
+By contrast, the American put typically admits a genuine early exercise
+boundary.
+This makes the pricing problem substantially more interesting and leads
+to a free-boundary problem in the PDE formulation.
+
+\paragraph{Why the boundary matters.}
+The early exercise boundary summarizes the optimal exercise policy.
+Once this boundary is known, the pricing and hedging problem becomes
+much more tractable.
+
+In practice, one of the main difficulties in pricing American options
+is precisely to determine this free boundary.
+
+
+% ============================================================
+\section{PDE formulation}
+% ============================================================
+
+In continuous time, the pricing of American options can be described not
+only as an optimal stopping problem, but also through a partial
+differential equation with an inequality constraint.
+
+Compared with European options, the key new feature is the possibility
+of early exercise.
+This creates two regions:
+\begin{itemize}[leftmargin=1.4em]
+    \item a \emph{continuation region}, where the holder prefers to wait,
+    \item a \emph{stopping region}, where the holder prefers to exercise immediately.
+\end{itemize}
+
+The boundary separating these two regions is not known in advance and
+must be determined as part of the solution.
+This is why the American pricing problem becomes a \emph{free boundary problem}.
+
+% ------------------------------------------------------------
+\subsection{Variational inequality}
+% ------------------------------------------------------------
+
+Let
+\[
+V_t = v(t,S_t)
+\]
+be the price of the American option, where \(v(t,s)\) denotes the value
+function of the optimal stopping problem.
+
+Suppose that the underlying asset follows the Black--Scholes dynamics
+under the risk-neutral measure:
+\[
+\dd S_t = rS_t\,\dd t + \sigma S_t\,\dd W_t.
+\]
+
+We denote by
+\[
+\mathcal{L}f(s)
+=
+rs f_s(s)+\frac12 \sigma^2 s^2 f_{ss}(s)
+\]
+the Black--Scholes infinitesimal generator.
+
+If the holder decides not to exercise immediately, the option behaves
+locally like a European claim, and therefore the value function should
+satisfy the Black--Scholes equation
+\[
+v_t + \mathcal{L}v - r v = 0
+\]
+inside the continuation region.
+
+On the other hand, immediate exercise gives the payoff
+\[
+g(s).
+\]
+
+Therefore the value function must satisfy two constraints:
+\[
+v(t,s)\ge g(s),
+\]
+since the holder can always exercise immediately, and
+\[
+v_t+\mathcal{L}v-rv \le 0,
+\]
+because waiting cannot create value beyond the optimal stopping value.
+
+These conditions are summarized by the \emph{variational inequality}
+\[
+\boxed{
+\max\!\big(g(s)-v(t,s),\; v_t(t,s)+\mathcal{L}v(t,s)-r\,v(t,s)\big)=0.
+}
+\]
+
+Equivalently, one may write
+\[
+\boxed{
+\min\!\big(v(t,s)-g(s),\; -v_t(t,s)-\mathcal{L}v(t,s)+r\,v(t,s)\big)=0.
+}
+\]
+
+\paragraph{Terminal condition.}
+At maturity, the option must be exercised or expire worthless, so
+\[
+v(T,s)=g(s).
+\]
+
+\paragraph{Interpretation.}
+The variational inequality encodes the fact that at each point
+\((t,s)\), exactly one of two situations occurs:
+\begin{itemize}[leftmargin=1.4em]
+    \item either the option is exercised immediately and \(v(t,s)=g(s)\),
+    \item or it is kept alive and the PDE
+    \[
+    v_t+\mathcal{L}v-rv=0
+    \]
+    holds.
+\end{itemize}
+
+% ------------------------------------------------------------
+\subsection{Free boundary problem}
+% ------------------------------------------------------------
+
+The variational inequality is closely related to a free boundary problem.
+
+Indeed, the state space is split into two regions:
+
+\paragraph{Stopping region.}
+This is the set of points \((t,s)\) such that
+\[
+v(t,s)=g(s).
+\]
+At such points, immediate exercise is optimal.
+
+\paragraph{Continuation region.}
+This is the set of points \((t,s)\) such that
+\[
+v(t,s)>g(s).
+\]
+At such points, it is optimal to keep the option alive, and the value
+function satisfies the Black--Scholes PDE:
+\[
+v_t+\mathcal{L}v-rv=0.
+\]
+
+The boundary separating these two regions is called the
+\emph{free boundary} or \emph{early exercise boundary}.
+
+\paragraph{Why is it called ``free''?}
+Unlike standard boundary value problems, the location of this boundary
+is not known in advance.
+It must be found simultaneously with the value function \(v\).
+
+This is one of the main mathematical difficulties in the pricing of
+American options.
+
+\paragraph{Smooth-fit principle.}
+Under suitable regularity assumptions, the value function not only
+matches the payoff at the free boundary, but also has a matching first
+derivative there.
+This is the so-called \emph{smooth-fit condition}:
+\[
+v(t,s^*(t)) = g(s^*(t)),
+\qquad
+v_s(t,s^*(t)) = g'(s^*(t)).
+\]
+
+Although this condition is not always emphasized in an introductory
+course, it plays an important role in both analysis and numerics.
+
+% ------------------------------------------------------------
+\subsection{Economic interpretation of the exercise region}
+% ------------------------------------------------------------
+
+The exercise region is the set of states where the immediate payoff is
+at least as attractive as the value of waiting.
+
+Economically, this region appears when the benefit of locking in the
+payoff now dominates the flexibility of keeping the option alive.
+
+\paragraph{General principle.}
+At each point \((t,s)\), the holder compares:
+\begin{itemize}[leftmargin=1.4em]
+    \item the immediate exercise value \(g(s)\),
+    \item the continuation value \(v(t,s)\).
+\end{itemize}
+
+If the two values are equal, the holder is indifferent and this point
+lies on the boundary.
+If \(v(t,s)>g(s)\), the flexibility of waiting has positive value, so
+continuation is optimal.
+
+\paragraph{Why does the stopping region depend on time?}
+As maturity approaches, there is less and less time value left in the
+option.
+Therefore the continuation region typically shrinks as \(t\to T\),
+and the exercise region expands.
+
+\paragraph{Connection with the early exercise premium.}
+The quantity
+\[
+v(t,s)-v^{\mathrm{Eur}}(t,s)
+\]
+measures the value of the right to exercise early.
+Inside the stopping region, this flexibility is used immediately;
+inside the continuation region, it is still valuable to retain it.
+
+\subsection{Example : American call}
+
+\paragraph{American call without dividends.}
+
+A fundamental result in the Black--Scholes model is that an American call option written on a non-dividend-paying stock should never be exercised early.
+
+\medskip
+
+\textbf{Intuition.}
+Exercising the option early means receiving the payoff
+$
+S_t - K
+$
+at time $t$.
+However, by keeping the option alive, the holder preserves an additional \emph{time value}, i.e., the possibility of benefiting from future favorable movements of the stock price.
+
+Since the stock does not pay dividends, there is no cashflow lost by waiting.
+On the contrary, delaying exercise allows the investor to keep optionality at no cost.
+
+\medskip
+
+\paragraph{Detailed argument.}
+
+Fix $t<T$. If the holder exercises the call immediately, he pays $K$ and receives one share, hence his immediate payoff is
+$
+S_t-K.
+$
+
+Now compare this with the alternative strategy consisting in simply selling the option in the market instead of exercising it.
+This yields the amount
+$
+C_t.
+$
+
+Therefore, to show that early exercise is suboptimal, it is enough to prove that
+$
+C_t \ge S_t-K,
+$
+and in fact that the inequality is strict under the usual assumptions.
+
+By the no-arbitrage lower bound for a European call, we have
+$
+C_t \ge S_t-Ke^{-r(T-t)}.
+$
+Since $t<T$ and $r>0$, we have
+$
+e^{-r(T-t)}<1,
+$
+hence
+$
+Ke^{-r(T-t)}<K
+$
+and therefore
+$
+S_t-Ke^{-r(T-t)} > S_t-K.
+$
+It follows that
+$
+C_t > S_t-K.
+$
+
+Thus the holder receives strictly more by selling the call than by exercising it immediately.
+
+\paragraph{Conclusion.}
+
+Exercising the American call early destroys its remaining time value.
+Since the stock pays no dividends, there is no benefit in holding the stock earlier rather than the option itself.
+Therefore early exercise is strictly suboptimal, and
+$$
+V_t^{\mathrm{Am,call}}=V_t^{\mathrm{Eur,call}}.
+$$
+
+\medskip
+
+% ------------------------------------------------------------
+\subsection{American and European calls on a non-dividend-paying stock}
+% ------------------------------------------------------------
+
+An important special case occurs for call options written on a
+non-dividend-paying stock.
+In that setting, the American call has the same value as the
+corresponding European call.
+
+\medskip
+
+Let the payoff be
+\[
+g(s)=(s-K)^+,
+\]
+where \(K>0\) is the strike and \(T>0\) the maturity.
+We assume that the stock pays no dividends and that the interest rate
+satisfies \(r\ge 0\).
+
+The European call price is
+\[
+C^E(t,s)
+=
+\mathbb E^{\Qbb}\!\left[
+e^{-r(T-t)}(S_T-K)^+
+\,\middle|\, S_t=s
+\right],
+\]
+whereas the American call price is
+\[
+C^A(t,s)
+=
+\sup_{\tau\in\mathcal T_{t,T}}
+\mathbb E^{\Qbb}\!\left[
+e^{-r(\tau-t)}(S_\tau-K)^+
+\,\middle|\, S_t=s
+\right].
+\]
+
+Since the American holder is allowed to choose \(\tau=T\), we always have
+\[
+C^A(t,s)\ge C^E(t,s).
+\]
+The key point is that, in the present setting, exercising strictly
+before maturity is never optimal.
+
+\begin{proposition}
+Assume that the underlying stock pays no dividends and that \(r\ge 0\).
+Then, for every \(t\in[0,T]\) and \(s\ge 0\),
+\[
+C^A(t,s)=C^E(t,s).
+\]
+Equivalently, it is never optimal to exercise an American call before
+maturity.
+\end{proposition}
+
+\begin{proof}
+We show that, for every \(t<T\) and every \(s\ge 0\),
+\[
+C^E(t,s)\ge (s-K)^+.
+\]
+This means that, at any time before maturity, keeping the option alive
+is at least as valuable as exercising it immediately.
+
+\medskip
+
+Indeed, since \((x-K)^+\ge x-K\) for all \(x\in\mathbb R\), we obtain
+\begin{align*}
+C^E(t,s)
+&=
+e^{-r(T-t)}
+\mathbb E^{\Qbb}\!\left[
+(S_T-K)^+
+\,\middle|\, S_t=s
+\right]
+\\
+&\ge
+e^{-r(T-t)}
+\mathbb E^{\Qbb}\!\left[
+S_T-K
+\,\middle|\, S_t=s
+\right].
+\end{align*}
+Under the risk-neutral measure, the discounted stock price is a
+martingale, so
+\[
+\mathbb E^{\Qbb}[S_T\mid S_t=s]=s\,e^{r(T-t)}.
+\]
+Therefore
+\begin{align*}
+C^E(t,s)
+&\ge
+e^{-r(T-t)}
+\big(s\,e^{r(T-t)}-K\big)
+\\
+&=
+s-Ke^{-r(T-t)}.
+\end{align*}
+Since \(r\ge 0\), we have
+\[
+e^{-r(T-t)}\le 1,
+\qquad\text{hence}\qquad
+Ke^{-r(T-t)}\le K,
+\]
+and thus
+\[
+s-Ke^{-r(T-t)}\ge s-K.
+\]
+We conclude that
+\[
+C^E(t,s)\ge s-K.
+\]
+If \(s\ge K\), this implies
+\[
+C^E(t,s)\ge s-K=(s-K)^+.
+\]
+If \(s<K\), then trivially
+\[
+(s-K)^+=0\le C^E(t,s).
+\]
+Hence, in all cases,
+\[
+C^E(t,s)\ge (s-K)^+.
+\]
+
+\medskip
+
+Now fix any stopping time \(\tau\in\mathcal T_{t,T}\).
+At time \(\tau\), the holder may either exercise and receive
+\((S_\tau-K)^+\), or keep the European option alive until \(T\).
+By the inequality proved above, applied at time \(\tau\), we have
+\[
+C^E(\tau,S_\tau)\ge (S_\tau-K)^+.
+\]
+Multiplying by \(e^{-r(\tau-t)}\) and taking conditional expectations,
+we obtain
+\[
+\mathbb E^{\Qbb}\!\left[
+e^{-r(\tau-t)}(S_\tau-K)^+
+\,\middle|\, S_t=s
+\right]
+\le
+\mathbb E^{\Qbb}\!\left[
+e^{-r(\tau-t)} C^E(\tau,S_\tau)
+\,\middle|\, S_t=s
+\right].
+\]
+But the discounted European call price process is a martingale, so
+\[
+\mathbb E^{\Qbb}\!\left[
+e^{-r(\tau-t)} C^E(\tau,S_\tau)
+\,\middle|\, S_t=s
+\right]
+=
+C^E(t,s).
+\]
+Therefore
+\[
+\mathbb E^{\Qbb}\!\left[
+e^{-r(\tau-t)}(S_\tau-K)^+
+\,\middle|\, S_t=s
+\right]
+\le
+C^E(t,s).
+\]
+Since this holds for every stopping time \(\tau\in\mathcal T_{t,T}\),
+taking the supremum over \(\tau\) yields
+\[
+C^A(t,s)\le C^E(t,s).
+\]
+Together with the obvious inequality \(C^A(t,s)\ge C^E(t,s)\), we
+finally obtain
+\[
+C^A(t,s)=C^E(t,s).
+\]
+This proves that early exercise is never optimal.
+\end{proof}
+
+\paragraph{Financial interpretation.}
+For a call on a non-dividend-paying stock, exercising early is
+disadvantageous for two reasons:
+\begin{itemize}[leftmargin=1.4em]
+\item the holder gives up the remaining time value of the option;
+\item the strike \(K\) must be paid earlier than necessary.
+\end{itemize}
+Since the stock pays no dividends, there is no compensating benefit to
+holding the stock rather than the option before maturity.
+It is therefore always preferable to keep the option alive until \(T\).
+
+\paragraph{Consequence.}
+In the Black--Scholes model without dividends, the pricing of an
+American call reduces to the pricing of the corresponding European call.
+In particular, the Black--Scholes formula applies:
+\[
+C^A(t,s)=C^E(t,s)
+=
+s\,\mathcal N(d_1)-K e^{-r(T-t)} \mathcal N(d_2),
+\]
+where
+\[
+d_1=
+\frac{\log(s/K)+\left(r+\tfrac12\sigma^2\right)(T-t)}
+{\sigma\sqrt{T-t}},
+\qquad
+d_2=d_1-\sigma\sqrt{T-t}.
+\]
+
+\textbf{Conclusion.}
+Early exercise is strictly suboptimal, and the American call coincides with the European call:
+$$
+V_t^{\mathrm{Am,call}} = V_t^{\mathrm{Eur,call}}.
+$$
+
+In particular, there is no non-trivial exercise boundary for the American call in this setting.
+
+% ------------------------------------------------------------
+\subsection{Example: American put}
+% ------------------------------------------------------------
+
+The American put is the canonical example where early exercise is
+genuinely relevant.
+
+Its payoff is
+\[
+g(s)=(K-s)^+.
+\]
+
+\paragraph{Why early exercise may be optimal.}
+If the stock price becomes very low, the put is deep in the money.
+In that case, immediate exercise allows the holder to receive the amount
+\(K-s\) right away.
+
+Waiting may not be worthwhile, because:
+\begin{itemize}[leftmargin=1.4em]
+    \item there is less upside left in the put when the stock is already very low,
+    \item receiving the strike earlier is valuable when interest rates are positive.
+\end{itemize}
+
+For this reason, the American put typically has a non-trivial stopping region.
+
+\paragraph{Structure of the exercise boundary.}
+For the American put, the stopping region is usually of the form
+\[
+\{(t,s): s\le s^*(t)\},
+\]
+where \(s^*(t)\) is the early exercise boundary.
+
+Thus:
+\begin{itemize}[leftmargin=1.4em]
+    \item if \(s\le s^*(t)\), it is optimal to exercise,
+    \item if \(s>s^*(t)\), it is optimal to continue.
+\end{itemize}
+
+\paragraph{PDE characterization.}
+The value function \(v(t,s)\) of the American put satisfies
+\[
+\max\!\left(
+(K-s)^+-v(t,s),\;
+v_t + rs\,v_s + \frac12 \sigma^2 s^2 v_{ss} - r v
+\right)=0,
+\]
+with terminal condition
+\[
+v(T,s)=(K-s)^+.
+\]
+
+\paragraph{Contrast with the American call.}
+For a non-dividend-paying stock, an American call should never be
+exercised early.
+Hence the American call has the same price as the European call.
+
+By contrast, the American put typically has a genuine free boundary and
+therefore provides the main motivating example for the PDE formulation
+of American options.
+
+
+% ============================================================
+\section{Numerical methods for American options}
+% ============================================================
+
+Unlike European options, American options generally do not admit
+closed-form formulas, even in the Black--Scholes model.
+The main reason is the possibility of \emph{early exercise}, which turns
+the pricing problem into an \emph{optimal stopping problem}.
+
+More precisely, if \(g\) denotes the payoff function and
+\((S_t)_{0\le t\le T}\) the underlying asset price under the
+risk-neutral measure \(\Qbb\), then the price of the American option at
+time \(t\) is
+\[
+V(t,s)
+=
+\sup_{\tau \in \mathcal T_{t,T}}
+\mathbb E^{\Qbb}\!\left[
+e^{-r(\tau-t)} g(S_\tau)\,\middle|\, S_t=s
+\right],
+\]
+where \(\mathcal T_{t,T}\) denotes the set of stopping times taking
+values in \([t,T]\).
+
+This is more difficult than the European case, where the payoff is only
+received at maturity:
+\[
+V^{E}(t,s)
+=
+\mathbb E^{\Qbb}\!\left[
+e^{-r(T-t)} g(S_T)\,\middle|\, S_t=s
+\right].
+\]
+
+The early exercise feature introduces two major difficulties:
+\begin{itemize}[leftmargin=1.4em]
+\item one must determine the \emph{value} of the option;
+\item one must also determine the \emph{optimal exercise policy}.
+\end{itemize}
+
+In continuous time, this leads to a free boundary problem, or
+equivalently to a variational inequality.
+In practice, one therefore relies on numerical methods.
+
+Several important numerical approaches have been developed:
+tree methods, finite difference schemes, and Monte Carlo methods.
+We briefly present the main ideas below.
+
+% ------------------------------------------------------------
+\subsection{Binomial and tree methods}
+% ------------------------------------------------------------
+
+Tree-based methods are among the most intuitive techniques for pricing
+American options.
+Their main idea is to approximate the continuous-time stock dynamics by
+a discrete-time recombining tree.
+
+\medskip
+
+Consider a maturity \(T>0\), an integer \(N\ge 1\), and set
+\[
+\Delta t = \frac{T}{N}.
+\]
+The exercise dates are
+\[
+t_n = n\Delta t, \qquad n=0,1,\dots,N.
+\]
+
+In the Cox--Ross--Rubinstein binomial model, the stock price evolves as
+follows: from a node \((n,j)\), corresponding to time \(t_n\), the stock
+moves to
+\[
+S_{n+1}^{(j+1)} = u S_n^{(j)}
+\qquad \text{or} \qquad
+S_{n+1}^{(j)} = d S_n^{(j)},
+\]
+where typically
+\[
+u = e^{\sigma\sqrt{\Delta t}},
+\qquad
+d = e^{-\sigma\sqrt{\Delta t}}.
+\]
+Under the risk-neutral measure, the corresponding probability of an
+upward move is
+\[
+p = \frac{e^{r\Delta t}-d}{u-d},
+\]
+provided \(d < e^{r\Delta t} < u\).
+
+\medskip
+
+At maturity, the value of the American option is simply equal to its
+payoff:
+\[
+V_N^{(j)} = g\!\left(S_N^{(j)}\right),
+\qquad j=0,\dots,N.
+\]
+
+The key point is that, at each earlier node, the holder can either:
+\begin{itemize}[leftmargin=1.4em]
+\item exercise immediately and receive the intrinsic value
+\[
+g\!\left(S_n^{(j)}\right),
+\]
+\item or continue holding the option, in which case the value is the
+discounted conditional expectation of the future option value.
+\end{itemize}
+
+Thus the dynamic programming principle gives
+\[
+V_n^{(j)}
+=
+\max\!\left(
+g\!\left(S_n^{(j)}\right),
+e^{-r\Delta t}
+\big(
+p\,V_{n+1}^{(j+1)} + (1-p)\,V_{n+1}^{(j)}
+\big)
+\right).
+\]
+
+It is useful to interpret the two terms:
+\begin{align*}
+\text{exercise value} &= g\!\left(S_n^{(j)}\right),\\
+\text{continuation value}
+&=
+e^{-r\Delta t}
+\big(
+p\,V_{n+1}^{(j+1)} + (1-p)\,V_{n+1}^{(j)}
+\big).
+\end{align*}
+The value at the node is the larger of the two.
+
+\medskip
+
+This recursion is performed \emph{backward} from time \(T\) to time \(0\).
+The initial price is then
+\[
+V_0 = V_0^{(0)}.
+\]
+
+\medskip
+
+Tree methods are attractive because:
+\begin{itemize}[leftmargin=1.4em]
+\item they are conceptually simple;
+\item they naturally incorporate early exercise through the
+\(\max\)-operator;
+\item they give not only the price, but also the exercise region on the
+tree.
+\end{itemize}
+
+For instance, for an American put with payoff
+\[
+g(s)=(K-s)^+,
+\]
+one can identify at each time step the set of nodes where
+\[
+g\!\left(S_n^{(j)}\right)
+\ge
+e^{-r\Delta t}
+\big(
+p\,V_{n+1}^{(j+1)} + (1-p)\,V_{n+1}^{(j)}
+\big),
+\]
+that is, where immediate exercise is optimal.
+
+\medskip
+
+As \(N\to\infty\), the binomial model converges, under suitable
+assumptions, to the continuous-time Black--Scholes model, and the tree
+price converges to the American option price.
+
+% ------------------------------------------------------------
+\subsection{Finite difference methods}
+% ------------------------------------------------------------
+
+Finite difference methods rely on the PDE characterization of the
+American option price.
+
+Under the Black--Scholes model, the stock price under \(\Qbb\) satisfies
+\[
+dS_t = rS_t\,dt + \sigma S_t\,dW_t.
+\]
+The infinitesimal generator associated with this diffusion is
+\[
+\mathcal L \varphi(s)
+=
+rs\,\varphi_s(s) + \frac12 \sigma^2 s^2 \varphi_{ss}(s).
+\]
+
+If \(v(t,s)\) denotes the American option price, then \(v\) solves the
+variational inequality
+\[
+\max\!\left(
+g(s)-v(t,s),\;
+v_t(t,s)+\mathcal L v(t,s)-r v(t,s)
+\right)=0,
+\qquad (t,s)\in[0,T)\times(0,\infty),
+\]
+with terminal condition
+\[
+v(T,s)=g(s).
+\]
+
+Equivalently, this can be written as the complementarity system
+\[
+\left\{
+\begin{aligned}
+&v(t,s)\ge g(s),\\
+&v_t + \mathcal L v - r v \le 0,\\
+&\big(v-g\big)\big(v_t+\mathcal L v-rv\big)=0.
+\end{aligned}
+\right.
+\]
+This formulation clearly separates the two regions:
+\begin{itemize}[leftmargin=1.4em]
+\item the \emph{exercise region}, where \(v=g\);
+\item the \emph{continuation region}, where
+\[
+v_t+\mathcal L v-rv=0.
+\]
+\end{itemize}
+
+\medskip
+
+To solve this numerically, one discretizes both time and the stock price.
+
+Let
+\[
+t_n = n\Delta t,\qquad n=0,\dots,N,
+\]
+and let
+\[
+s_i = i\Delta s,\qquad i=0,\dots,M,
+\]
+for some spatial truncation interval \([0,S_{\max}]\).
+
+We denote by \(v_i^n\) an approximation of \(v(t_n,s_i)\).
+The time derivative may be approximated by a backward difference:
+\[
+v_t(t_n,s_i)
+\approx
+\frac{v_i^{n+1}-v_i^n}{\Delta t},
+\]
+while the spatial derivatives are approximated by finite differences:
+\[
+v_s(t_n,s_i)
+\approx
+\frac{v_{i+1}^n-v_{i-1}^n}{2\Delta s},
+\qquad
+v_{ss}(t_n,s_i)
+\approx
+\frac{v_{i+1}^n-2v_i^n+v_{i-1}^n}{(\Delta s)^2}.
+\]
+
+Plugging these approximations into the Black--Scholes operator gives a
+discrete version of the PDE in the continuation region.
+For example, an implicit scheme typically takes the form
+\[
+\frac{v_i^{n+1}-v_i^n}{\Delta t}
++
+r s_i \frac{v_{i+1}^n-v_{i-1}^n}{2\Delta s}
++
+\frac12 \sigma^2 s_i^2
+\frac{v_{i+1}^n-2v_i^n+v_{i-1}^n}{(\Delta s)^2}
+-
+r v_i^n
+=0.
+\]
+
+This can be rewritten as a linear system
+\[
+A v^n = v^{n+1},
+\]
+or more generally
+\[
+A v^n = b^{n+1},
+\]
+depending on the choice of discretization.
+
+\medskip
+
+The American feature is enforced through the obstacle condition
+\[
+v_i^n \ge g(s_i).
+\]
+Hence, after solving the continuation step, one projects onto the
+constraint:
+\[
+v_i^n \leftarrow \max\big(v_i^n,\; g(s_i)\big).
+\]
+
+In other words, the numerical scheme alternates between:
+\begin{itemize}[leftmargin=1.4em]
+\item solving the discrete Black--Scholes equation backward in time;
+\item imposing the early exercise constraint.
+\end{itemize}
+
+\medskip
+
+This gives rise to discrete linear complementarity problems (LCPs),
+which are often written in the form
+\[
+\left\{
+\begin{aligned}
+&v^n \ge g,\\
+&A v^n - b^{n+1} \ge 0,\\
+&(v^n-g)^\top (A v^n - b^{n+1}) = 0.
+\end{aligned}
+\right.
+\]
+
+Finite difference methods are especially efficient for
+one-dimensional problems such as the American put.
+They are accurate and closely connected to the PDE/free boundary
+interpretation.
+However, their main limitation is dimensionality: when the number of
+state variables increases, the computational cost grows rapidly.
+
+% ------------------------------------------------------------
+\subsection{Monte Carlo methods}
+% ------------------------------------------------------------
+
+Monte Carlo methods are extremely effective for European options because
+the payoff depends only on the terminal value \(S_T\).
+Indeed, if
+\[
+V^E(t,s)
+=
+\mathbb E^{\Qbb}\!\left[
+e^{-r(T-t)}g(S_T)\,\middle|\,S_t=s
+\right],
+\]
+then one can simply simulate many independent paths of the stock price,
+compute the discounted payoff on each path, and average:
+\[
+V^E(t,s)
+\approx
+\frac1M \sum_{m=1}^M
+e^{-r(T-t)} g\!\left(S_T^{(m)}\right).
+\]
+
+For an American option, the situation is more subtle because the value is
+\[
+V(t,s)
+=
+\sup_{\tau\in\mathcal T_{t,T}}
+\mathbb E^{\Qbb}\!\left[
+e^{-r(\tau-t)}g(S_\tau)\,\middle|\,S_t=s
+\right].
+\]
+The difficulty is not the simulation of paths itself, but the fact that
+the stopping time \(\tau\) must be chosen optimally.
+
+\medskip
+
+At a given date \(t_n\), the holder must compare:
+\begin{itemize}[leftmargin=1.4em]
+\item the immediate exercise value
+\[
+g(S_{t_n});
+\]
+\item the continuation value
+\[
+\mathbb E^{\Qbb}\!\left[
+e^{-r\Delta t}V(t_{n+1},S_{t_{n+1}})
+\,\middle|\, \mathcal F_{t_n}
+\right].
+\]
+\end{itemize}
+
+Hence the key object is the conditional expectation
+\[
+C(t_n,S_{t_n})
+:=
+\mathbb E^{\Qbb}\!\left[
+e^{-r\Delta t}V(t_{n+1},S_{t_{n+1}})
+\,\middle|\, S_{t_n}
+\right],
+\]
+called the \emph{continuation value}.
+
+For European options, no such stopping decision is needed, so standard
+Monte Carlo is straightforward.
+For American options, however, one must estimate continuation values at
+every possible exercise date.
+This is a much harder problem because conditional expectations are not
+directly observed from the simulated paths.
+
+\medskip
+
+This explains why naive Monte Carlo is not sufficient for American
+options.
+Instead, one uses specialized methods designed to approximate the
+continuation value or the optimal stopping rule.
+
+% ------------------------------------------------------------
+\subsection{Longstaff--Schwartz algorithm}
+% ------------------------------------------------------------
+
+One of the most influential Monte Carlo methods for American options is
+the \emph{Longstaff--Schwartz algorithm}, also known as the
+\emph{least-squares Monte Carlo} (LSMC) method.
+
+The central idea is to approximate continuation values by regression on
+a suitable family of basis functions.
+
+\medskip
+
+Suppose that exercise is allowed at discrete dates
+\[
+0=t_0<t_1<\dots<t_N=T.
+\]
+The American option value is then
+\[
+V_{t_n}
+=
+\max\!\left(
+g(S_{t_n}),
+\mathbb E^{\Qbb}\!\left[
+e^{-r\Delta t}V_{t_{n+1}}
+\,\middle|\, \mathcal F_{t_n}
+\right]
+\right),
+\qquad n=0,\dots,N-1,
+\]
+with terminal condition
+\[
+V_{t_N}=g(S_{t_N}).
+\]
+
+The algorithm works backward in time.
+
+\paragraph{Step 1: simulation of paths.}
+Simulate \(M\) independent paths of the stock price:
+\[
+\big(S_{t_0}^{(m)},S_{t_1}^{(m)},\dots,S_{t_N}^{(m)}\big),
+\qquad m=1,\dots,M.
+\]
+
+In the Black--Scholes model, one may simulate using
+\[
+S_{t_{n+1}}^{(m)}
+=
+S_{t_n}^{(m)}
+\exp\!\left(
+\left(r-\frac12\sigma^2\right)\Delta t
++
+\sigma \sqrt{\Delta t}\, Z_n^{(m)}
+\right),
+\]
+where \(Z_n^{(m)}\sim\mathcal N(0,1)\) are independent.
+
+\paragraph{Step 2: terminal condition.}
+At maturity,
+\[
+Y_N^{(m)} = g\!\left(S_{t_N}^{(m)}\right),
+\qquad m=1,\dots,M.
+\]
+
+\paragraph{Step 3: backward induction.}
+Now fix \(n=N-1,\dots,0\), and suppose that the future cashflows have
+already been determined.
+
+For each path \(m\), define the immediate exercise value
+\[
+E_n^{(m)} = g\!\left(S_{t_n}^{(m)}\right).
+\]
+If \(E_n^{(m)}=0\), the option is out of the money and immediate exercise
+is not relevant.
+Thus the regression is typically performed only on the in-the-money
+paths:
+\[
+\mathcal I_n
+=
+\left\{
+m\in\{1,\dots,M\}:\;
+g\!\left(S_{t_n}^{(m)}\right)>0
+\right\}.
+\]
+
+For each such path, define the discounted future cashflow
+\[
+\widetilde Y_n^{(m)}
+=
+e^{-r(t_{\tau^{(m)}}-t_n)}
+g\!\left(S_{t_{\tau^{(m)}}}^{(m)}\right),
+\]
+where \(\tau^{(m)}\) is the exercise time currently assigned to path
+\(m\) based on later dates.
+This quantity represents the realized value of \emph{continuing} from
+time \(t_n\).
+
+\paragraph{Step 4: regression for the continuation value.}
+The conditional expectation
+\[
+\mathbb E^{\Qbb}\!\left[
+\widetilde Y_n \,\middle|\, S_{t_n}
+\right]
+\]
+is approximated by projection onto basis functions of \(S_{t_n}\).
+
+Choose functions \(\psi_1,\dots,\psi_K\), for example
+\[
+\psi_1(s)=1,\qquad
+\psi_2(s)=s,\qquad
+\psi_3(s)=s^2,
+\]
+or Laguerre/Hermite polynomials.
+
+We then solve the least-squares problem
+\[
+\min_{\beta_1,\dots,\beta_K}
+\sum_{m\in\mathcal I_n}
+\left(
+\widetilde Y_n^{(m)}
+-
+\sum_{k=1}^K \beta_k \psi_k(S_{t_n}^{(m)})
+\right)^2.
+\]
+This gives coefficients \(\hat\beta_1,\dots,\hat\beta_K\), and therefore
+an estimated continuation value function
+\[
+\widehat C_n(s)
+=
+\sum_{k=1}^K \hat\beta_k \psi_k(s).
+\]
+
+\paragraph{Step 5: exercise decision.}
+For each in-the-money path \(m\in\mathcal I_n\), compare:
+\[
+E_n^{(m)} = g\!\left(S_{t_n}^{(m)}\right)
+\qquad \text{and} \qquad
+\widehat C_n\!\left(S_{t_n}^{(m)}\right).
+\]
+If
+\[
+E_n^{(m)} \ge \widehat C_n\!\left(S_{t_n}^{(m)}\right),
+\]
+then exercise is declared optimal on that path at time \(t_n\), and the
+cashflow becomes
+\[
+Y_n^{(m)} = E_n^{(m)}.
+\]
+Otherwise, the option is continued and one keeps the future cashflow
+already assigned.
+
+Thus, on each path, the estimated stopping rule is
+\[
+\hat\tau^{(m)}
+=
+\inf\left\{
+t_n:\;
+g\!\left(S_{t_n}^{(m)}\right)
+\ge
+\widehat C_n\!\left(S_{t_n}^{(m)}\right)
+\right\},
+\]
+with the convention that \(\hat\tau^{(m)}=T\) if exercise never occurs
+earlier.
+
+\paragraph{Step 6: price estimator.}
+Once the stopping rule has been determined, the option price is
+estimated by
+\[
+\widehat V_0
+=
+\frac1M
+\sum_{m=1}^M
+e^{-r\hat\tau^{(m)}}\,
+g\!\left(S_{\hat\tau^{(m)}}^{(m)}\right).
+\]
+
+\medskip
+
+The fundamental idea is therefore simple:
+\begin{itemize}[leftmargin=1.4em]
+\item simulate paths;
+\item estimate continuation values by regression;
+\item exercise whenever the immediate payoff exceeds the estimated
+continuation value.
+\end{itemize}
+
+\medskip
+
+The method is particularly attractive in situations where PDE or tree
+methods become impractical, for example in high dimension or when the
+state variable is more complex than a single stock price.
+Its flexibility is one of its main strengths.
+
+However, its accuracy depends on several choices:
+\begin{itemize}[leftmargin=1.4em]
+\item the number of simulated paths \(M\);
+\item the choice of basis functions \(\psi_k\);
+\item the time discretization;
+\item the statistical quality of the regression.
+\end{itemize}
+
+In particular, poor basis choices may lead to inaccurate continuation
+value estimates and therefore to suboptimal exercise policies.
+
+\medskip
+
+Nevertheless, the Longstaff--Schwartz method remains one of the most
+important and most widely used numerical methods for American option
+pricing.
+% ============================================================
+\section{Important qualitative properties}
+% ============================================================
+
+Beyond numerical pricing, it is important to understand when early
+exercise is economically optimal.
+
+These qualitative properties provide useful intuition and help explain
+the structure of American option prices.
+
+% ------------------------------------------------------------
+\subsection{When is early exercise optimal?}
+% ------------------------------------------------------------
+
+Early exercise becomes optimal when the immediate payoff dominates the
+continuation value of the option.
+
+Intuitively, exercising early is attractive when
+\begin{itemize}[leftmargin=1.4em]
+\item the option is already deep in the money,
+\item there is little time value left,
+\item receiving the payoff earlier provides an economic benefit
+(for instance because of positive interest rates).
+\end{itemize}
+
+However, early exercise also destroys the optionality of the contract.
+Therefore it is optimal only in specific regions of the state space.
+
+% ------------------------------------------------------------
+\subsection{American call with no dividends}
+% ------------------------------------------------------------
+
+A classical result states that an American call option on a
+non-dividend-paying stock should never be exercised early.
+
+The reason is that exercising early would require paying the strike
+\(K\) immediately, which is economically disadvantageous.
+
+Instead, it is always better to keep the option alive:
+\begin{itemize}[leftmargin=1.4em]
+\item the holder keeps the upside potential,
+\item the payment of the strike can be postponed until maturity.
+\end{itemize}
+
+As a consequence,
+\[
+C^{Am} = C^{Eur}
+\]
+for a call option on a stock that pays no dividends.
+
+% ------------------------------------------------------------
+\subsection{American put}
+% ------------------------------------------------------------
+
+The situation is different for American put options.
+
+When the underlying price becomes sufficiently low, exercising the put
+immediately may be optimal.
+
+Indeed, exercising allows the holder to receive the amount
+\[
+K - S_t
+\]
+right away.
+
+If interest rates are positive, receiving this cash earlier can be
+valuable.
+
+Therefore the American put typically has a non-trivial exercise region.
+
+% ------------------------------------------------------------
+\subsection{Shape of the exercise boundary}
+% ------------------------------------------------------------
+
+The optimal exercise strategy can often be summarized by an
+\emph{exercise boundary}.
+
+For the American put, this boundary typically takes the form of a
+critical price \(s^*(t)\) such that
+
+\[
+\begin{cases}
+S_t \le s^*(t) & \text{exercise immediately,}\\
+S_t > s^*(t) & \text{continue holding the option.}
+\end{cases}
+\]
+
+This boundary depends on time and usually decreases as maturity
+approaches.
+
+Determining this free boundary is one of the central problems in the
+analysis and numerical pricing of American options.
+
+\vspace{0.3cm}
+
+% ============================================================
+\section{Summary}
+% ============================================================
+
+% ------------------------------------------------------------
+\subsection{Main ideas}
+
+\begin{itemize}[leftmargin=1.4em]
+\item American options introduce an optimal stopping problem.
+\item Discrete-time pricing uses backward induction.
+\item Continuous-time pricing leads to free-boundary PDE problems.
+\item Numerical methods are essential in practice.
+\end{itemize}
+
+% ------------------------------------------------------------
+\subsection{What students should remember}
+
+\begin{itemize}[leftmargin=1.4em]
+\item definition of an American option,
+\item optimal stopping interpretation,
+\item dynamic programming approach,
+\item link with free-boundary PDE problems.
+\end{itemize}
+
+\end{document}

@@ -1,0 +1,613 @@
+% !TEX program = pdflatex
+\documentclass[11pt]{article}
+
+% ==========================
+% Encoding / font (pdflatex)
+% ==========================
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+
+% ==========================
+% Page layout
+% ==========================
+\usepackage[margin=1in]{geometry}
+
+% ==========================
+% Math
+% ==========================
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+
+% ==========================
+% Lists
+% ==========================
+\usepackage{enumitem}
+
+% ==========================
+% Hyperref (load late)
+% ==========================
+\usepackage[hidelinks]{hyperref}
+
+% ==========================
+% Macros
+% ==========================
+\newcommand{\Pbb}{\mathbb{P}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\F}{\mathcal{F}}
+\newcommand{\1}{\mathbf{1}}
+\newcommand{\dd}{\,\mathrm{d}}
+
+% ==========================
+% Theorem environments
+% ==========================
+\numberwithin{equation}{section}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+% ==========================
+% "Board" environment (robust)
+%   - no extra spaces (ignorespaces/unskip)
+%   - boxed minipage
+% ==========================
+\newenvironment{board}{%
+  \par\medskip\noindent
+  \fbox{%
+    \begin{minipage}{0.98\linewidth}
+      \textbf{On the board (plan + comments).}\par\medskip
+      \ignorespaces
+}{%
+      \unskip
+    \end{minipage}%
+  }%
+  \par\medskip
+}
+
+% ==========================
+% Title
+% ==========================
+\title{Board Notes --- Constructing the It\^o Integral}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-1em}
+
+\noindent\textbf{Goal of the lecture.}
+We construct $\int_0^T \phi_t\,\dd W_t$ \emph{without} using It\^o's formula,
+starting from left-point sums and passing to the limit in $L^2$.
+We will establish:
+\begin{itemize}[leftmargin=2em]
+  \item the \textbf{correct} convention is the left-point (non-anticipative) one,
+  \item the \textbf{key property} is the It\^o isometry,
+  \item the integral is a \textbf{martingale} and we can compute its moments/covariances.
+\end{itemize}
+
+% ==========================================================
+\section{Why Riemann--Stieltjes fails for Brownian motion}
+% ==========================================================
+
+\subsection{Infinite variation and nowhere differentiability}
+
+\begin{remark}
+If $x:[0,T]\to\R$ has \emph{finite total variation} on $[0,T]$, then the
+Riemann--Stieltjes integral $\int_0^T \phi(t)\,\dd x(t)$ exists for every continuous $\phi$.
+Brownian motion $W$ has (almost surely) infinite variation, which is a first reason for the failure.
+\end{remark}
+
+
+\begin{itemize}
+  \item Recall total variation:
+  \[
+    \mathrm{Var}_{[0,T]}(x)=\sup_{\pi}\sum_{k}|x(t_{k+1})-x(t_k)|.
+  \]
+  \item Intuition: $\Delta W \sim \sqrt{\Delta t}$, so
+  \[
+    \sum |\Delta W|
+    \sim \sum \sqrt{\Delta t}
+    \approx \frac{T}{\sqrt{\Delta t}}\to\infty.
+  \]
+  \item Transition: rather than order-1 variation, what \emph{accumulates} for $W$ is order 2:
+  \[
+    \sum (\Delta W)^2.
+  \]
+\end{itemize}
+
+\subsection{Quadratic variation: accumulation of the order-2 terms}
+
+Fix a partition $\pi=\{0=t_0<\cdots<t_n=T\}$ and define
+\[
+Q_T^\pi(W)=\sum_{k=0}^{n-1}\big(W_{t_{k+1}}-W_{t_k}\big)^2.
+\]
+
+\begin{theorem}[Quadratic variation of Brownian motion: uniform case]
+For the uniform partition $t_k=kT/n$,
+\[
+Q_T^{(n)}(W):=\sum_{k=0}^{n-1}(W_{t_{k+1}}-W_{t_k})^2 \xrightarrow[n\to\infty]{L^2} T.
+\]
+In particular, the convergence holds in probability.
+\end{theorem}
+
+\begin{proof}
+Let $\Delta W_k:=W_{t_{k+1}}-W_{t_k}$. Then $\Delta W_k\sim\mathcal N(0,\Delta t)$,
+independent, with $\Delta t=T/n$.
+
+\smallskip
+\noindent\textbf{(1) Expectation.}
+\[
+\E\big[Q_T^{(n)}(W)\big]=\sum_{k=0}^{n-1}\E[(\Delta W_k)^2]=\sum_{k=0}^{n-1}\Delta t = n\Delta t = T.
+\]
+
+\smallskip
+\noindent\textbf{(2) Variance.}
+Since the $\Delta W_k$ are independent,
+\[
+\mathrm{Var}\big(Q_T^{(n)}(W)\big)
+=\sum_{k=0}^{n-1}\mathrm{Var}\big((\Delta W_k)^2\big).
+\]
+If $Z\sim\mathcal N(0,\sigma^2)$, then $\E[Z^4]=3\sigma^4$, hence
+$\mathrm{Var}(Z^2)=\E[Z^4]-\E[Z^2]^2=3\sigma^4-\sigma^4=2\sigma^4$.
+Here $\sigma^2=\Delta t$, so $\mathrm{Var}((\Delta W_k)^2)=2(\Delta t)^2$ and
+\[
+\mathrm{Var}\big(Q_T^{(n)}(W)\big)=n\cdot 2(\Delta t)^2
+=2n\cdot (T/n)^2=\frac{2T^2}{n}\xrightarrow[n\to\infty]{}0.
+\]
+Therefore $\E\big[(Q_T^{(n)}(W)-T)^2\big]=\mathrm{Var}(Q_T^{(n)}(W))\to 0$, i.e.\ $L^2$-convergence.
+\end{proof}
+
+\textbf{To do on board}
+\begin{itemize}
+  \item Do this computation on the board (a great ``proof by computation'').
+  \item Emphasize: this is \emph{the} crucial difference with finite-variation functions.
+\end{itemize}
+\textbf{To do on board}
+
+\subsection{Why the Riemann--Stieltjes limit can depend on the sampling point}
+
+Consider the random integrand $\phi_t=W_t$ and the sums
+\[
+L_n=\sum_{k=0}^{n-1}W_{t_k}\Delta W_k,
+\qquad
+R_n=\sum_{k=0}^{n-1}W_{t_{k+1}}\Delta W_k.
+\]
+Then
+\[
+R_n-L_n=\sum_{k=0}^{n-1}(W_{t_{k+1}}-W_{t_k})^2
+=Q_T^{(n)}(W)\xrightarrow[]{\Pbb}T.
+\]
+Hence, \emph{if} $L_n$ converges, then $R_n$ converges to a different limit (shifted by $T$).
+This shows cleanly that the usual Riemann--Stieltjes notion is not robust here.
+
+\textbf{To do on board}
+\begin{itemize}
+  \item Say it very clearly: \textbf{changing the evaluation point changes the limit}
+  when the integrand is as rough as $W$.
+  \item Motivation: we need a new definition, and finance enforces the left-point choice
+  (predictability / no peeking).
+\end{itemize}
+\textbf{To do on board}
+
+% ==========================================================
+\section{Finance interpretation: self-financing gains}
+% ==========================================================
+
+\subsection{Discrete $\to$ continuous: why the left-point convention}
+
+On a grid $0=t_0<\cdots<t_n=T$, holding $\phi_{t_k}$ shares on $(t_k,t_{k+1}]$ yields the gain
+\[
+G_T^\pi(\phi)=\sum_{k=0}^{n-1}\phi_{t_k}\big(S_{t_{k+1}}-S_{t_k}\big).
+\]
+The key point is: \textbf{$\phi_{t_k}$ is chosen using the information at time $t_k$ (not after).}
+
+\textbf{To do on board}
+\begin{itemize}
+  \item Direct link to ``no peeking'': $\phi_{t_k}$ is $\F_{t_k}$-measurable.
+  \item This is the pedagogical reason for the left-point rule in the It\^o integral.
+\end{itemize}
+\textbf{To do on board}
+
+% ==========================================================
+\section{Setup: filtration, adaptedness, square integrability}
+% ==========================================================
+
+We work on $(\Omega,\F,(\F_t)_{t\ge0},\Pbb)$ supporting a Brownian motion $W$.
+Typically $\F_t=\sigma(W_s:0\le s\le t)$ (completed).
+
+\begin{definition}[Adapted / simple process]
+A process $(\phi_t)$ is \emph{adapted} if $\phi_t$ is $\F_t$-measurable for every $t$.
+A \emph{simple process} on $[0,T]$ is of the form
+\[
+\phi_t=\sum_{k=0}^{n-1}\phi_{t_k}\,\1_{(t_k,t_{k+1}]}(t),
+\qquad \phi_{t_k}\in\F_{t_k}.
+\]
+\end{definition}
+
+\begin{remark}[Why $L^2$?]
+The natural condition to define $\int_0^T \phi_t\,\dd W_t$ is
+\[
+\E\!\left[\int_0^T \phi_t^2\,\dd t\right]<\infty,
+\]
+because the integral will have variance of that order (It\^o isometry).
+\end{remark}
+
+% ==========================================================
+\section{Step 1: definition on simple processes (left sums)}
+% ==========================================================
+
+\subsection{Definition}
+
+\begin{definition}[It\^o integral for simple processes]
+For $\phi$ simple as above, define
+\[
+I_0(\phi):=\int_0^T \phi_t\,\dd W_t
+:=\sum_{k=0}^{n-1}\phi_{t_k}\big(W_{t_{k+1}}-W_{t_k}\big).
+\]
+\end{definition}
+
+\textbf{To do on board}
+\begin{itemize}
+  \item Stress: this is not a limit here; it is a \textbf{definition}.
+  \item Stress: $\phi_{t_k}$ is evaluated \textbf{before} the increment $\Delta W_k$.
+\end{itemize}
+\textbf{To do on board}
+
+\subsection{First quick properties}
+\begin{proposition}[Linearity and measurability]
+If $\phi,\psi$ are simple and $\alpha,\beta\in\R$, then
+$I_0(\alpha\phi+\beta\psi)=\alpha I_0(\phi)+\beta I_0(\psi)$.
+Moreover $I_0(\phi)$ is $\F_T$-measurable.
+\end{proposition}
+
+\begin{proof}
+Linearity is immediate from linearity of sums.
+For measurability: each $\phi_{t_k}$ is $\F_{t_k}\subset\F_T$-measurable and each increment
+$W_{t_{k+1}}-W_{t_k}$ is $\F_{t_{k+1}}\subset\F_T$-measurable, hence their product is $\F_T$-measurable.
+\end{proof}
+
+% ==========================================================
+\section{Step 2: the central computation --- mean zero and It\^o isometry}
+% ==========================================================
+
+\subsection{Mean}
+\begin{proposition}
+For $\phi$ simple, $\E[I_0(\phi)]=0$.
+\end{proposition}
+
+\begin{proof}
+\[
+\E[I_0(\phi)]=\sum_{k=0}^{n-1}\E\!\left[\phi_{t_k}(W_{t_{k+1}}-W_{t_k})\right]
+=\sum_{k=0}^{n-1}\E\!\left[\E\!\left[\phi_{t_k}(W_{t_{k+1}}-W_{t_k})\mid \F_{t_k}\right]\right].
+\]
+Since $\phi_{t_k}$ is $\F_{t_k}$-measurable and the increment $(W_{t_{k+1}}-W_{t_k})$
+is independent of $\F_{t_k}$ with mean $0$,
+\[
+\E\!\left[\phi_{t_k}(W_{t_{k+1}}-W_{t_k})\mid \F_{t_k}\right]
+=\phi_{t_k}\,\E[W_{t_{k+1}}-W_{t_k}]=0.
+\]
+\end{proof}
+
+\textbf{To do on board}
+Do the conditioning carefully once: it is a model argument students should learn.
+\textbf{To do on board}
+
+\subsection{It\^o isometry (detailed proof for simple processes)}
+\begin{theorem}[It\^o isometry for simple processes]
+For $\phi$ simple,
+\[
+\E\!\left[I_0(\phi)^2\right]=\E\!\left[\int_0^T \phi_t^2\,\dd t\right]
+=\sum_{k=0}^{n-1}\E[\phi_{t_k}^2]\,(t_{k+1}-t_k).
+\]
+\end{theorem}
+
+\begin{proof}
+Let $\Delta W_k=W_{t_{k+1}}-W_{t_k}$. Then $I_0(\phi)=\sum_k \phi_{t_k}\Delta W_k$ and
+\[
+I_0(\phi)^2=\sum_k \phi_{t_k}^2(\Delta W_k)^2
++2\sum_{i<j}\phi_{t_i}\phi_{t_j}\Delta W_i\Delta W_j.
+\]
+Taking expectations. For the diagonal term:
+\[
+\E\!\left[\phi_{t_k}^2(\Delta W_k)^2\right]
+=\E\!\left[\E\!\left[\phi_{t_k}^2(\Delta W_k)^2\mid \F_{t_k}\right]\right]
+=\E\!\left[\phi_{t_k}^2\,\E[(\Delta W_k)^2]\right]
+=\E[\phi_{t_k}^2]\,(t_{k+1}-t_k),
+\]
+since $\Delta W_k$ is independent of $\F_{t_k}$ and $\E[(\Delta W_k)^2]=t_{k+1}-t_k$.
+
+For cross terms $i<j$, condition on $\F_{t_j}$:
+\[
+\E[\phi_{t_i}\phi_{t_j}\Delta W_i\Delta W_j]
+=\E\!\left[\E[\phi_{t_i}\phi_{t_j}\Delta W_i\Delta W_j\mid \F_{t_j}]\right].
+\]
+Now $\phi_{t_i},\phi_{t_j},\Delta W_i$ are $\F_{t_j}$-measurable (because $t_i<t_j$),
+while $\Delta W_j$ is independent of $\F_{t_j}$ with mean $0$, hence
+\[
+\E[\phi_{t_i}\phi_{t_j}\Delta W_i\Delta W_j\mid \F_{t_j}]
+=\phi_{t_i}\phi_{t_j}\Delta W_i\,\E[\Delta W_j]=0.
+\]
+So all cross terms vanish. Therefore
+\[
+\E[I_0(\phi)^2]=\sum_{k=0}^{n-1}\E[\phi_{t_k}^2]\,(t_{k+1}-t_k)
+=\E\!\left[\int_0^T \phi_t^2\,\dd t\right].
+\]
+\end{proof}
+
+\textbf{To do on board}
+\begin{itemize}
+  \item This is \textbf{the} computation of the lecture: take your time and show the structure.
+  \item Message: \textbf{cross terms disappear} thanks to independence + mean zero.
+\end{itemize}
+\textbf{To do on board}
+
+% ==========================================================
+\section{Consequence: Cauchy property in $L^2(\Omega)$}
+% ==========================================================
+
+\begin{proposition}[Cauchy]
+If $\phi^n$ and $\phi^m$ are simple processes, then
+\[
+\E\!\left[\big(I_0(\phi^n)-I_0(\phi^m)\big)^2\right]
+=\E\!\left[\int_0^T (\phi_t^n-\phi_t^m)^2\,\dd t\right].
+\]
+Hence if $(\phi^n)$ is Cauchy in $L^2(\Omega\times[0,T])$, then $(I_0(\phi^n))$ is Cauchy in $L^2(\Omega)$.
+\end{proposition}
+
+\begin{proof}
+By linearity,
+$I_0(\phi^n)-I_0(\phi^m)=I_0(\phi^n-\phi^m)$, and apply It\^o isometry to the simple process $\phi^n-\phi^m$.
+\end{proof}
+
+\textbf{To do on board}
+Key point: the integral is an \textbf{isometry}. Therefore the $L^2$ limit is natural.
+\textbf{To do on board}
+
+% ==========================================================
+\section{Definition for general integrands (the $L^2$ limit)}
+% ==========================================================
+
+\begin{definition}[It\^o integral]
+Let $\phi$ be adapted and satisfy $\E\!\int_0^T \phi_t^2\,\dd t<\infty$.
+Choose simple processes $\phi^n$ such that $\phi^n\to\phi$ in $L^2(\Omega\times[0,T])$.
+Define
+\[
+\int_0^T \phi_t\,\dd W_t := \lim_{n\to\infty} I_0(\phi^n)
+\quad\text{in } L^2(\Omega).
+\]
+\end{definition}
+
+\subsection{Well-definedness (independence of the approximation)}
+
+\begin{theorem}[Well-definedness]
+The limit above does not depend on the choice of the approximating sequence $(\phi^n)$.
+\end{theorem}
+
+\begin{proof}
+Let $\phi^n\to\phi$ and $\psi^n\to\phi$ in $L^2(\Omega\times[0,T])$. Then $\phi^n-\psi^n\to 0$ in that space, and
+by It\^o isometry for simple processes,
+\[
+\E\!\left[\big(I_0(\phi^n)-I_0(\psi^n)\big)^2\right]
+=\E\!\left[\int_0^T (\phi_t^n-\psi_t^n)^2\,\dd t\right]\xrightarrow[n\to\infty]{}0.
+\]
+Hence $I_0(\phi^n)-I_0(\psi^n)\to 0$ in $L^2(\Omega)$, so the limits coincide.
+\end{proof}
+
+\textbf{To do on board}
+Clean uniqueness proof: the $L^2$ metric + isometry does all the work.
+\textbf{To do on board}
+
+% ==========================================================
+\section{Main properties: martingale, covariance, time continuity}
+% ==========================================================
+
+\subsection{Martingale}
+
+For $t\le T$, define
+\[
+M_t := \int_0^t \phi_s\,\dd W_s.
+\]
+
+\begin{theorem}[Martingale property]
+If $\phi$ is adapted and $\E\!\int_0^T \phi_t^2\,\dd t<\infty$, then $(M_t)_{0\le t\le T}$
+is an $(\F_t)$-martingale and $\E[M_t]=0$.
+\end{theorem}
+
+\begin{proof}[Proof (simple case first, then extension)]
+\textbf{Simple case.} Let $\phi_t=\sum_k \phi_{t_k}\1_{(t_k,t_{k+1}]}(t)$.
+Fix $s<t$ and use a partition containing $s$. Then
+\[
+M_t-M_s=\sum_{k:\,t_k\in(s,t]} \phi_{t_k}\big(W_{t_{k+1}}-W_{t_k}\big).
+\]
+Condition on $\F_s$: each term has zero conditional mean (by iterated conditioning), hence
+$\E[M_t-M_s\mid\F_s]=0$ and therefore $\E[M_t\mid\F_s]=M_s$.
+
+\textbf{General case.} Approximate $\phi$ by simple $\phi^n$ in $L^2(\Omega\times[0,T])$.
+Then $M_t^n:=\int_0^t \phi_s^n\,\dd W_s$ are martingales and, by It\^o isometry,
+\[
+\E[(M_t^n-M_t)^2]=\E\!\int_0^t(\phi_s^n-\phi_s)^2\,\dd s\to 0.
+\]
+Use $L^2$-continuity of conditional expectation to pass to the limit in
+$\E[M_t^n\mid\F_s]=M_s^n$.
+\end{proof}
+
+\textbf{To do on board}
+\begin{itemize}
+  \item On the board: do the \textbf{simple} case only (clear and sufficient for intuition).
+  \item For the extension: ``$L^2$ approximation + continuity of $\E[\cdot\mid\F_s]$''.
+\end{itemize}
+\textbf{To do on board}
+
+\subsection{Isometry at time $t$ and polarization}
+
+\begin{proposition}[Isometry at time $t$]
+\[
+\E[M_t^2]=\E\!\left[\int_0^t \phi_s^2\,\dd s\right].
+\]
+\end{proposition}
+
+\begin{proposition}[Covariance / polarization]
+If $\phi,\psi$ are square-integrable, then
+\[
+\E\!\left[\Big(\int_0^t \phi_s\,\dd W_s\Big)\Big(\int_0^t \psi_s\,\dd W_s\Big)\right]
+=\E\!\left[\int_0^t \phi_s\psi_s\,\dd s\right].
+\]
+\end{proposition}
+
+\begin{proof}
+Use polarization:
+\[
+4\langle A,B\rangle = \|A+B\|^2-\|A-B\|^2,
+\]
+with $A=\int_0^t\phi\,\dd W$ and $B=\int_0^t\psi\,\dd W$, and apply the isometry to $\phi\pm\psi$.
+\end{proof}
+
+\subsection{Time continuity (brief)}
+
+\begin{proposition}[$L^2$ continuity]
+For $s<t$,
+\[
+\E[(M_t-M_s)^2]=\E\!\left[\int_s^t \phi_u^2\,\dd u\right]\xrightarrow[t\to s]{}0.
+\]
+\end{proposition}
+
+\begin{remark}
+One can then cite: an $L^2$-continuous martingale admits a continuous modification
+(standard results via Doob/BDG inequalities). We do not reprove this here.
+\end{remark}
+
+% ==========================================================
+\section{Why right-point sampling creates an extra ``drift''}
+% ==========================================================
+
+\subsection{Canonical example: $\phi_t=W_t$}
+
+On a uniform partition:
+\[
+L_n=\sum_k W_{t_k}\Delta W_k,\qquad
+R_n=\sum_k W_{t_{k+1}}\Delta W_k.
+\]
+We have $R_n=L_n+\sum_k(\Delta W_k)^2$, hence $R_n=L_n+T+o_{\Pbb}(1)$.
+
+\begin{proposition}[Limit identification (formula to remember)]
+\[
+\int_0^T W_t\,\dd W_t=\frac12\big(W_T^2-T\big).
+\]
+\end{proposition}
+
+\begin{proof}[Proof via sums]
+Use the algebraic identity
+\[
+W_{t_{k+1}}^2-W_{t_k}^2
+=2W_{t_k}\Delta W_k+(\Delta W_k)^2.
+\]
+Summing over $k$:
+\[
+W_T^2-W_0^2=2\sum_k W_{t_k}\Delta W_k+\sum_k(\Delta W_k)^2.
+\]
+Therefore
+\[
+L_n=\sum_k W_{t_k}\Delta W_k
+=\frac12\Big(W_T^2-\sum_k(\Delta W_k)^2\Big)
+\xrightarrow[n\to\infty]{\Pbb}\frac12(W_T^2-T),
+\]
+because $\sum_k(\Delta W_k)^2\to T$ in probability.
+By definition, the limit of $L_n$ is $\int_0^T W_t\,\dd W_t$.
+\end{proof}
+
+\textbf{To do on board}
+\begin{itemize}
+  \item Very accessible proof: only algebra + quadratic variation.
+  \item Point out: the term $-T/2$ is exactly the It\^o correction.
+\end{itemize}
+\textbf{To do on board}
+
+% ==========================================================
+\section{Deterministic integrand: Gaussianity and variance}
+% ==========================================================
+
+\begin{theorem}[Deterministic case]
+If $f\in L^2(0,T)$ is deterministic, then
+\[
+\int_0^T f(t)\,\dd W_t \sim \mathcal N\!\Big(0,\ \int_0^T f(t)^2\,\dd t\Big).
+\]
+\end{theorem}
+
+\begin{proof}[Clean and short proof idea]
+Approximate $f$ by step functions $f^n=\sum_k c_k\1_{(t_k,t_{k+1}]}$ in $L^2(0,T)$.
+Then
+\[
+\int_0^T f^n(t)\,\dd W_t=\sum_k c_k\big(W_{t_{k+1}}-W_{t_k}\big),
+\]
+a sum of independent Gaussian variables, hence Gaussian with mean $0$ and variance
+$\sum_k c_k^2(t_{k+1}-t_k)=\int_0^T (f^n)^2$.
+By It\^o isometry, $\int f^n\,\dd W\to \int f\,\dd W$ in $L^2$, hence in law, and the variances converge to $\int f^2$.
+The limit of centered Gaussians whose variances converge is centered Gaussian with the limit variance.
+\end{proof}
+
+% ==========================================================
+\section{Quadratic variation link: $[M]_t=\int_0^t \phi^2$ (preview)}
+% ==========================================================
+
+\begin{theorem}[Quadratic variation of an It\^o integral (statement)]
+If $M_t=\int_0^t \phi_s\,\dd W_s$, then
+\[
+[M]_t=\int_0^t \phi_s^2\,\dd s.
+\]
+\end{theorem}
+
+\begin{proof}[Sketch (to be detailed later)]
+For a partition $\pi$ of $[0,t]$,
+\[
+\sum_k (M_{t_{k+1}}-M_{t_k})^2
+=\sum_k \left(\int_{t_k}^{t_{k+1}}\phi_s\,\dd W_s\right)^2.
+\]
+Decompose
+\[
+\int_{t_k}^{t_{k+1}}\phi_s\,\dd W_s
+=\phi_{t_k}(W_{t_{k+1}}-W_{t_k})+\int_{t_k}^{t_{k+1}}(\phi_s-\phi_{t_k})\,\dd W_s,
+\]
+and control the error by It\^o isometry:
+\[
+\E\left[\left(\int_{t_k}^{t_{k+1}}(\phi_s-\phi_{t_k})\,\dd W_s\right)^2\right]
+=\E\int_{t_k}^{t_{k+1}}(\phi_s-\phi_{t_k})^2\,\dd s \to 0
+\quad\text{as }|\pi|\to 0.
+\]
+The main term yields
+\[
+\sum_k \phi_{t_k}^2 (W_{t_{k+1}}-W_{t_k})^2 \approx \sum_k \phi_{t_k}^2 (t_{k+1}-t_k)
+\to \int_0^t \phi_s^2\,\dd s.
+\]
+\end{proof}
+
+\textbf{To do on board}
+You can say: ``we will justify this properly when we develop covariation''.
+But giving the formula now is useful: it explains the It\^o correction later.
+\textbf{To do on board}
+
+% ==========================================================
+\section{Preview of the next lecture: toward It\^o's formula}
+% ==========================================================
+
+\begin{remark}[Roadmap]
+Next lecture: covariation $[X,Y]$, the multiplication table ($dW^2=dt$),
+product rule, then It\^o for $f(t,X_t)$.
+Main takeaway today:
+\[
+\int_0^t \phi\,\dd W \text{ is a martingale and }
+\E\left[\left(\int_0^t \phi\,\dd W\right)^2\right]=\E\int_0^t \phi^2.
+\]
+\end{remark}
+
+\end{document}

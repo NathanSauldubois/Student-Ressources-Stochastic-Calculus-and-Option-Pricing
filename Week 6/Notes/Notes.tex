@@ -1,0 +1,941 @@
+\documentclass[11pt]{article}
+
+% ============================================================
+% Packages
+% ============================================================
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{microtype}
+
+% ============================================================
+% Macros
+% ============================================================
+
+\newcommand{\Pbb}{\mathbb{P}}
+\newcommand{\Qbb}{\mathbb{Q}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Nbb}{\mathcal{N}}
+\newcommand{\dd}{\,\mathrm{d}}
+\newcommand{\1}{\mathbf{1}}
+
+% Brownian / stochastic calculus
+\newcommand{\F}{\mathcal{F}}
+\newcommand{\Filtration}{(\mathcal{F}_t)_{t\ge 0}}
+
+% ============================================================
+% Environments
+% ============================================================
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+\newtheorem{lemma}{Lemma}
+
+\newtheorem{definition}{Definition}
+\newtheorem{remark}{Remark}
+
+% ============================================================
+% Title
+% ============================================================
+
+\title{\textbf{Girsanov's Theorem and Risk-Neutral Pricing}\\
+\large Lecture Notes (Antisèche)}
+\author{Nathan Sauldubois}
+\date{MSFE6233 --- Option Pricing}
+
+\begin{document}
+\maketitle
+\vspace{-1.2em}
+
+\noindent\textbf{Purpose of these notes.}
+These notes provide a concise and intuitive introduction to:
+\begin{itemize}[leftmargin=1.4em, itemsep=0.2em]
+  \item change of probability measure,
+  \item Girsanov’s theorem for Brownian motion,
+  \item its role in Black--Scholes pricing and delta hedging.
+\end{itemize}
+
+The emphasis is on intuition, structure, and practical use in option pricing,
+rather than full technical proofs.
+
+\vspace{0.5em}
+\hrule
+\vspace{1em}
+
+% ==========================================================
+% ============================================================
+\section*{Part A --- Change of probability measure + conditioning (Bayes rule)}
+% ============================================================
+
+\subsection*{A.1 Change of measure: finite space first, then general case}
+
+\textbf{Pedagogical goal.} Start with a \emph{finite} sample space (probabilities are just numbers),
+then abstract the same computation with a density $Z=\frac{d\Qbb}{d\Pbb}$.
+
+\paragraph{Finite probability space (discrete case).}
+Let $\Omega=\{\omega_1,\dots,\omega_m\}$ and let $\Pbb$ and $\Qbb$ be two probability measures
+with $\Pbb(\omega_i)>0$ and $\Qbb(\omega_i)>0$ for all $i$.
+Define the (pointwise) density
+\[
+Z(\omega_i):=\frac{\Qbb(\omega_i)}{\Pbb(\omega_i)}.
+\]
+Then $Z(\omega_i)\ge 0$ and
+\[
+\sum_{i=1}^m Z(\omega_i)\,\Pbb(\omega_i)
+=
+\sum_{i=1}^m \Qbb(\omega_i)
+=
+1,
+\qquad\text{i.e.}\qquad
+\E^{\Pbb}[Z]=1.
+\]
+For any random variable $Y:\Omega\to\R$,
+\[
+\E^{\Qbb}[Y]
+=
+\sum_{i=1}^m Y(\omega_i)\Qbb(\omega_i)
+=
+\sum_{i=1}^m Y(\omega_i)\,Z(\omega_i)\,\Pbb(\omega_i)
+=
+\E^{\Pbb}[ZY].
+\]
+
+\textbf{Key identity:} $\displaystyle \E^{\Qbb}[Y]=\E^{\Pbb}[ZY]$.
+Think of $Z$ as \emph{reweighting scenarios}.
+
+
+\paragraph{General case (Radon--Nikodym density viewpoint).}
+On a general space $(\Omega,\F,\Pbb)$, let $Z$ be a nonnegative random variable such that
+\[
+Z\ge 0,\qquad \E^{\Pbb}[Z]=1.
+\]
+Define a new probability measure $\Qbb$ on $(\Omega,\F)$ by
+\[
+\Qbb(A):=\E^{\Pbb}[Z\,\1_A],\qquad A\in\F.
+\]
+Then $\Qbb(\Omega)=\E^{\Pbb}[Z]=1$, hence $\Qbb$ is a probability measure.
+
+\begin{remark}[Equivalence $\Pbb\sim\Qbb$ (same null events)]
+If $Z>0$ $\Pbb$-a.s.\ (and also $1/Z$ integrable on relevant sigma-fields), then $\Pbb$ and $\Qbb$
+are \emph{equivalent}: $\Pbb(A)=0$ iff $\Qbb(A)=0$. Intuitively: $Z$ never kills events completely.
+\end{remark}
+
+% ------------------------------------------------------------
+\subsection*{A.2 Conditioning under $\Qbb$: Bayes rule}
+
+
+Let $\mathcal G\subset \F$ be a sub-$\sigma$-algebra and let $Y$ be integrable under $\Qbb$ (equivalently $ZY$ integrable under $\Pbb$).
+Assume $Z$ is such that $\E^{\Pbb}[Z\mid\mathcal G]>0$ a.s.
+Then:
+\begin{theorem}[Bayes rule / conditioning under a change of measure]
+\[
+\boxed{
+\ \E^{\Qbb}[Y\mid\mathcal G]
+=
+\frac{\E^{\Pbb}[ZY\mid\mathcal G]}{\E^{\Pbb}[Z\mid\mathcal G]}\ .
+}
+\]
+\end{theorem}
+
+\begin{remark}[Two immediate corollaries]
+\begin{itemize}[leftmargin=1.4em]
+\item If $Y$ is $\mathcal G$-measurable, then $\E^{\Qbb}[Y\mid\mathcal G]=Y$.
+\item Taking expectations ($\mathcal G=\{\emptyset,\Omega\}$) gives back $\E^{\Qbb}[Y]=\E^{\Pbb}[ZY]$.
+\end{itemize}
+\end{remark}
+
+
+\textbf{Mini oral exercise (30 seconds).}
+If $Y$ is $\mathcal G$-measurable, compute $\E^{\Qbb}[Y\mid\mathcal G]$.
+Answer: $Y$.
+
+
+% ============================================================
+\section*{Part B --- Gaussian example: exponential tilting shifts the mean}
+% ============================================================
+
+\subsection*{B.1 Main message: reweighting moves the mean}
+
+
+\textbf{Punchline.} Multiply the density by an exponential $\Rightarrow$ complete the square
+$\Rightarrow$ same variance, shifted mean.
+This is the finite-dimensional prototype of Girsanov.
+
+
+Let $X\sim\mathcal N(0,1)$ under $\Pbb$ and fix $\theta\in\R$.
+Define
+\[
+Z:=\exp\!\Big(-\theta X-\tfrac12\theta^2\Big).
+\]
+Then $\E^{\Pbb}[Z]=1$ (easy check by Gaussian mgf), so we can define a new probability measure $\widetilde{\Pbb}$ by
+\[
+\widetilde{\Pbb}(A):=\E^{\Pbb}[Z\,\1_A].
+\]
+
+\paragraph{Density computation.}
+Under $\Pbb$, the density of $X$ is $\varphi(x)=\frac{1}{\sqrt{2\pi}}e^{-x^2/2}$.
+Under $\widetilde{\Pbb}$, the (unnormalized) density is proportional to $Z(x)\varphi(x)$:
+\[
+Z(x)\varphi(x)
+=
+\exp\!\Big(-\theta x-\tfrac12\theta^2\Big)\cdot \frac{1}{\sqrt{2\pi}}e^{-x^2/2}
+=
+\frac{1}{\sqrt{2\pi}}
+\exp\!\Big(-\tfrac12(x+\theta)^2\Big).
+\]
+So the law is Gaussian with shifted mean:
+\[
+X \sim \mathcal N(-\theta,1)\quad\text{under }\widetilde{\Pbb}.
+\]
+Equivalently,
+\[
+X+\theta \sim \mathcal N(0,1)\quad\text{under }\widetilde{\Pbb}.
+\]
+
+
+\textbf{Interpretation.}
+We did not change the variable $X$; we changed the \emph{probabilities of scenarios}.
+The exponential weight makes negative values of $X$ more likely (if $\theta>0$),
+hence shifts the mean to $-\theta$.
+
+
+\subsection*{B.2 Transition to the continuous-time setting}
+In continuous time, the same idea is applied to a whole Brownian path:
+\[
+X \quad\leadsto\quad \int_0^T \theta_t\,\dd W_t,
+\qquad
+Z \quad\leadsto\quad \mathcal E\!\left(-\int_0^\cdot \theta_t\,\dd W_t\right)_T,
+\]
+where $\mathcal E(\cdot)$ is the Dol\'eans--Dade exponential.
+Girsanov's theorem is precisely the statement that this change of measure
+\emph{turns a drifted Brownian motion back into a Brownian motion}.
+
+
+% ============================================================
+\section*{Part C --- Brownian motion under a new probability:
+Cameron--Martin then Girsanov (detailed lecture notes)}
+% ============================================================
+
+\subsection*{C.0 The big picture (what we are doing)}
+
+
+\textbf{Meta-goal (2 sentences).}
+We want to \emph{change probabilities} so that a process that has a drift under $\Pbb$
+becomes driftless under $\Qbb$ (or conversely).
+In finance, this will allow us to make \emph{discounted prices} look like martingales.
+
+
+
+\textbf{One-sentence summary.}
+Pick a positive random variable $Z_T$ with $\E^{\Pbb}[Z_T]=1$,
+set $\dd\Qbb = Z_T\,\dd\Pbb$,
+then under $\Qbb$ the noise changes from $W$ to $W-\int \phi$.
+
+% ==========================================================
+% ============================================================
+\subsection*{C.1 Warm-up: deterministic drift (Cameron--Martin)}
+
+
+\textbf{Pedagogical plan.}
+(1) Start with deterministic drift: it is basically ``Gaussian tilting'' on paths.
+(2) Do the one computation that shows $\E[Z_T]=1$.
+(3) State the result: drift gets absorbed into the measure.
+
+
+Let $T>0$ and $(W_t)_{0\le t\le T}$ be a $d$-dimensional Brownian motion under $\Pbb$.
+Take a \emph{deterministic} function $h:[0,T]\to\R^d$ with $h\in L^2([0,T])$.
+
+\paragraph{Step 1: define the density.}
+Set
+\[
+Z_T
+:=
+\exp\!\left(
+\int_0^T h(t)\cdot \dd W_t
+-
+\frac12\int_0^T |h(t)|^2\,\dd t
+\right).
+\]
+
+\paragraph{Step 2: check it integrates to 1 (quick Gaussian computation).}
+Since $h$ is deterministic,
+\[
+X:=\int_0^T h(t)\cdot \dd W_t
+\sim \mathcal N\!\left(0,\; \int_0^T |h(t)|^2\,\dd t\right).
+\]
+Hence by the mgf of a centered Gaussian,
+\[
+\E^{\Pbb}\!\left[e^{X}\right]
+=
+\exp\!\left(\frac12\text{Var}(X)\right)
+=
+\exp\!\left(\frac12\int_0^T |h(t)|^2\,\dd t\right).
+\]
+Therefore
+\[
+\E^{\Pbb}[Z_T]
+=
+\E^{\Pbb}\!\left[\exp\!\left(X-\frac12\text{Var}(X)\right)\right]
+=
+1.
+\]
+
+\paragraph{Step 3: define the new measure.}
+Define $\Qbb$ on $\mathcal F_T$ by
+\[
+\frac{\dd\Qbb}{\dd\Pbb}\Big|_{\mathcal F_T}=Z_T,
+\qquad\text{i.e.}\qquad
+\Qbb(A)=\E^{\Pbb}[\mathbf{1}_A Z_T].
+\]
+
+\begin{theorem}[Cameron--Martin (deterministic drift)]
+Under $\Qbb$, the process
+\[
+B_t
+:=
+W_t-\int_0^t h(u)\,\dd u,
+\qquad 0\le t\le T,
+\]
+is a $d$-dimensional Brownian motion.
+\end{theorem}
+
+
+\textbf{Intuition to hammer.}
+\begin{itemize}[leftmargin=1.4em]
+\item $Z_T$ is larger when $\int_0^T h\cdot \dd W$ is large:
+we \emph{reward} paths that correlate with $h$.
+\item This ``pushes'' $W$ to look like it has drift $\int h$.
+\item After changing the probability, the drift is absorbed:
+$B=W-\int h$ becomes the new Brownian motion.
+\end{itemize}
+
+
+
+\textbf{(Optional) Quick check of increments intuition.}
+Under $\Qbb$, the increments of $B$ remain independent and Gaussian,
+because we essentially shifted the mean of Gaussian vectors
+(the path-level analogue of the 1D tilting example).
+
+
+% ============================================================
+\subsection*{C.2 From deterministic to adapted drift: why this is harder}
+
+
+\textbf{What changes now.}
+If we replace $h(t)$ by a \emph{random} process $\phi_t(\omega)$,
+then $\int_0^T \phi_t\cdot \dd W_t$ is no longer a simple Gaussian:
+we lose the direct mgf computation.
+So we need a stochastic calculus tool to control $\E[Z_T]$.
+
+
+% ============================================================
+\subsection*{C.3 Stochastic exponential (Doléans--Dade) and its SDE}
+
+Let $\phi=(\phi_t)_{0\le t\le T}$ be $\R^d$-valued, progressively measurable,
+and assume
+\[
+\int_0^T |\phi_t|^2\,\dd t<\infty \quad\text{a.s.}
+\]
+Define, for $0\le t\le T$,
+\[
+Z_t
+:=
+\exp\!\left(
+\int_0^t \phi_s\cdot \dd W_s
+-
+\frac12\int_0^t |\phi_s|^2\,\dd s
+\right).
+\]
+
+
+\textbf{Why this definition?}
+It is designed so that $Z$ behaves like an exponential martingale,
+just like $e^{\theta W_t-\frac12\theta^2 t}$ in the constant case.
+The extra $-\frac12\int|\phi|^2$ term compensates the quadratic variation.
+
+
+\paragraph{Key computation.}
+Let
+\[
+Y_t:=\int_0^t \phi_s\cdot \dd W_s - \frac12\int_0^t |\phi_s|^2\,\dd s,
+\qquad\text{so } Z_t=e^{Y_t}.
+\]
+Then
+\[
+\dd Y_t = \phi_t\cdot \dd W_t - \frac12|\phi_t|^2\,\dd t,
+\qquad
+\dd\langle Y\rangle_t = |\phi_t|^2\,\dd t.
+\]
+Apply It\^o to $e^{Y_t}$:
+\[
+\dd Z_t
+=
+Z_t\,\dd Y_t + \frac12 Z_t\,\dd\langle Y\rangle_t
+=
+Z_t\left(\phi_t\cdot \dd W_t - \frac12|\phi_t|^2\,\dd t\right)
++\frac12 Z_t |\phi_t|^2\,\dd t
+=
+Z_t\,\phi_t\cdot \dd W_t.
+\]
+So
+\[
+\boxed{\ \dd Z_t = Z_t\,\phi_t\cdot \dd W_t,\qquad Z_0=1. \ }
+\]
+
+
+\textbf{Immediate consequences.}
+\begin{itemize}[leftmargin=1.4em]
+\item $Z_t\ge 0$.
+\item It is a supermartingale and 
+$\E[Z_t]\le 1$.
+\item For a change of measure, we need $\E[Z_T]=1$
+(i.e.\ $Z$ is a true martingale).
+\end{itemize}
+
+
+% ============================================================
+\subsection*{C.4 Novikov condition (a usable sufficient condition)}
+
+\begin{theorem}[Novikov (sufficient condition)]
+If
+\[
+\E^{\Pbb}\!\left[
+\exp\!\left(\frac12\int_0^T |\phi_s|^2\,\dd s\right)
+\right]<\infty,
+\]
+then $(Z_t)_{0\le t\le T}$ is a true martingale and $\E^{\Pbb}[Z_T]=1$.
+\end{theorem}
+
+
+\textbf{How to present it.}
+``Novikov is a technical condition that guarantees our density integrates to 1.
+We do not prove it today; we just use it as a checkable assumption.''
+
+
+% ============================================================
+\subsection*{C.5 Girsanov theorem (general adapted drift)}
+
+Assume $\E^{\Pbb}[Z_T]=1$ and define $\Qbb$ on $\mathcal F_T$ by
+\[
+\frac{\dd\Qbb}{\dd\Pbb}\Big|_{\mathcal F_T}=Z_T.
+\]
+
+\begin{theorem}[Girsanov]
+Under $\Qbb$, the process
+\[
+B_t
+:=
+W_t-\int_0^t \phi_s\,\dd s
+\]
+is a $d$-dimensional Brownian motion.
+Equivalently,
+\[
+W_t = B_t+\int_0^t \phi_s\,\dd s,
+\]
+so $W$ has drift $\int \phi$ when viewed under $\Qbb$.
+\end{theorem}
+
+
+\textbf{Interpretation (say it slowly).}
+\begin{itemize}[leftmargin=1.4em]
+\item Under $\Pbb$, $W$ is Brownian.
+\item We define $\Qbb$ by tilting paths with $Z_T$.
+\item Under $\Qbb$, the new Brownian motion is $B=W-\int \phi$.
+\item \textbf{So: drift can be moved from the SDE into the measure (and back).}
+\end{itemize}
+
+
+% ============================================================
+\subsection*{C.6 ``How do we compute under $\Qbb$?'' (practical formulas)}
+
+
+\textbf{This is what students must be able to use.}
+If $\dd\Qbb = Z_T\,\dd\Pbb$, then expectations under $\Qbb$
+are expectations under $\Pbb$ with weight $Z_T$.
+
+
+For any integrable random variable $Y$ (measurable w.r.t.\ $\mathcal F_T$),
+\[
+\boxed{\ \E^{\Qbb}[Y]=\E^{\Pbb}[Z_T\,Y].\ }
+\]
+For conditional expectations: for $0\le s\le T$,
+\[
+\boxed{\ \E^{\Qbb}[Y\mid\mathcal F_s]
+=
+\frac{1}{Z_s}\,\E^{\Pbb}[Z_T\,Y\mid\mathcal F_s].\ }
+\]
+(Proof is Bayes rule; we use it as a computational tool.)
+
+
+\textbf{Mini-example (constant drift case).}
+If $\phi_t\equiv \theta$ (constant), then
+$Z_T=\exp(\theta W_T-\frac12\theta^2T)$ and
+$B_t=W_t-\theta t$ is Brownian under $\Qbb$.
+So under $\Qbb$, $W_T \sim \mathcal N(\theta T,\,T)$.
+
+
+\paragraph{Concrete computation example.}
+Let $\theta\in\R$ constant and $f$ integrable. Then under $\Qbb$:
+\[
+\E^{\Qbb}[f(W_T)]
+=
+\E^{\Pbb}\!\left[
+f(W_T)\exp\!\left(\theta W_T-\frac12\theta^2T\right)
+\right].
+\]
+Since $W_T\sim\mathcal N(0,T)$ under $\Pbb$, this is exactly the Gaussian tilting identity:
+the weight shifts the mean by $\theta T$.
+
+% ============================================================
+\subsection*{C.7 ``Effect on a generic It\^o process'' (bridge to finance)}
+
+
+\textbf{Useful template.}
+Suppose under $\Pbb$:
+\[
+\dd X_t = b_t\,\dd t + a_t\cdot \dd W_t.
+\]
+If we define $\Qbb$ with $\phi$ and $B=W-\int\phi$,
+then $\dd W_t = \dd B_t + \phi_t\,\dd t$.
+So under $\Qbb$:
+\[
+\dd X_t = (b_t+a_t\cdot \phi_t)\,\dd t + a_t\cdot \dd B_t.
+\]
+\textbf{Only the drift changes; volatility stays the same.}
+
+% ============================================================
+\section*{Part D --- Back to Black--Scholes:
+drift $\mu$ vs $r$, and the ``risk-neutral measure'' (25--30 min)}
+% ============================================================
+
+\section*{Part D --- Back to Black--Scholes: \texorpdfstring{$\Delta$}{Delta}-hedging \texorpdfstring{$\Rightarrow$}{=>} PDE \texorpdfstring{$\Rightarrow$}{=>} expectation}
+% ==========================================================
+
+% ----------------------------------------------------------
+\subsection*{D.1 Delta hedging under the Black--Scholes model (replication viewpoint)}
+% ----------------------------------------------------------
+
+\paragraph{Market model.}
+We work on a filtered space $(\Omega,\mathcal F,(\mathcal F_t)_{t\in[0,T]},\Pbb)$ supporting
+a Brownian motion $W$, and assume the \emph{Black--Scholes} dynamics
+\[
+\frac{\dd S_t}{S_t}=\mu\,\dd t+\sigma\,\dd W_t,
+\qquad \mu\in\R,\ \sigma>0,
+\]
+together with a money market account
+\[
+\dd B_t=rB_t\,\dd t,
+\qquad B_0=1,
+\qquad B_t=e^{rt},
+\]
+where $r$ is constant. Define the discount factor $D_t:=B_t^{-1}=e^{-rt}$.
+
+\paragraph{European derivative as a Markov price function.}
+Let the payoff be $H=g(S_T)$ (e.g.\ a call: $g(s)=(s-K)_+$).
+Assume the time-$t$ price has the form
+\[
+V_t = p(t,S_t),
+\qquad 0\le t\le T,
+\qquad p(T,s)=g(s),
+\]
+for a sufficiently smooth function $p$.
+
+\paragraph{It\^o expansion.}
+By It\^o's formula,
+\[
+\dd p(t,S_t)
+=
+\partial_t p(t,S_t)\,\dd t
++\partial_s p(t,S_t)\,\dd S_t
++\frac12\,\partial_{ss}p(t,S_t)\,(\dd S_t)^2,
+\]
+and since $(\dd S_t)^2=\sigma^2 S_t^2\,\dd t$, we get
+\[
+\dd p(t,S_t)
+=
+\Big(\partial_t p(t,S_t)+\mu S_t\partial_s p(t,S_t)
++\tfrac12\sigma^2 S_t^2\partial_{ss}p(t,S_t)\Big)\dd t
++\sigma S_t\partial_s p(t,S_t)\,\dd W_t.
+\]
+
+\paragraph{Self-financing replicating portfolio.}
+Consider a trading strategy holding $\Delta_t$ shares of stock and $\beta_t$ units of cash:
+\[
+X_t:=\Delta_t S_t+\beta_t B_t.
+\]
+The strategy is \emph{self-financing} if
+\[
+\dd X_t=\Delta_t\,\dd S_t+\beta_t\,\dd B_t
+=\Delta_t\,\dd S_t+r\big(X_t-\Delta_t S_t\big)\dd t.
+\]
+Replication means $X_t\equiv p(t,S_t)$, hence $\dd X_t=\dd p(t,S_t)$.
+
+\paragraph{Kill the stochastic term (the hedge).}
+Compare the coefficients of $\dd W_t$ in $\dd X_t$ and $\dd p(t,S_t)$:
+\[
+\sigma S_t\,\Delta_t
+=
+\sigma S_t\,\partial_s p(t,S_t)
+\quad\Longrightarrow\quad
+\boxed{\ \Delta_t=\partial_s p(t,S_t).\ }
+\]
+This is the \textbf{Black--Scholes delta hedge}.
+
+\paragraph{Drift matching and the Black--Scholes PDE.}
+Plugging $\Delta_t=\partial_s p(t,S_t)$ into the drift terms gives
+\[
+r\big(p(t,S_t)-S_t\partial_s p(t,S_t)\big)\dd t
+=
+\Big(\partial_t p(t,S_t)+\mu S_t\partial_s p(t,S_t)
++\tfrac12\sigma^2 S_t^2\partial_{ss}p(t,S_t)\Big)\dd t
+-\mu S_t\partial_s p(t,S_t)\dd t.
+\]
+The $\mu$ terms cancel (key point), and we obtain the valuation PDE:
+\[
+\boxed{\ \partial_t p(t,s)+rs\,\partial_s p(t,s)
++\frac12\sigma^2 s^2\,\partial_{ss}p(t,s)-r\,p(t,s)=0,
+\qquad p(T,s)=g(s).\ }
+\]
+
+\begin{itemize}[leftmargin=1.4em, itemsep=0.15em]
+\item \textbf{Key message:} $\mu$ disappears $\Rightarrow$ the arbitrage-free price does not depend on the real drift.
+\item \textbf{Key object for the HW:} the hedge is $\Delta_t=\partial_s p(t,S_t)$.
+\end{itemize}
+
+% ----------------------------------------------------------
+\subsection*{D.2 Discrete-time delta hedging (exactly what the Python lab implements)}
+% ----------------------------------------------------------
+
+In practice we rebalance on a grid $0=t_0<t_1<\cdots<t_n=T$.
+Define the discounted stock $\bar S_t:=D_tS_t=e^{-rt}S_t$.
+
+\paragraph{Discounted self-financing wealth.}
+Starting from initial capital $X_0=p(0,S_0)$ and using the delta at the \emph{left point},
+the discounted terminal wealth is
+\[
+e^{-rT}X_T^{\,n}
+=
+p(0,S_0)
++
+\sum_{i=1}^{n}\Delta_{t_{i-1}}\Big(\bar S_{t_i}-\bar S_{t_{i-1}}\Big),
+\qquad
+\Delta_{t_{i-1}}=\partial_s p(t_{i-1},S_{t_{i-1}}).
+\]
+Equivalently, in non-discounted units:
+\[
+X_T^{\,n}
+=
+e^{rT}p(0,S_0)
++
+e^{rT}\sum_{i=1}^{n}\Delta_{t_{i-1}}\Big(e^{-rt_i}S_{t_i}-e^{-rt_{i-1}}S_{t_{i-1}}\Big).
+\]
+
+\paragraph{Hedging error (P\&L).}
+The (pathwise) hedging error is
+\[
+\mathrm{PL}_T^{\,n}:=X_T^{\,n}-g(S_T).
+\]
+Under the ideal continuous-time model (continuous trading), the replication error is $0$.
+With discrete rebalancing, $\mathrm{PL}_T^{\,n}$ is typically non-zero, and its variance decreases as the grid is refined.
+
+\begin{itemize}[leftmargin=1.4em, itemsep=0.15em]
+\item \textbf{This is the main object in the HW:} simulate $S$, compute $\Delta_{t_{i-1}}$, accumulate the sum,
+then compare $X_T^{\,n}$ to $g(S_T)$.
+\item \textbf{Interpretation:} the remaining risk is due to discrete hedging (and, in practice, model error and transaction costs).
+\end{itemize}
+
+% ----------------------------------------------------------
+\subsection*{D.3 Closed-form call price and delta (formulas used in the lab)}
+% ----------------------------------------------------------
+
+For the European call payoff $g(s)=(s-K)_+$, the Black--Scholes closed-form price is
+\[
+p(0,S_0)=S_0\,\mathbf N(d_+)-Ke^{-rT}\,\mathbf N(d_-),
+\]
+with
+\[
+d_\pm=\frac{\ln\!\left(\frac{S_0}{Ke^{-rT}}\right)}{\sigma\sqrt{T}}
+\pm\frac12\sigma\sqrt{T},
+\qquad
+\mathbf N(x)=\int_{-\infty}^x\frac{e^{-y^2/2}}{\sqrt{2\pi}}\,\dd y.
+\]
+At time $t$, the delta hedge is
+\[
+\boxed{\ \Delta_t
+=\partial_s p(t,S_t)
+=\mathbf N\!\left(d_+(t,S_t)\right),\qquad
+d_+(t,s)=\frac{\ln\!\left(\frac{s}{Ke^{-r(T-t)}}\right)}{\sigma\sqrt{T-t}}
++\frac12\sigma\sqrt{T-t}. }
+\]
+
+% ----------------------------------------------------------
+\subsection*{D.4 From the PDE to a discounted expectation (motivation for Girsanov)}
+% ----------------------------------------------------------
+
+The PDE can be transformed into the heat equation (change of variables) and solved explicitly.
+The outcome is the \emph{discounted expectation representation}:
+\[
+\boxed{\ p(t,s)
+=
+\E\!\left[e^{-r(T-t)}\,g\!\left(s\exp\!\left((r-\tfrac12\sigma^2)(T-t)+\sigma\sqrt{T-t}\,Z\right)\right)\right],
+\quad Z\sim\Nbb(0,1). }
+\]
+
+\begin{itemize}[leftmargin=1.4em, itemsep=0.15em]
+\item In words: solve the hedging PDE $\Rightarrow$ the price is a discounted expectation under a drift $r$ dynamics.
+\item Next: Girsanov explains \emph{why} we can change the drift from $\mu$ to $r$ by changing the probability measure.
+\end{itemize}
+
+
+
+
+\subsection*{D.5 Immediate link: discounted stock and ``$\mu \to r$'' via Girsanov (10--12 min)}
+
+
+\textbf{Goal of this subsection.}
+Starting from the real-world dynamics
+\[
+\frac{\dd S_t}{S_t}=\mu_t\,\dd t+\sigma_t\,\dd W_t,
+\qquad \sigma_t>0,
+\]
+we build a new measure $\Qbb$ such that under $\Qbb$ the same stock satisfies
+\[
+\frac{\dd S_t}{S_t}=r_t\,\dd t+\sigma_t\,\dd B_t,
+\]
+so the \emph{discounted stock} becomes a martingale.
+
+
+\paragraph{Setup (write cleanly).}
+Assume:
+\[
+\frac{\dd S_t}{S_t}=\mu_t\,\dd t+\sigma_t\,\dd W_t,
+\qquad
+\dd B_t^{(0)}=r_t B_t^{(0)}\,\dd t,
+\qquad
+B_t^{(0)}=\exp\Big(\int_0^t r_s\,\dd s\Big),
+\qquad
+D_t:=\frac{1}{B_t^{(0)}}=\exp\Big(-\int_0^t r_s\,\dd s\Big).
+\]
+Define the discounted stock:
+\[
+\bar S_t := D_t S_t.
+\]
+
+\paragraph{Discounted dynamics under $\Pbb$.}
+Since $D$ has finite variation,
+\[
+\dd\bar S_t = \dd(D_t S_t)=D_t\,\dd S_t + S_t\,\dd D_t,
+\qquad
+\dd D_t = -r_t D_t\,\dd t.
+\]
+So
+\[
+\dd\bar S_t
+=
+D_t(\mu_t S_t\,\dd t+\sigma_t S_t\,\dd W_t) - r_t D_t S_t\,\dd t
+=
+(\mu_t-r_t)\bar S_t\,\dd t+\sigma_t \bar S_t\,\dd W_t.
+\]
+
+
+\textbf{Key message.}
+Under $\Pbb$, discounted prices typically have a drift $(\mu_t-r_t)$.
+We want a new probability where this drift disappears.
+
+
+\paragraph{Choose the Girsanov shift.}
+Define the (scalar) market price of risk
+\[
+\phi_t := \frac{\mu_t-r_t}{\sigma_t},
+\qquad\text{so that}\qquad
+(\mu_t-r_t)=\sigma_t \phi_t.
+\]
+Then
+\[
+\dd\bar S_t = \sigma_t \bar S_t(\phi_t\,\dd t + \dd W_t).
+\]
+
+\paragraph{Change of measure.}
+Define the stochastic exponential
+\[
+Z_t
+:=
+\exp\!\left(
+-\int_0^t \phi_s\,\dd W_s
+-\frac12\int_0^t \phi_s^2\,\dd s
+\right).
+\]
+Assume a condition ensuring $\E^{\Pbb}[Z_T]=1$ (e.g.\ Novikov):
+\[
+\E^{\Pbb}\!\left[\exp\!\left(\frac12\int_0^T \phi_s^2\,\dd s\right)\right]<\infty.
+\]
+Define $\Qbb$ on $\mathcal F_T$ by
+\[
+\frac{\dd\Qbb}{\dd\Pbb}\Big|_{\mathcal F_T}=Z_T.
+\]
+
+\begin{theorem}[Girsanov applied to $W$]
+Under $\Qbb$, the process
+\[
+B_t := W_t+\int_0^t \phi_s\,\dd s
+\]
+is a Brownian motion.
+Equivalently, $\dd W_t = \dd B_t - \phi_t\,\dd t$.
+\end{theorem}
+
+\paragraph{Apply it to the discounted stock.}
+Plug $\dd W_t = \dd B_t - \phi_t\,\dd t$ into
+$\dd\bar S_t = \sigma_t \bar S_t(\phi_t\,\dd t + \dd W_t)$:
+\[
+\dd\bar S_t
+=
+\sigma_t \bar S_t\big(\phi_t\,\dd t + \dd B_t - \phi_t\,\dd t\big)
+=
+\sigma_t \bar S_t\,\dd B_t.
+\]
+Hence, under $\Qbb$,
+\[
+\boxed{\ \dd(D_t S_t)=\sigma_t (D_t S_t)\,\dd B_t. \ }
+\]
+
+
+\textbf{Conclusion (say it explicitly).}
+Under $\Qbb$ the drift is replaced: $\mu_t \leadsto r_t$.
+The volatility $\sigma_t$ does not change.
+And the discounted stock $\bar S_t=D_tS_t$ has drift $0$
+(hence is a local martingale; with mild integrability, a true martingale).
+
+
+\paragraph{Equivalent ``risk-neutral dynamics''.}
+Since $\bar S_t=D_tS_t$ and $\dd\bar S_t=\sigma_t \bar S_t\,\dd B_t$, we can rewrite:
+\[
+\frac{\dd S_t}{S_t}
+=
+r_t\,\dd t+\sigma_t\,\dd B_t,
+\qquad (\text{under }\Qbb).
+\]
+
+% ============================================================
+\subsection*{D.6 Pricing: PDE $\Rightarrow$ ``expectation formula'' (Feynman--Kac viewpoint) (10--12 min)}
+
+
+\textbf{Where we are in the story.}
+Earlier (hedging), we derived the Black--Scholes PDE for
+\[
+V_t=p(t,S_t),\qquad p(T,s)=g(s).
+\]
+Now we explain why the PDE solution can be written as a discounted expectation
+under the dynamics with drift $r$ (the one obtained above).
+
+
+\paragraph{Recall the PDE (constant coefficients case).}
+For GBM with constant $(r,\sigma)$ and European payoff $g(S_T)$, the price function solves
+\[
+\boxed{
+\ \partial_t p(t,s) + r s\,\partial_s p(t,s)
++ \frac12\sigma^2 s^2\,\partial_{ss}p(t,s) - r\,p(t,s) = 0,
+\qquad p(T,s)=g(s).\ }
+\]
+
+
+\textbf{Interpretation (1 line).}
+This is a linear parabolic PDE: ``transport + diffusion + discounting''.
+
+
+\paragraph{Heuristic Feynman--Kac step (what you state without heavy proof).}
+Consider a process under some measure (call it $\Qbb$) with dynamics
+\[
+\frac{\dd S_t}{S_t}=r\,\dd t+\sigma\,\dd B_t,
+\qquad (B \text{ Brownian under }\Qbb).
+\]
+Then the PDE solution is represented by
+\[
+\boxed{\ p(t,s)=\E^{\Qbb}\!\left[e^{-r(T-t)}\,g(S_T)\,\Big|\,S_t=s\right].\ }
+\]
+In particular, at time $0$:
+\[
+\boxed{\ p(0,S_0)=\E^{\Qbb}\!\left[e^{-rT}\,g(S_T)\right].\ }
+\]
+
+
+\textbf{Message to students.}
+We do not need the full proof today.
+Think: the PDE describes the evolution of the price; the expectation formula
+describes the same object by averaging the terminal payoff along the diffusion paths.
+
+
+\paragraph{Optional: explicit distribution (constant coefficients).}
+If $r,\sigma$ are constant, then under $\Qbb$:
+\[
+S_T = S_t\exp\!\left(\Big(r-\tfrac12\sigma^2\Big)(T-t)+\sigma(B_T-B_t)\right),
+\quad B_T-B_t\sim \mathcal N(0,T-t).
+\]
+So the expectation becomes a Gaussian integral (leading to the closed-form call price).
+
+% ============================================================
+\subsection*{D.7 Proper definitions: num\'eraire, discounting, EMM, risk-neutral measure (8--10 min)}
+
+
+\textbf{Definitions to state cleanly (end of course).}
+Num\'eraire, discounted prices, equivalent martingale measure, risk-neutral measure.
+
+
+\paragraph{Num\'eraire and discount factor.}
+A strictly positive asset $(N_t)_{t\le T}$ used as a unit of account is called a \emph{num\'eraire}.
+In the Black--Scholes model, the standard num\'eraire is the money-market account
+\[
+B_t^{(0)}=\exp\Big(\int_0^t r_s\,\dd s\Big),
+\qquad
+D_t:=\frac{1}{B_t^{(0)}}.
+\]
+For any price process $X_t$, its \emph{discounted price} is
+\[
+\bar X_t := D_t X_t.
+\]
+
+\paragraph{Equivalent martingale measure (EMM).}
+A probability measure $\Qbb$ on $(\Omega,\mathcal F_T)$ is an \emph{equivalent martingale measure}
+(relative to the num\'eraire $B^{(0)}$) if:
+\begin{itemize}[leftmargin=1.8em, itemsep=0.2em]
+\item $\Qbb \sim \Pbb$ (equivalent measures: same null events),
+\item every discounted traded asset price is a $\Qbb$-martingale
+(at least a local martingale, plus integrability to be a true martingale).
+\end{itemize}
+In particular, for the stock:
+\[
+\bar S_t=D_t S_t \text{ is a martingale under }\Qbb.
+\]
+
+\paragraph{Risk-neutral measure (terminology in this model).}
+In the Black--Scholes model (complete market), the EMM is unique; it is commonly called
+\emph{the} risk-neutral measure. Under it, the stock satisfies
+\[
+\frac{\dd S_t}{S_t}=r_t\,\dd t+\sigma_t\,\dd B_t,
+\]
+and prices of European claims are given by
+\[
+V_t
+=
+\E^{\Qbb}\!\left[\frac{B_t^{(0)}}{B_T^{(0)}}\,g(S_T)\,\Big|\,\mathcal F_t\right]
+=
+\E^{\Qbb}\!\left[e^{-\int_t^T r_s\,\dd s}\,g(S_T)\,\Big|\,\mathcal F_t\right].
+\]
+
+
+\textbf{Final intuition (important).}
+Why drift $0$ for discounted prices?
+If $\bar S$ had a positive drift under the pricing measure, you would systematically earn money
+``on average'' by holding it (free lunch against the num\'eraire).
+No-arbitrage pushes discounted traded assets to have \emph{no drift} under the pricing measure.
+
+
+
+\textbf{(Optional) one-line uniqueness/completeness comment.}
+In complete models (like Black--Scholes), the EMM is unique.
+In incomplete models, there are many EMMs: pricing is no longer unique without extra criteria.
+
+\end{document}

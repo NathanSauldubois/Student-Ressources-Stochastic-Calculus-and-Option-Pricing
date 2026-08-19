@@ -1,0 +1,6262 @@
+\documentclass[11pt]{article}
+
+% ============================================================
+% Packages
+% ============================================================
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,mathtools,amsthm}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{microtype}
+
+\usepackage{listings}
+\usepackage{xcolor}
+
+\lstdefinestyle{mypython}{
+    language=Python,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue},
+    commentstyle=\color{teal},
+    stringstyle=\color{red},
+    showstringspaces=false,
+    breaklines=true,
+    breakatwhitespace=false,
+    columns=fullflexible,
+    keepspaces=true,
+    frame=single,
+    tabsize=4
+}
+
+% ============================================================
+% Macros
+% ============================================================
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Qbb}{\mathbb{Q}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\dd}{\,\mathrm{d}}
+
+% ============================================================
+% Environments
+% ============================================================
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+% ============================================================
+% Title
+% ============================================================
+\title{Option Pricing --- Lecture Notes}
+\author{Nathan Sauldubois}
+\date{MSFE6233 --- Fixed-Income Derivatives Pricing}
+
+\begin{document}
+% ============================================================
+\section{European option: pricing, hedging, and model risk}
+% ============================================================
+\subsection{The contract and the general objective}
+
+We begin with the simplest and most classical derivative contract: a
+European call option.
+
+\paragraph{Contract.}
+A European call option with maturity \(T\) and strike \(K\) gives its
+holder the right, but not the obligation, to buy the underlying asset at
+time \(T\) for the price \(K\).
+
+Its payoff is
+\[
+(S_T-K)^+.
+\]
+
+This is the natural benchmark contract for several reasons:
+\begin{itemize}[leftmargin=1.4em]
+    \item the payoff depends only on the terminal value \(S_T\),
+    \item the contract is liquid in many markets,
+    \item its price can be computed explicitly in the Black--Scholes
+    model,
+    \item and its hedge can be derived in a fully explicit way.
+\end{itemize}
+
+\paragraph{General objective of this section.}
+Our goal is not only to compute the price of the call, but also to
+understand how a pricing model generates a hedging strategy.
+
+More precisely, we want to explain the following chain of ideas:
+\begin{quote}
+a model specifies the dynamics of the underlying asset; from these
+dynamics, one derives a pricing formula and a pricing PDE; from the PDE,
+one extracts the delta; and this delta defines the dynamic hedging
+strategy.
+\end{quote}
+
+In the first step, we work in the Black--Scholes model, which provides a
+simple and fully explicit benchmark.
+
+Later in the section, we will revisit the same contract under a local
+volatility model and compare the corresponding hedging strategies.
+
+\subsection{A benchmark model: Black--Scholes}
+
+We now recall the Black--Scholes framework, which will serve as the
+benchmark model throughout this first example.
+
+\subsubsection{Risk-neutral dynamics}
+
+We assume that the market contains:
+\begin{itemize}[leftmargin=1.4em]
+    \item a risky asset \(S\),
+    \item and a money market account \(B\).
+\end{itemize}
+
+The money market account satisfies
+\[
+\mathrm{d}B_t=rB_t\,\mathrm{d}t,
+\qquad
+B_0=1,
+\]
+so that
+\[
+B_t=e^{rt},
+\]
+where \(r\) is the constant risk-free interest rate.
+
+\paragraph{Black--Scholes assumption under the risk-neutral measure.}
+Under the risk-neutral measure \(\Qbb\), the asset price is assumed to
+follow the stochastic differential equation
+\[
+\mathrm{d}S_t=rS_t\,\mathrm{d}t+\sigma S_t\,\mathrm{d}W_t,
+\]
+where:
+\begin{itemize}[leftmargin=1.4em]
+    \item \(r\) is the constant interest rate,
+    \item \(\sigma>0\) is the constant volatility,
+    \item \(W\) is a Brownian motion under \(\Qbb\).
+\end{itemize}
+
+\paragraph{Interpretation.}
+The risk-neutral dynamics say that, under \(\Qbb\), the expected rate of
+return of the asset is the risk-free rate \(r\), not the physical
+expected return of the stock.
+
+This is the key simplification of arbitrage-free pricing:
+once we move to the risk-neutral measure, derivative prices are obtained
+by discounting future payoffs at the risk-free rate.
+
+\paragraph{Explicit solution.}
+The Black--Scholes SDE admits the explicit solution
+\[
+S_T
+=
+S_t\exp\!\Big(
+\big(r-\tfrac12\sigma^2\big)(T-t)+\sigma(W_T-W_t)
+\Big).
+\]
+
+Thus the stock price is lognormal under \(\Qbb\), and the log-return
+\[
+\log\Big(\frac{S_T}{S_t}\Big)
+\]
+is Gaussian with mean
+\[
+\big(r-\tfrac12\sigma^2\big)(T-t)
+\]
+and variance
+\[
+\sigma^2(T-t).
+\]
+
+This explicit structure is what makes the Black--Scholes model so
+tractable.
+
+\subsubsection{Risk-neutral pricing formula}
+
+Let \(u(t,s)\) denote the price at time \(t\) of the European call when
+the current stock price is \(s\).
+
+\paragraph{Risk-neutral valuation.}
+Under the usual assumptions of no arbitrage and market completeness, the
+time-\(t\) price of the call is given by
+\[
+u(t,s)
+=
+\E^\Qbb\!\left[
+e^{-r(T-t)}(S_T-K)^+
+\;\middle|\;
+S_t=s
+\right].
+\]
+
+Equivalently, along the stochastic path,
+\[
+u(t,S_t)
+=
+\E^\Qbb\!\left[
+e^{-r(T-t)}(S_T-K)^+
+\;\middle|\;
+\mathcal F_t
+\right].
+\]
+
+\paragraph{Interpretation.}
+This formula says that the option price is the discounted conditional
+expectation of its payoff under the risk-neutral measure.
+
+The remarkable point is that pricing does not involve the investor's
+risk preferences explicitly.
+Everything is encoded in:
+\begin{itemize}[leftmargin=1.4em]
+    \item the risk-neutral dynamics of the stock,
+    \item and the discounting at the risk-free rate.
+\end{itemize}
+
+\paragraph{Why this formula is natural.}
+If the discounted stock price
+\[
+e^{-rt}S_t
+\]
+is a martingale under \(\Qbb\), then by the same no-arbitrage logic the
+discounted price of any self-financing replicable claim must also be a
+martingale.
+This leads directly to the risk-neutral expectation formula.
+
+\paragraph{Dependence on the current state.}
+Because the Black--Scholes model is Markovian, the price depends only on
+the current time \(t\) and the current stock price \(s\), so it can be
+written as a deterministic function
+\[
+u=u(t,s).
+\]
+
+This Markovian structure is what allows us to derive a PDE.
+
+\subsubsection{Pricing PDE}
+
+We now derive the PDE satisfied by the price function \(u(t,s)\).
+
+\paragraph{It\^o's formula.}
+Assume that \(u\) is sufficiently smooth.
+Applying It\^o's formula to the process \(u(t,S_t)\), we obtain
+\[
+\mathrm{d}u(t,S_t)
+=
+\partial_t u(t,S_t)\,\mathrm{d}t
++
+\partial_s u(t,S_t)\,\mathrm{d}S_t
++
+\frac12 \partial_{ss}u(t,S_t)\,\mathrm{d}\langle S\rangle_t.
+\]
+
+Since
+\[
+\mathrm{d}S_t=rS_t\,\mathrm{d}t+\sigma S_t\,\mathrm{d}W_t
+\]
+and
+\[
+\mathrm{d}\langle S\rangle_t=\sigma^2 S_t^2\,\mathrm{d}t,
+\]
+this becomes
+\[
+\mathrm{d}u(t,S_t)
+=
+\Big(
+\partial_t u
++
+rS_t\,\partial_s u
++
+\frac12 \sigma^2 S_t^2\,\partial_{ss}u
+\Big)\mathrm{d}t
++
+\sigma S_t\,\partial_s u\,\mathrm{d}W_t.
+\]
+
+\paragraph{Discounted martingale argument.}
+Under the risk-neutral measure, the discounted price process
+\[
+e^{-rt}u(t,S_t)
+\]
+must be a martingale.
+Applying It\^o's product rule, its drift must vanish.
+This yields the Black--Scholes PDE:
+\[
+\boxed{
+\partial_t u(t,s)
++
+rs\,\partial_s u(t,s)
++
+\frac12 \sigma^2 s^2\,\partial_{ss}u(t,s)
+-
+r\,u(t,s)
+=
+0.
+}
+\]
+
+The terminal condition is given by the payoff:
+\[
+\boxed{
+u(T,s)=(s-K)^+.
+}
+\]
+
+\paragraph{Interpretation of the PDE.}
+This equation summarizes the whole pricing problem:
+\begin{itemize}[leftmargin=1.4em]
+    \item the terminal condition encodes the contract,
+    \item the differential operator encodes the model dynamics,
+    \item and the discount term \(-ru\) reflects the time value of money.
+\end{itemize}
+
+\paragraph{Alternative derivation by replication.}
+The same PDE can also be obtained by constructing a hedged portfolio and
+imposing that it earns the risk-free rate.
+We will do this explicitly in the next subsection, because it leads
+directly to the delta hedging strategy.
+
+\subsubsection{Closed-form price of the European call}
+
+One of the main strengths of the Black--Scholes model is that the PDE
+can be solved explicitly for the European call.
+
+The resulting price is
+\[
+\boxed{
+u(t,s)=s\,N(d_1)-Ke^{-r(T-t)}N(d_2),
+}
+\]
+where
+\[
+d_1
+=
+\frac{\log(s/K)+\big(r+\tfrac12\sigma^2\big)(T-t)}
+{\sigma\sqrt{T-t}},
+\qquad
+d_2=d_1-\sigma\sqrt{T-t}.
+\]
+
+Here \(N(\cdot)\) denotes the cumulative distribution function of a
+standard normal random variable:
+\[
+N(x)=\mathbb{P}(Z\le x),
+\qquad
+Z\sim\mathcal N(0,1).
+\]
+
+\paragraph{Interpretation of the formula.}
+The Black--Scholes price has a very natural structure:
+\begin{itemize}[leftmargin=1.4em]
+    \item the term \(sN(d_1)\) represents the weighted contribution of
+    the stock,
+    \item the term \(Ke^{-r(T-t)}N(d_2)\) represents the weighted present
+    value of the strike.
+\end{itemize}
+
+\paragraph{Dependence on the parameters.}
+The formula makes it possible to read immediately how the call price
+depends on:
+\begin{itemize}[leftmargin=1.4em]
+    \item the current stock price \(s\),
+    \item the strike \(K\),
+    \item the interest rate \(r\),
+    \item the volatility \(\sigma\),
+    \item and the time to maturity \(T-t\).
+\end{itemize}
+
+\paragraph{Why this formula matters for us.}
+In this section, the closed-form price is useful for two reasons:
+\begin{itemize}[leftmargin=1.4em]
+    \item it provides an explicit benchmark price,
+    \item and it allows us to compute the hedge ratio explicitly.
+\end{itemize}
+
+This explicit delta will be the reference point for our later
+comparison with local volatility hedging.
+
+\subsection{Delta hedging in the Black--Scholes model}
+
+We now turn to the hedging problem.
+The key question is the following:
+
+\begin{quote}
+If we sell the option, how should we dynamically trade in the stock and
+the bank account in order to replicate its payoff?
+\end{quote}
+
+This leads to the notion of delta hedging.
+
+\subsubsection{Self-financing portfolio}
+
+Suppose that we want to replicate the option by trading dynamically in:
+\begin{itemize}[leftmargin=1.4em]
+    \item the stock \(S_t\),
+    \item the money market account \(B_t\).
+\end{itemize}
+
+Let:
+\begin{itemize}[leftmargin=1.4em]
+    \item \(\Delta_t\) be the number of shares held in the stock,
+    \item \(\beta_t\) be the amount invested in the bank account.
+\end{itemize}
+
+The value of the hedging portfolio is then
+\[
+\Pi_t=\Delta_t S_t+\beta_t B_t.
+\]
+
+\paragraph{Self-financing condition.}
+We assume that the strategy is self-financing, meaning that changes in
+portfolio value come only from gains and losses on the assets already
+held, not from external cash injections or withdrawals.
+
+Therefore,
+\[
+\mathrm{d}\Pi_t=\Delta_t\,\mathrm{d}S_t+\beta_t\,\mathrm{d}B_t.
+\]
+
+Since
+\[
+\mathrm{d}B_t=rB_t\,\mathrm{d}t,
+\]
+we have
+\[
+\mathrm{d}\Pi_t=\Delta_t\,\mathrm{d}S_t+r\beta_t B_t\,\mathrm{d}t.
+\]
+
+Using
+\[
+\Pi_t=\Delta_t S_t+\beta_t B_t,
+\]
+this can also be written as
+\[
+\mathrm{d}\Pi_t
+=
+\Delta_t\,\mathrm{d}S_t+r(\Pi_t-\Delta_t S_t)\,\mathrm{d}t.
+\]
+
+\paragraph{Replication objective.}
+We want the portfolio to replicate the option, that is,
+\[
+\Pi_t=u(t,S_t)
+\qquad\text{for all }t.
+\]
+In particular, at maturity, we want
+\[
+\Pi_T=(S_T-K)^+.
+\]
+
+Thus the problem is to choose \(\Delta_t\) and \(\beta_t\) so that the
+portfolio value always coincides with the option price.
+
+\subsubsection{Derivation of the hedge ratio}
+
+We now compare the dynamics of the option price and the dynamics of the
+self-financing portfolio.
+
+\paragraph{Dynamics of the option price.}
+From It\^o's formula, we already know that
+\[
+\mathrm{d}u(t,S_t)
+=
+\Big(
+\partial_t u
++
+rS_t\,\partial_s u
++
+\frac12 \sigma^2 S_t^2\,\partial_{ss}u
+\Big)\mathrm{d}t
++
+\sigma S_t\,\partial_s u\,\mathrm{d}W_t.
+\]
+
+\paragraph{Dynamics of the portfolio.}
+On the other hand,
+\[
+\mathrm{d}\Pi_t
+=
+\Delta_t\,\mathrm{d}S_t+r(\Pi_t-\Delta_t S_t)\,\mathrm{d}t.
+\]
+Since
+\[
+\mathrm{d}S_t=rS_t\,\mathrm{d}t+\sigma S_t\,\mathrm{d}W_t,
+\]
+we obtain
+\[
+\mathrm{d}\Pi_t
+=
+r\Pi_t\,\mathrm{d}t+\Delta_t \sigma S_t\,\mathrm{d}W_t.
+\]
+
+\paragraph{Matching the diffusion terms.}
+If the portfolio is to replicate the option, then we must have
+\[
+\Pi_t=u(t,S_t),
+\]
+and therefore the Brownian terms in the two dynamics must coincide.
+
+This gives
+\[
+\Delta_t \sigma S_t
+=
+\sigma S_t\,\partial_s u(t,S_t).
+\]
+
+Assuming \(\sigma S_t\neq 0\), we deduce
+\[
+\boxed{
+\Delta_t=\partial_s u(t,S_t).
+}
+\]
+
+This is the hedge ratio.
+
+\paragraph{Interpretation.}
+The delta hedge ratio is the sensitivity of the option price with
+respect to the underlying asset price.
+It tells us how many units of the stock must be held at time \(t\) in
+order to offset the first-order exposure of the option to moves in the
+underlying.
+
+\paragraph{Matching the drift terms.}
+Once the diffusion terms are matched, the drift terms also coincide
+provided that \(u\) solves the Black--Scholes PDE.
+Thus the PDE and the replicating strategy are two sides of the same
+argument:
+\begin{itemize}[leftmargin=1.4em]
+    \item the hedge ratio removes the random part,
+    \item the PDE ensures consistency of the deterministic part.
+\end{itemize}
+
+\subsubsection{The Black--Scholes delta}
+
+Since we have an explicit formula for the call price, we can compute the
+delta explicitly.
+
+Recall that
+\[
+u(t,s)=sN(d_1)-Ke^{-r(T-t)}N(d_2).
+\]
+
+Differentiating with respect to \(s\), one obtains the classical
+Black--Scholes delta:
+\[
+\boxed{
+\Delta^{BS}(t,s)=\partial_s u(t,s)=N(d_1).
+}
+\]
+
+Therefore, along the path of the stock,
+\[
+\boxed{
+\Delta_t^{BS}=N(d_1(t,S_t)).
+}
+\]
+
+\paragraph{Meaning of the formula.}
+This quantity lies between \(0\) and \(1\), which is consistent with the
+fact that the call option becomes more and more stock-like as it moves
+deeper into the money.
+
+More precisely:
+\begin{itemize}[leftmargin=1.4em]
+    \item if the option is deep out of the money, \(\Delta^{BS}\) is
+    close to \(0\),
+    \item if the option is deep in the money, \(\Delta^{BS}\) is close
+    to \(1\),
+    \item near the money, \(\Delta^{BS}\) takes intermediate values.
+\end{itemize}
+
+\paragraph{Dynamic nature of the hedge.}
+The delta is not constant.
+It changes with time and with the level of the stock price.
+Therefore, the replicating strategy must be rebalanced dynamically.
+
+This is why one speaks of \emph{dynamic hedging}.
+
+\paragraph{Discrete rebalancing in practice.}
+In the ideal Black--Scholes theory, rebalancing is continuous in time.
+In practice, however, hedging is done on a discrete grid of dates.
+This generates hedging error even if the model is correct.
+Later in the section, we will study this issue numerically.
+
+\subsubsection{Interpretation of the replication argument}
+
+The Black--Scholes replication argument is one of the most important
+ideas in mathematical finance.
+
+\paragraph{Main message.}
+The option price is not introduced as an arbitrary discounted expected
+value.
+Rather, it is the unique value of a self-financing trading strategy that
+replicates the payoff.
+
+Thus pricing and hedging are intrinsically linked:
+\begin{itemize}[leftmargin=1.4em]
+    \item the pricing formula tells us the value of the contract,
+    \item the hedge ratio tells us how to trade dynamically in order to
+    replicate it.
+\end{itemize}
+
+\paragraph{Why this is powerful.}
+The argument shows that, in a complete model, the value of the option is
+fully determined by no arbitrage.
+If two different prices were proposed for the same replicable payoff,
+one could construct an arbitrage.
+
+\paragraph{The role of the model.}
+The whole construction depends on the assumed dynamics of the
+underlying.
+Once the model is fixed, the PDE and the hedge ratio follow from it.
+
+This is the key point for the rest of the course:
+\begin{quote}
+different models generate different prices, different PDEs, and
+different hedging strategies.
+\end{quote}
+
+\paragraph{Why this benchmark matters.}
+The Black--Scholes model gives us:
+\begin{itemize}[leftmargin=1.4em]
+    \item a closed-form price,
+    \item an explicit PDE,
+    \item an explicit delta hedge,
+    \item and a fully transparent replication argument.
+\end{itemize}
+
+This makes it the perfect benchmark against which more sophisticated
+models can be compared.
+
+\paragraph{Transition to the next subsection.}
+In the next step, we keep the same contract, namely the European call,
+but we change the model.
+Instead of assuming a constant volatility, we use a local volatility
+surface calibrated from liquid market option prices.
+
+This will allow us to compare:
+\begin{itemize}[leftmargin=1.4em]
+    \item a simple benchmark hedge, namely the Black--Scholes delta,
+    \item and a market-consistent hedge, namely the local-volatility
+    delta.
+\end{itemize}
+
+\subsection{A market-consistent extension: the local volatility model}
+
+We now keep the same contract, namely the European call, but replace the
+Black--Scholes assumption of constant volatility by a more flexible
+model calibrated from market vanilla prices.
+
+The main idea is the following:
+\begin{quote}
+even when the price of a liquid European option is already observed in
+the market, one still needs a dynamic model for the underlying in order
+to compute Greeks and construct a hedging strategy.
+\end{quote}
+
+This is one of the main motivations for the local volatility model.
+
+\subsubsection{Why go beyond constant volatility?}
+
+The Black--Scholes model is a natural benchmark, but it relies on the
+assumption that the volatility coefficient \(\sigma\) is constant.
+This implies that all European option prices at a given date should be
+consistent with a single volatility parameter.
+
+In practice, this is not what one observes.
+Market option prices, when translated into Black--Scholes implied
+volatilities, exhibit clear patterns:
+\begin{itemize}[leftmargin=1.4em]
+    \item implied volatility depends on the strike,
+    \item implied volatility depends on the maturity,
+    \item and the resulting implied-volatility surface is not flat.
+\end{itemize}
+
+In equity markets, this often appears as a downward skew:
+low strikes tend to have higher implied volatilities than high strikes.
+Thus the assumption of constant volatility is too rigid to match the
+observed cross-section of liquid European option prices.
+
+\paragraph{A first consequence for hedging.}
+If the true market smile is not flat, then the Black--Scholes delta is
+not necessarily the most market-consistent hedge ratio.
+Indeed, the option price reacts not only to the stock level, but also to
+the way volatility varies with strike and maturity.
+
+Thus, even for a European call, the choice of pricing model affects the
+computed delta and therefore the hedging strategy.
+
+\paragraph{What we want from a richer model.}
+We would like a model that:
+\begin{itemize}[leftmargin=1.4em]
+    \item remains relatively tractable,
+    \item is still Markovian in the stock price,
+    \item reproduces the full current surface of liquid European option
+    prices,
+    \item and provides a dynamic framework for hedging.
+\end{itemize}
+
+This leads naturally to the local volatility approach.
+
+\subsubsection{Calibration from liquid European option prices}
+
+The key practical feature of the local volatility model is that it is
+not introduced in isolation.
+Rather, it is built from the observed market prices of liquid European
+options.
+
+\paragraph{Observed market data.}
+At a given date, the market provides prices
+\[
+C^{\mathrm{mkt}}(T,K)
+\]
+for a family of liquid European call options indexed by maturity \(T\)
+and strike \(K\).
+
+Equivalently, one may think of the market as providing the implied
+volatility surface
+\[
+\sigma_{\mathrm{imp}}(T,K),
+\]
+since Black--Scholes gives a one-to-one relation between call prices and
+implied volatilities.
+
+\paragraph{What is the objective?}
+The purpose of the local volatility model is to construct a deterministic
+function
+\[
+\sigma_{\mathrm{loc}}(t,s)
+\]
+such that, when the stock follows the corresponding diffusion, the model
+reproduces the observed market prices of liquid European options.
+
+Thus the calibration problem is:
+\[
+\text{find }\sigma_{\mathrm{loc}}(t,s)\text{ such that }
+C^{\mathrm{model}}(T,K)=C^{\mathrm{mkt}}(T,K)
+\]
+for the relevant maturities and strikes.
+
+\paragraph{Why this is useful even for a liquid option.}
+One might ask:
+if the call price is already quoted in the market, why do we need a
+model at all?
+
+The answer is that the model is needed not primarily to reprice the
+liquid option itself, but to provide:
+\begin{itemize}[leftmargin=1.4em]
+    \item a coherent risk-neutral dynamics for the underlying,
+    \item a pricing PDE,
+    \item and, most importantly for us here, a delta hedge
+    \[
+    \Delta_t=\partial_s u(t,S_t).
+    \]
+\end{itemize}
+
+Thus, in the local volatility setting, market prices are used as
+\emph{inputs} to construct a dynamic hedging model.
+
+\paragraph{Static fit versus dynamic use.}
+This is a very important point.
+Local volatility is calibrated from today's market vanilla prices, so it
+is excellent at fitting the current implied-volatility surface.
+Once calibrated, it generates a full dynamic model for the stock price,
+and this model can then be used:
+\begin{itemize}[leftmargin=1.4em]
+    \item to compute Greeks,
+    \item to hedge,
+    \item and to price less liquid products.
+\end{itemize}
+
+\subsubsection{Dupire's local volatility formula}
+
+We now recall the central formula that links liquid call prices to the
+local volatility surface.
+
+Suppose that the market call-price surface
+\[
+C(T,K)
+\]
+is sufficiently smooth in maturity and strike.
+Then Dupire's formula formally gives the local variance as
+\[
+\boxed{
+\sigma_{\mathrm{loc}}(T,K)^2
+=
+\frac{
+\partial_T C(T,K)+rK\,\partial_K C(T,K)
+}{
+\frac12 K^2\,\partial_{KK}C(T,K)
+}.
+}
+\]
+
+Equivalently, the call price surface satisfies the forward Dupire PDE
+\[
+\partial_T C(T,K)
+=
+\frac12 \sigma_{\mathrm{loc}}(T,K)^2K^2\,\partial_{KK}C(T,K)
+-rK\,\partial_K C(T,K).
+\]
+
+\paragraph{Interpretation.}
+This formula is remarkable because it expresses the local volatility
+surface directly in terms of observable market quantities:
+\begin{itemize}[leftmargin=1.4em]
+    \item the derivative of call prices with respect to maturity,
+    \item and the curvature of call prices with respect to strike.
+\end{itemize}
+
+Thus the market surface of vanilla options is turned into a local
+diffusion coefficient for the stock.
+
+\paragraph{What does the formula really mean?}
+The quantity
+\[
+\sigma_{\mathrm{loc}}(T,K)
+\]
+should not be confused with the implied volatility.
+The implied volatility is the Black--Scholes volatility that matches one
+single option price.
+The local volatility is instead the instantaneous diffusion coefficient
+of the stock process in the model calibrated to the whole surface.
+
+\paragraph{Practical point.}
+In applications, one does not observe a perfectly smooth surface
+\(C(T,K)\), but only a finite grid of strikes and maturities.
+Hence interpolation and numerical differentiation are needed in order to
+apply Dupire's formula.
+This is one of the numerical difficulties of the local volatility
+approach.
+
+\paragraph{What matters for us here.}
+For the purposes of this section, the key point is the following:
+once the market call surface is given, Dupire's formula provides a way
+to infer a state-dependent volatility function
+\[
+\sigma_{\mathrm{loc}}(t,s),
+\]
+and this function then determines the model used to compute the hedge.
+
+\subsubsection{Risk-neutral dynamics under local volatility}
+
+Once the local volatility surface has been constructed, the stock price
+is modeled under the risk-neutral measure by the diffusion
+\[
+\boxed{
+\mathrm{d}S_t
+=
+rS_t\,\mathrm{d}t
++
+\sigma_{\mathrm{loc}}(t,S_t)S_t\,\mathrm{d}W_t.
+}
+\]
+
+Thus the drift remains the risk-free rate, exactly as in the
+Black--Scholes model, but the diffusion coefficient is no longer
+constant.
+
+\paragraph{Comparison with Black--Scholes.}
+Under Black--Scholes,
+\[
+\mathrm{d}S_t=rS_t\,\mathrm{d}t+\sigma S_t\,\mathrm{d}W_t.
+\]
+Under local volatility, this becomes
+\[
+\mathrm{d}S_t=rS_t\,\mathrm{d}t+\sigma_{\mathrm{loc}}(t,S_t)S_t\,\mathrm{d}W_t.
+\]
+
+So the model remains:
+\begin{itemize}[leftmargin=1.4em]
+    \item one-dimensional,
+    \item Markovian,
+    \item and risk-neutral.
+\end{itemize}
+
+But it is now flexible enough to reflect the current option surface.
+
+\paragraph{Log-price dynamics.}
+Applying It\^o's formula to \(\log S_t\), we get
+\[
+\mathrm{d}\log S_t
+=
+\Big(
+r-\frac12 \sigma_{\mathrm{loc}}(t,S_t)^2
+\Big)\mathrm{d}t
++
+\sigma_{\mathrm{loc}}(t,S_t)\,\mathrm{d}W_t.
+\]
+
+Unlike Black--Scholes, the log-price is no longer Gaussian in general,
+since the volatility depends on the current state.
+
+\paragraph{Discounted dynamics.}
+If we define the discounted stock
+\[
+\widetilde S_t=e^{-rt}S_t,
+\]
+then
+\[
+\mathrm{d}\widetilde S_t
+=
+e^{-rt}\sigma_{\mathrm{loc}}(t,S_t)S_t\,\mathrm{d}W_t,
+\]
+so the discounted stock remains a local martingale under the
+risk-neutral measure.
+
+\paragraph{Main practical interpretation.}
+The local volatility model is therefore a market-consistent extension of
+Black--Scholes:
+\begin{itemize}[leftmargin=1.4em]
+    \item the drift is unchanged,
+    \item the dynamics remain relatively simple,
+    \item but the volatility coefficient is chosen so as to reflect the
+    current market smile.
+\end{itemize}
+
+\subsection{Pricing and hedging in the local volatility model}
+
+We now use the local volatility dynamics to define the option price and
+the corresponding delta hedge.
+
+\subsubsection{Risk-neutral pricing formula}
+
+Let \(u(t,s)\) denote the price of the same European call option under
+the local volatility model.
+
+\paragraph{Risk-neutral valuation.}
+Since the model is still written under the risk-neutral measure, the
+pricing formula remains
+\[
+\boxed{
+u(t,s)
+=
+\E^\Qbb\!\left[
+e^{-r(T-t)}(S_T-K)^+
+\;\middle|\;
+S_t=s
+\right],
+}
+\]
+where now the process \(S\) follows the local volatility dynamics
+\[
+\mathrm{d}S_t
+=
+rS_t\,\mathrm{d}t
++
+\sigma_{\mathrm{loc}}(t,S_t)S_t\,\mathrm{d}W_t.
+\]
+
+\paragraph{Same contract, different model.}
+This is an important point:
+the payoff has not changed,
+\[
+(S_T-K)^+,
+\]
+but the law of \(S_T\) under the pricing measure is no longer the
+Black--Scholes lognormal law.
+The price function \(u(t,s)\) is therefore different from the
+Black--Scholes price function, even though the contract is the same.
+
+\paragraph{Markovian structure.}
+Since the local volatility model remains one-factor and Markovian, the
+price still depends only on \((t,s)\).
+This allows us to derive a PDE very similar to Black--Scholes, but with
+state-dependent volatility.
+
+\subsubsection{Pricing PDE under local volatility}
+
+Assume that \(u\) is sufficiently smooth.
+Applying It\^o's formula to \(u(t,S_t)\), we obtain
+\[
+\mathrm{d}u(t,S_t)
+=
+\partial_t u\,\mathrm{d}t
++
+\partial_s u\,\mathrm{d}S_t
++
+\frac12 \partial_{ss}u\,\mathrm{d}\langle S\rangle_t.
+\]
+
+Since
+\[
+\mathrm{d}S_t
+=
+rS_t\,\mathrm{d}t
++
+\sigma_{\mathrm{loc}}(t,S_t)S_t\,\mathrm{d}W_t,
+\]
+and
+\[
+\mathrm{d}\langle S\rangle_t
+=
+\sigma_{\mathrm{loc}}(t,S_t)^2S_t^2\,\mathrm{d}t,
+\]
+this becomes
+\[
+\mathrm{d}u(t,S_t)
+=
+\Big(
+\partial_t u
++
+rS_t\partial_s u
++
+\frac12 \sigma_{\mathrm{loc}}(t,S_t)^2S_t^2\partial_{ss}u
+\Big)\mathrm{d}t
++
+\sigma_{\mathrm{loc}}(t,S_t)S_t\partial_s u\,\mathrm{d}W_t.
+\]
+
+As before, under the risk-neutral measure the discounted option price
+must be a martingale.
+Therefore the drift of
+\[
+e^{-rt}u(t,S_t)
+\]
+must vanish, which yields the PDE
+\[
+\boxed{
+\partial_t u(t,s)
++
+rs\,\partial_s u(t,s)
++
+\frac12 \sigma_{\mathrm{loc}}(t,s)^2 s^2\,\partial_{ss}u(t,s)
+-r\,u(t,s)
+=
+0,
+}
+\]
+with terminal condition
+\[
+\boxed{
+u(T,s)=(s-K)^+.
+}
+\]
+
+\paragraph{Interpretation.}
+This PDE has exactly the same structure as the Black--Scholes PDE, but
+with the constant coefficient \(\sigma\) replaced by the local
+volatility function \(\sigma_{\mathrm{loc}}(t,s)\).
+
+Thus the local volatility model preserves the PDE logic of
+Black--Scholes while incorporating the market smile through the diffusion
+coefficient.
+
+\paragraph{No closed-form formula in general.}
+Unlike in the Black--Scholes model, one usually does not have a closed
+formula for \(u(t,s)\) in the local volatility setting.
+Therefore the price and the delta must generally be computed
+numerically, for instance by finite-difference methods or Monte Carlo.
+
+\subsubsection{Delta hedge under local volatility}
+
+The hedging logic is the same as in the Black--Scholes model:
+we construct a self-financing portfolio made of stock and cash, and we
+choose the stock position so as to match the diffusion term of the
+option price.
+
+\paragraph{Self-financing portfolio.}
+Let
+\[
+\Pi_t=\Delta_t S_t+\beta_t B_t
+\]
+be the value of a self-financing hedging portfolio, where \(B_t=e^{rt}\)
+is the money market account.
+
+Then
+\[
+\mathrm{d}\Pi_t=\Delta_t\,\mathrm{d}S_t+\beta_t\,\mathrm{d}B_t.
+\]
+
+As in the Black--Scholes case, this can be rewritten as
+\[
+\mathrm{d}\Pi_t
+=
+r\Pi_t\,\mathrm{d}t
++
+\Delta_t \sigma_{\mathrm{loc}}(t,S_t)S_t\,\mathrm{d}W_t.
+\]
+
+\paragraph{Match the Brownian terms.}
+If we want
+\[
+\Pi_t=u(t,S_t),
+\]
+then we compare this with the dynamics of \(u(t,S_t)\):
+\[
+\mathrm{d}u(t,S_t)
+=
+\cdots
++
+\sigma_{\mathrm{loc}}(t,S_t)S_t\,\partial_s u(t,S_t)\,\mathrm{d}W_t.
+\]
+
+Matching the diffusion terms yields
+\[
+\Delta_t \sigma_{\mathrm{loc}}(t,S_t)S_t
+=
+\sigma_{\mathrm{loc}}(t,S_t)S_t\,\partial_s u(t,S_t),
+\]
+and therefore
+\[
+\boxed{
+\Delta_t^{LV}=\partial_s u(t,S_t).
+}
+\]
+
+\paragraph{Same formal formula, different quantity.}
+Formally, the delta hedge has exactly the same definition as before:
+it is still the derivative of the option price with respect to the spot.
+
+However, the price function \(u\) is no longer the Black--Scholes one.
+Hence:
+\[
+\Delta_t^{LV}\neq \Delta_t^{BS}
+\]
+in general.
+
+This is one of the most important lessons of this section:
+\begin{quote}
+the hedge ratio is model-dependent because the price function is
+model-dependent.
+\end{quote}
+
+\paragraph{Practical implication.}
+In the local volatility model, the delta is usually computed numerically
+from the PDE solution.
+Thus, compared with Black--Scholes:
+\begin{itemize}[leftmargin=1.4em]
+    \item the conceptual hedging argument is unchanged,
+    \item but the hedge ratio is no longer explicit,
+    \item and its numerical value reflects the market smile encoded in
+    \(\sigma_{\mathrm{loc}}(t,s)\).
+\end{itemize}
+
+\subsubsection{Comparison with the Black--Scholes hedge}
+
+We now compare the two delta hedges.
+
+\paragraph{Black--Scholes hedge.}
+Under Black--Scholes, the hedge ratio is
+\[
+\Delta_t^{BS}=N(d_1(t,S_t)).
+\]
+It is explicit and depends only on:
+\begin{itemize}[leftmargin=1.4em]
+    \item the stock level,
+    \item the strike,
+    \item the maturity,
+    \item the constant volatility,
+    \item and the interest rate.
+\end{itemize}
+
+\paragraph{Local volatility hedge.}
+Under local volatility, the hedge ratio is
+\[
+\Delta_t^{LV}=\partial_s u(t,S_t),
+\]
+where \(u\) solves the local volatility PDE.
+This delta depends on the entire local volatility surface
+\[
+\sigma_{\mathrm{loc}}(t,s),
+\]
+and therefore on the observed market smile.
+
+\paragraph{Conceptual difference.}
+The Black--Scholes delta is a hedge produced by a model that ignores the
+smile.
+The local-volatility delta is a hedge produced by a model calibrated to
+the current smile.
+
+Thus the local-volatility hedge is more \emph{market-consistent} in the
+sense that it uses information extracted from liquid market option
+prices.
+
+\paragraph{Important practical nuance.}
+For a liquid European call, the market already provides the option
+price.
+So the role of the local volatility model is not mainly to compute a new
+price for this liquid contract.
+Its role is rather to provide:
+\begin{itemize}[leftmargin=1.4em]
+    \item a dynamic model for the stock,
+    \item a coherent PDE,
+    \item and therefore a hedge ratio consistent with the implied
+    volatility surface.
+\end{itemize}
+
+\paragraph{What we expect qualitatively.}
+If the market smile is pronounced, then the local volatility delta may
+differ significantly from the Black--Scholes delta, especially:
+\begin{itemize}[leftmargin=1.4em]
+    \item for strikes far from the money,
+    \item for longer maturities,
+    \item or when the local volatility surface varies strongly with the
+    spot.
+\end{itemize}
+
+\paragraph{Transition to the numerical section.}
+At this stage, we have two candidate hedging strategies for the same
+European call:
+\begin{itemize}[leftmargin=1.4em]
+    \item the Black--Scholes delta hedge,
+    \item the local-volatility delta hedge.
+\end{itemize}
+
+In the next part, we explain how to compute these quantities
+numerically, rebalance the corresponding self-financing portfolios in
+discrete time, and compare their hedging performance when the true
+underlying dynamics are stochastic volatility rather than either of the
+two hedging models.
+
+
+\subsection{Numerical implementation}
+
+We now explain how to implement the pricing and hedging strategies
+numerically.
+
+The overall workflow is the following:
+\begin{itemize}[leftmargin=1.4em]
+    \item solve the pricing PDE backward in time,
+    \item recover the option delta from the numerical solution,
+    \item simulate stock paths,
+    \item rebalance the hedging portfolio on a discrete time grid,
+    \item compare the resulting hedging P\&L across models.
+\end{itemize}
+
+In the Black--Scholes case, the price and the delta are explicit, so the
+numerical burden is light.
+In the local volatility case, the price and the delta must typically be
+computed on a grid.
+
+\subsubsection{Finite-difference scheme for the pricing PDE}
+
+We start from the local volatility pricing PDE
+\[
+\partial_t u(t,s)
++
+rs\,\partial_s u(t,s)
++
+\frac12 \sigma_{\mathrm{loc}}(t,s)^2 s^2\,\partial_{ss}u(t,s)
+-r\,u(t,s)
+=
+0,
+\]
+with terminal condition
+\[
+u(T,s)=(s-K)^+.
+\]
+
+\paragraph{Space-time grid.}
+Fix:
+\begin{itemize}[leftmargin=1.4em]
+    \item a terminal time \(T\),
+    \item a maximum stock value \(S_{\max}\),
+    \item integers \(N_t,N_s\ge 1\).
+\end{itemize}
+
+We define the time and space steps
+\[
+\Delta t=\frac{T}{N_t},
+\qquad
+\Delta s=\frac{S_{\max}}{N_s},
+\]
+and the grid
+\[
+t_n=n\Delta t,\qquad n=0,\dots,N_t,
+\]
+\[
+s_i=i\Delta s,\qquad i=0,\dots,N_s.
+\]
+
+We denote by
+\[
+u_i^n \approx u(t_n,s_i)
+\]
+the numerical approximation of the option price at the grid point
+\((t_n,s_i)\).
+
+\paragraph{Terminal and boundary conditions.}
+At maturity,
+\[
+u_i^{N_t}=(s_i-K)^+.
+\]
+
+For the spatial boundaries, a simple and standard choice for a call is:
+\[
+u_0^n=0,
+\qquad
+u_{N_s}^n=S_{\max}-Ke^{-r(T-t_n)}.
+\]
+
+The first condition reflects the fact that a call is worthless when the
+stock is zero.
+The second one is the usual linear asymptotic behavior of the call for
+large stock prices.
+
+\paragraph{Backward explicit scheme.}
+A simple explicit backward scheme is obtained by writing
+\[
+\partial_t u(t_n,s_i)
+\approx
+\frac{u_i^{n+1}-u_i^n}{\Delta t},
+\]
+\[
+\partial_s u(t_n,s_i)
+\approx
+\frac{u_{i+1}^{n+1}-u_{i-1}^{n+1}}{2\Delta s},
+\]
+\[
+\partial_{ss}u(t_n,s_i)
+\approx
+\frac{u_{i+1}^{n+1}-2u_i^{n+1}+u_{i-1}^{n+1}}{\Delta s^2}.
+\]
+
+Substituting these approximations into the PDE and solving for \(u_i^n\)
+gives
+\[
+u_i^n
+=
+u_i^{n+1}
++
+\Delta t
+\Bigg[
+rs_i\frac{u_{i+1}^{n+1}-u_{i-1}^{n+1}}{2\Delta s}
++
+\frac12 \sigma_{\mathrm{loc}}(t_n,s_i)^2 s_i^2
+\frac{u_{i+1}^{n+1}-2u_i^{n+1}+u_{i-1}^{n+1}}{\Delta s^2}
+-r u_i^{n+1}
+\Bigg].
+\]
+
+This allows us to compute the solution backward from \(n=N_t-1\) down
+to \(n=0\).
+
+\paragraph{Remark on stability.}
+The explicit scheme is simple and pedagogically useful, but it may
+require a small time step for stability.
+In practice, implicit or Crank--Nicolson schemes are often preferred.
+For a first implementation, however, the explicit scheme is sufficient
+to illustrate the main ideas.
+
+\paragraph{Non-vectorized Python implementation.}
+A first implementation, written in the most direct way, is as follows.
+
+\begin{lstlisting}[language=Python]
+import numpy as np
+
+def sigma_loc(t, s, sigma0=0.2, alpha=0.3, K=100.0):
+    # Example of a toy local volatility surface
+    return sigma0 * (1.0 + alpha * (s - K) / K)
+
+def price_pde_local_vol_non_vectorized(
+    K=100.0, T=1.0, r=0.02, Smax=300.0,
+    Nt=1000, Ns=400
+):
+    dt = T / Nt
+    ds = Smax / Ns
+
+    t_grid = np.linspace(0.0, T, Nt + 1)
+    s_grid = np.linspace(0.0, Smax, Ns + 1)
+
+    U = np.zeros((Nt + 1, Ns + 1))
+
+    # terminal condition
+    for i in range(Ns + 1):
+        U[Nt, i] = max(s_grid[i] - K, 0.0)
+
+    # backward induction
+    for n in range(Nt - 1, -1, -1):
+        t = t_grid[n]
+
+        # boundary conditions
+        U[n, 0] = 0.0
+        U[n, Ns] = Smax - K * np.exp(-r * (T - t))
+
+        for i in range(1, Ns):
+            s = s_grid[i]
+            sig = sigma_loc(t, s, K=K)
+
+            dU = (U[n+1, i+1] - U[n + 1, i - 1]) / (2.0 * ds)
+            d2U = (U[n+1, i+1] - 2.0 * U[n+1,i] + U[n+1, i-1]) / (ds ** 2)
+
+            U[n,i] = U[n+1,i] + dt * (
+                r * s * dU
+                + 0.5 * sig**2 * s**2 * d2U
+                - r * U[n+1, i]
+            )
+
+    return t_grid, s_grid, U
+\end{lstlisting}
+
+\paragraph{Vectorized Python implementation.}
+The same scheme can be written in a more efficient vectorized form.
+
+\begin{lstlisting}[language=Python]
+import numpy as np
+
+def sigma_loc_vec(t, s, sigma0=0.2, alpha=0.3, K=100.0):
+    return sigma0 * (1.0 + alpha * (s - K) / K)
+
+def price_pde_local_vol_vectorized(
+    K=100.0, T=1.0, r=0.02, Smax=300.0,
+    Nt=1000, Ns=400
+):
+    dt = T / Nt
+    ds = Smax / Ns
+
+    t_grid = np.linspace(0.0, T, Nt + 1)
+    s_grid = np.linspace(0.0, Smax, Ns + 1)
+
+    U = np.zeros((Nt + 1, Ns + 1))
+    U[Nt, :] = np.maximum(s_grid - K, 0.0)
+
+    s_inner = s_grid[1:Ns]
+
+    for n in range(Nt - 1, -1, -1):
+        t = t_grid[n]
+
+        U[n, 0] = 0.0
+        U[n, Ns] = Smax - K * np.exp(-r * (T - t))
+
+        sig = sigma_loc_vec(t, s_inner, K=K)
+
+        dU = (U[n + 1, 2:Ns + 1] - U[n + 1, 0:Ns - 1]) / (2.0 * ds)
+        d2U = (U[n+1,2:Ns+1]-2.0*U[n+1,1:Ns]+U[n+1,0:Ns-1])/(ds**2)
+
+        U[n, 1:Ns] = U[n + 1, 1:Ns] + dt * (
+            r * s_inner * dU
+            + 0.5 * sig**2 * s_inner**2 * d2U
+            - r * U[n + 1, 1:Ns]
+        )
+
+    return t_grid, s_grid, U
+\end{lstlisting}
+
+\subsubsection{Numerical computation of the delta}
+
+Once the price surface has been computed on the grid, we approximate the
+delta by finite differences in the stock variable.
+
+\paragraph{Central difference approximation.}
+For interior points \(1\le i\le N_s-1\), we use
+\[
+\Delta(t_n,s_i)
+\approx
+\frac{u_{i+1}^n-u_{i-1}^n}{2\Delta s}.
+\]
+
+Thus the delta is obtained directly from the discrete price surface.
+
+\paragraph{Boundary treatment.}
+Near the boundaries, one may use one-sided finite differences, for
+instance
+\[
+\Delta(t_n,s_0)
+\approx
+\frac{u_1^n-u_0^n}{\Delta s},
+\qquad
+\Delta(t_n,s_{N_s})
+\approx
+\frac{u_{N_s}^n-u_{N_s-1}^n}{\Delta s}.
+\]
+
+\paragraph{Numerical delta on the whole grid.}
+The full discrete delta surface can be computed from the price matrix
+\(U\).
+
+\paragraph{Non-vectorized Python implementation.}
+\begin{lstlisting}[language=Python]
+def compute_delta_grid_non_vectorized(U, ds):
+    Nt, Ns_plus_one = U.shape
+    Ns = Ns_plus_one - 1
+
+    Delta = np.zeros_like(U)
+
+    for n in range(Nt):
+        Delta[n, 0] = (U[n, 1] - U[n, 0]) / ds
+        Delta[n, Ns] = (U[n, Ns] - U[n, Ns - 1]) / ds
+
+        for i in range(1, Ns):
+            Delta[n, i] = (U[n, i + 1] - U[n, i - 1]) / (2.0 * ds)
+
+    return Delta
+\end{lstlisting}
+
+\paragraph{Vectorized Python implementation.}
+\begin{lstlisting}[language=Python]
+def compute_delta_grid_vectorized(U, ds):
+    Delta = np.zeros_like(U)
+    Delta[:, 0] = (U[:, 1] - U[:, 0]) / ds
+    Delta[:, -1] = (U[:, -1] - U[:, -2]) / ds
+    Delta[:, 1:-1] = (U[:, 2:] - U[:, :-2]) / (2.0 * ds)
+    return Delta
+\end{lstlisting}
+
+\paragraph{Interpolating the delta along a simulated path.}
+In hedging applications, the stock value \(S_t\) will typically not lie
+exactly on the spatial grid.
+We therefore need an interpolation rule.
+The simplest choice is linear interpolation between neighboring grid
+points.
+
+\paragraph{Python helper function.}
+\begin{lstlisting}[language=Python]
+def interp_1d(x_grid, y_grid, x):
+    return np.interp(x, x_grid, y_grid)
+\end{lstlisting}
+
+Thus, if \(S_t=s\), we approximate
+\[
+\Delta(t,s)
+\]
+by linearly interpolating in the row of the delta grid corresponding to
+time \(t\).
+
+\subsubsection{Discrete-time rebalancing of the hedging portfolio}
+
+We now explain how the hedging strategy is implemented in discrete time.
+
+\paragraph{Discrete-time setting.}
+Fix a trading grid
+\[
+0=t_0<t_1<\cdots<t_N=T.
+\]
+At each rebalancing date \(t_n\), we compute a hedge ratio
+\[
+\Delta_{t_n},
+\]
+and adjust the portfolio holdings accordingly.
+
+\paragraph{Portfolio decomposition.}
+Suppose that we are short one option and hedge with:
+\begin{itemize}[leftmargin=1.4em]
+    \item \(\Delta_{t_n}\) shares of stock,
+    \item a cash position \(B_{t_n}^{\mathrm{cash}}\).
+\end{itemize}
+
+The hedging portfolio value is
+\[
+\Pi_{t_n}
+=
+\Delta_{t_n}S_{t_n}
++
+B_{t_n}^{\mathrm{cash}}.
+\]
+
+At inception, if the option is sold for \(u(0,S_0)\), we typically start
+with
+\[
+\Pi_0=u(0,S_0),
+\]
+and choose
+\[
+B_0^{\mathrm{cash}}=u(0,S_0)-\Delta_0 S_0.
+\]
+
+\paragraph{Portfolio update between two dates.}
+Between \(t_n\) and \(t_{n+1}\), the stock position is kept constant,
+and the cash account accrues interest at rate \(r\).
+Thus
+\[
+\Pi_{t_{n+1}}^{-}
+=
+e^{r\Delta t}
+\big(\Pi_{t_n}-\Delta_{t_n}S_{t_n}\big)
++
+\Delta_{t_n}S_{t_{n+1}},
+\]
+where
+\[
+\Delta t=t_{n+1}-t_n.
+\]
+
+The superscript ``\(-\)'' indicates the portfolio value just before
+rebalancing at time \(t_{n+1}\).
+
+\paragraph{Rebalancing.}
+At time \(t_{n+1}\), we compute the new hedge ratio
+\[
+\Delta_{t_{n+1}},
+\]
+and we update the cash account so that the new portfolio decomposition is
+\[
+\Pi_{t_{n+1}}
+=
+\Delta_{t_{n+1}}S_{t_{n+1}}
++
+B_{t_{n+1}}^{\mathrm{cash}}.
+\]
+
+In other words, the total portfolio value is unchanged by rebalancing,
+but its decomposition between stock and cash is modified.
+
+\paragraph{Non-vectorized Python implementation.}
+The following function simulates one discretely rebalanced hedging
+portfolio along one stock path, given a function that returns the hedge
+ratio.
+
+\begin{lstlisting}[language=Python]
+def hedge_path_non_vectorized(
+    S_path, t_grid, option_price_0, delta_func, r
+):
+    N = len(t_grid) - 1
+    dt = t_grid[1] - t_grid[0]
+
+    delta = delta_func(t_grid[0], S_path[0])
+    cash = option_price_0 - delta * S_path[0]
+
+    for n in range(N):
+        # portfolio evolves from t_n to t_{n+1}
+        cash = cash * np.exp(r * dt)
+        portfolio = delta * S_path[n + 1] + cash
+
+        # rebalance at t_{n+1}
+        delta = delta_func(t_grid[n + 1], S_path[n + 1])
+        cash = portfolio - delta * S_path[n + 1]
+
+    return portfolio
+\end{lstlisting}
+
+\paragraph{Vectorized idea.}
+For a large number of simulated paths, one can vectorize the entire
+update by working with arrays of stock values, deltas, and cash
+positions.
+This is essential in Monte Carlo studies of hedging P\&L.
+
+\begin{lstlisting}[language=Python]
+def hedge_paths_vectorized(
+    S_paths, t_grid, option_price_0, delta_func, r
+):
+    M, N_plus_one = S_paths.shape
+    N = N_plus_one - 1
+    dt = t_grid[1] - t_grid[0]
+
+    delta = delta_func(t_grid[0], S_paths[:, 0])
+    cash = option_price_0 - delta * S_paths[:, 0]
+
+    for n in range(N):
+        cash = cash * np.exp(r * dt)
+        portfolio = delta * S_paths[:, n + 1] + cash
+
+        delta = delta_func(t_grid[n + 1], S_paths[:, n + 1])
+        cash = portfolio - delta * S_paths[:, n + 1]
+
+    return portfolio
+\end{lstlisting}
+
+\paragraph{Black--Scholes versus local volatility implementation.}
+The only difference between the two hedging strategies lies in the
+function \texttt{delta\_func}:
+\begin{itemize}[leftmargin=1.4em]
+    \item for Black--Scholes, it is given by the explicit formula
+    \(N(d_1)\),
+    \item for local volatility, it is obtained numerically by
+    interpolation from the delta grid computed from the PDE.
+\end{itemize}
+
+\subsection{Model risk: what if the true dynamics are stochastic volatility?}
+
+We now introduce a different model, not for hedging, but for generating
+the \emph{true} stock dynamics in our numerical experiment.
+
+The purpose is to compare two hedging strategies:
+\begin{itemize}[leftmargin=1.4em]
+    \item a delta hedge computed under Black--Scholes,
+    \item a delta hedge computed under local volatility,
+\end{itemize}
+when neither of these models is actually the true one.
+
+This is a simple and concrete way to illustrate model risk.
+
+\subsubsection{A reference stochastic volatility model}
+
+As a reference ``true'' dynamics, we consider a Heston-type stochastic
+volatility model:
+\[
+\mathrm{d}S_t
+=
+rS_t\,\mathrm{d}t
++
+\sqrt{V_t}\,S_t\,\mathrm{d}W_t^{(1)},
+\]
+\[
+\mathrm{d}V_t
+=
+\kappa(\theta-V_t)\,\mathrm{d}t
++
+\eta\sqrt{V_t}\,\mathrm{d}W_t^{(2)},
+\]
+with
+\[
+\mathrm{d}\langle W^{(1)},W^{(2)}\rangle_t=\rho\,\mathrm{d}t.
+\]
+
+\paragraph{Interpretation.}
+In this model:
+\begin{itemize}[leftmargin=1.4em]
+    \item the stock still has drift \(r\) under the risk-neutral measure,
+    \item but the instantaneous variance \(V_t\) is itself random,
+    \item and the correlation parameter \(\rho\) creates asymmetry between
+    spot and volatility shocks.
+\end{itemize}
+
+\paragraph{Why use such a model for the experiment?}
+This is a natural benchmark for model risk because:
+\begin{itemize}[leftmargin=1.4em]
+    \item Black--Scholes is too simple compared with it,
+    \item local volatility may capture the current smile but not the full
+    stochastic dynamics of volatility,
+    \item and the resulting hedging experiment is rich enough to produce
+    meaningful P\&L differences.
+\end{itemize}
+
+\subsubsection{Simulating the true dynamics}
+
+To compare hedging strategies, we simulate stock paths under the
+stochastic volatility model.
+
+\paragraph{Euler-type scheme.}
+On a time grid \(t_n=n\Delta t\), we may use the discretization
+\[
+S_{n+1}
+=
+S_n
++
+rS_n\Delta t
++
+\sqrt{V_n^+}\,S_n\,\Delta W_n^{(1)},
+\]
+\[
+V_{n+1}
+=
+V_n
++
+\kappa(\theta-V_n)\Delta t
++
+\eta\sqrt{V_n^+}\,\Delta W_n^{(2)},
+\]
+where
+\[
+V_n^+=\max(V_n,0).
+\]
+
+To generate correlated Brownian increments, we may write
+\[
+\Delta W_n^{(1)}=\sqrt{\Delta t}\,Z_n^{(1)},
+\]
+\[
+\Delta W_n^{(2)}
+=
+\sqrt{\Delta t}\big(
+\rho Z_n^{(1)}+\sqrt{1-\rho^2}\,Z_n^{(2)}
+\big),
+\]
+where \(Z_n^{(1)}\) and \(Z_n^{(2)}\) are independent standard normal
+random variables.
+
+\paragraph{Non-vectorized Python implementation.}
+\begin{lstlisting}[language=Python]
+def simulate_heston_path_non_vectorized(
+    S0, V0, r, kappa, theta, eta, rho, T, N
+):
+    dt = T / N
+    t_grid = np.linspace(0.0, T, N + 1)
+
+    S = np.zeros(N + 1)
+    V = np.zeros(N + 1)
+
+    S[0] = S0
+    V[0] = V0
+
+    for n in range(N):
+        z1 = np.random.randn()
+        z2 = np.random.randn()
+
+        dW1 = np.sqrt(dt) * z1
+        dW2 = np.sqrt(dt) * (rho * z1 + np.sqrt(1.0 - rho**2) * z2)
+
+        V_pos = max(V[n], 0.0)
+
+        S[n + 1] = S[n] + r * S[n] * dt + np.sqrt(V_pos) * S[n] * dW1
+        V[n+1]=V[n]+kappa*(theta-V[n])*dt+eta*np.sqrt(V_pos)*dW2
+
+    return t_grid, S, V
+\end{lstlisting}
+
+\paragraph{Vectorized Python implementation.}
+\begin{lstlisting}[language=Python]
+def simulate_heston_paths_vectorized(
+    M, S0, V0, r, kappa, theta, eta, rho, T, N
+):
+    dt = T / N
+    t_grid = np.linspace(0.0, T, N + 1)
+
+    S = np.zeros((M, N + 1))
+    V = np.zeros((M, N + 1))
+
+    S[:, 0] = S0
+    V[:, 0] = V0
+
+    for n in range(N):
+        z1 = np.random.randn(M)
+        z2 = np.random.randn(M)
+
+        dW1 = np.sqrt(dt) * z1
+        dW2 = np.sqrt(dt) * (rho * z1 + np.sqrt(1.0 - rho**2) * z2)
+
+        V_pos = np.maximum(V[:, n], 0.0)
+
+        S[:, n + 1] = S[:, n] + r * S[:, n] * dt + np.sqrt(V_pos) * S[:, n] * dW1
+        V[:,n+1]=V[:,n]+kappa*(theta-V[:,n])*dt+eta*np.sqrt(V_pos)*dW2
+    return t_grid, S, V
+\end{lstlisting}
+
+\subsubsection{Hedging with the Black--Scholes delta}
+
+The first hedging strategy uses the Black--Scholes model as if it were
+the true one.
+
+\paragraph{Hedge ratio.}
+At each rebalancing date \(t_n\), the hedge ratio is
+\[
+\Delta_{t_n}^{BS}
+=
+N(d_1(t_n,S_{t_n})),
+\]
+where \(d_1\) is computed using the Black--Scholes volatility parameter.
+
+\paragraph{Interpretation.}
+This strategy is simple and explicit, but it ignores:
+\begin{itemize}[leftmargin=1.4em]
+    \item the market smile,
+    \item the state dependence of local volatility,
+    \item and the stochastic fluctuations of the true variance process.
+\end{itemize}
+
+Thus it is best understood as a benchmark hedge.
+
+\paragraph{Python implementation.}
+\begin{lstlisting}[language=Python]
+from math import log, sqrt, exp
+from scipy.stats import norm
+
+def bs_delta(t, s, K, T, r, sigma):
+    tau = max(T - t, 1e-12)
+    d1 = (np.log(s / K) + (r + 0.5 * sigma**2) * tau) / (sigma * np.sqrt(tau))
+    return norm.cdf(d1)
+\end{lstlisting}
+
+\subsubsection{Hedging with the local volatility delta}
+
+The second hedging strategy uses the local volatility model calibrated
+from the market vanilla surface.
+
+\paragraph{Hedge ratio.}
+At each date \(t_n\), we compute
+\[
+\Delta_{t_n}^{LV}
+=
+\partial_s u^{LV}(t_n,S_{t_n}),
+\]
+where \(u^{LV}\) solves the local volatility PDE.
+
+Numerically, this means:
+\begin{itemize}[leftmargin=1.4em]
+    \item solve the PDE on a grid,
+    \item compute the discrete delta grid,
+    \item interpolate the delta at the realized stock level.
+\end{itemize}
+
+\paragraph{Interpretation.}
+This strategy is more market-consistent than the Black--Scholes hedge
+because it incorporates the current implied-volatility smile through the
+local volatility surface.
+
+However, it still assumes that the true dynamics are given by a local
+volatility model, whereas in our experiment the true dynamics are
+stochastic volatility.
+
+\paragraph{Python wrapper.}
+A simple implementation is to use a function that interpolates the delta
+surface at a given time and spot.
+
+\begin{lstlisting}[language=Python]
+def build_local_vol_delta_function(t_grid, s_grid, Delta_grid):
+    def delta_func(t, s):
+        # time interpolation: nearest grid point for simplicity
+        n = np.searchsorted(t_grid, t)
+        n = min(max(n, 0), len(t_grid) - 1)
+        return np.interp(s, s_grid, Delta_grid[n, :])
+    return delta_func
+\end{lstlisting}
+
+A more refined implementation would interpolate both in time and in
+space, but the idea is already clear with this simple version.
+
+\subsection{Comparing hedging P\&L}
+
+We now explain how to compare the performance of the two hedging
+strategies.
+
+\subsubsection{Definition of the hedging P\&L}
+
+Suppose that we sell one European call at time \(0\) for the model price
+\[
+u(0,S_0),
+\]
+and then hedge dynamically up to maturity.
+
+Let \(\Pi_T\) denote the terminal value of the hedging portfolio.
+The terminal payoff of the short option position is
+\[
+-(S_T-K)^+.
+\]
+
+Thus the final hedging profit and loss is
+\[
+\boxed{
+\mathrm{PnL}
+=
+\Pi_T-(S_T-K)^+.
+}
+\]
+
+\paragraph{Interpretation.}
+If the hedge were perfect and rebalancing continuous, then in the ideal
+model one would have
+\[
+\mathrm{PnL}=0.
+\]
+In practice, however, several sources of error remain:
+\begin{itemize}[leftmargin=1.4em]
+    \item discrete rebalancing,
+    \item numerical approximation,
+    \item and, most importantly here, model misspecification.
+\end{itemize}
+
+\paragraph{Two P\&L distributions.}
+We will therefore obtain:
+\begin{itemize}[leftmargin=1.4em]
+    \item one distribution of P\&L from the Black--Scholes hedge,
+    \item one distribution of P\&L from the local-volatility hedge.
+\end{itemize}
+
+The comparison of these two distributions is the main output of the
+numerical experiment.
+
+\subsubsection{Pathwise comparison of the two strategies}
+
+For each simulated path of the true stochastic volatility model, we can:
+\begin{itemize}[leftmargin=1.4em]
+    \item compute the terminal payoff,
+    \item compute the terminal value of the Black--Scholes hedging
+    portfolio,
+    \item compute the terminal value of the local-volatility hedging
+    portfolio,
+    \item and compare the two resulting P\&Ls.
+\end{itemize}
+
+\paragraph{Why pathwise comparison is useful.}
+Pathwise comparison makes the model-risk issue very concrete.
+Even for the same realized stock path, the two hedging strategies may
+perform differently because the hedge ratios used along the path are not
+the same.
+
+\paragraph{Typical numerical outputs.}
+Useful pathwise diagnostics include:
+\begin{itemize}[leftmargin=1.4em]
+    \item plotting one or several stock paths,
+    \item plotting the corresponding hedge ratios through time,
+    \item plotting the cumulative value of the hedging portfolios,
+    \item and comparing the final pathwise errors.
+\end{itemize}
+
+\paragraph{Illustrative Python snippet.}
+\begin{lstlisting}[language=Python]
+payoff = np.maximum(S_paths[:, -1] - K, 0.0)
+
+pnl_bs = portfolio_bs - payoff
+pnl_lv = portfolio_lv - payoff
+\end{lstlisting}
+
+\subsubsection{Distribution of the hedging error}
+
+Once a large number of paths has been simulated, we can study the
+distribution of the hedging error for each strategy.
+
+\paragraph{Quantities of interest.}
+Typical summary statistics include:
+\begin{itemize}[leftmargin=1.4em]
+    \item the mean P\&L,
+    \item the standard deviation,
+    \item quantiles,
+    \item the probability of large losses.
+\end{itemize}
+
+\paragraph{Visual comparison.}
+A natural way to compare the two strategies is to display:
+\begin{itemize}[leftmargin=1.4em]
+    \item histograms of the two P\&L distributions,
+    \item boxplots,
+    \item or cumulative distribution curves.
+\end{itemize}
+
+\paragraph{Python example.}
+\begin{lstlisting}[language=Python]
+print("BS hedge:")
+print("mean =", np.mean(pnl_bs))
+print("std  =", np.std(pnl_bs))
+print("q05  =", np.quantile(pnl_bs, 0.05))
+print("q95  =", np.quantile(pnl_bs, 0.95))
+
+print("Local vol hedge:")
+print("mean =", np.mean(pnl_lv))
+print("std  =", np.std(pnl_lv))
+print("q05  =", np.quantile(pnl_lv, 0.05))
+print("q95  =", np.quantile(pnl_lv, 0.95))
+\end{lstlisting}
+
+One may then add:
+\begin{lstlisting}[language=Python]
+import matplotlib.pyplot as plt
+
+plt.hist(pnl_bs, bins=60, alpha=0.5, label="BS hedge")
+plt.hist(pnl_lv, bins=60, alpha=0.5, label="Local vol hedge")
+plt.legend()
+plt.title("Distribution of hedging P&L")
+plt.show()
+\end{lstlisting}
+
+\paragraph{What we are looking for.}
+A hedging strategy is typically considered better if:
+\begin{itemize}[leftmargin=1.4em]
+    \item its P\&L is more concentrated around zero,
+    \item its variance is smaller,
+    \item and its tail losses are less severe.
+\end{itemize}
+
+\subsubsection{Interpretation of the results}
+
+The purpose of the experiment is not to declare one model universally
+superior, but to illustrate how the choice of hedging model affects the
+distribution of the hedging error.
+
+\paragraph{Expected qualitative outcome.}
+Since the true dynamics are stochastic volatility:
+\begin{itemize}[leftmargin=1.4em]
+    \item the Black--Scholes hedge is based on a misspecified constant
+    volatility model,
+    \item the local-volatility hedge is based on a model calibrated to
+    the current smile, but still misspecified dynamically,
+    \item so neither hedge is perfect.
+\end{itemize}
+
+However, the local-volatility hedge may be expected to perform better in
+some scenarios because it incorporates more information about the market
+surface than the Black--Scholes hedge.
+
+\paragraph{Important nuance.}
+This is not a theorem.
+Depending on:
+\begin{itemize}[leftmargin=1.4em]
+    \item the option strike and maturity,
+    \item the shape of the local volatility surface,
+    \item the stochastic volatility parameters,
+    \item and the rebalancing frequency,
+\end{itemize}
+the relative performance of the two hedges may vary.
+
+\paragraph{Main lesson from the experiment.}
+The key point is that:
+\begin{quote}
+a hedge is always computed inside a model, but its performance is judged
+in the true market dynamics.
+\end{quote}
+
+Thus pricing models should not be evaluated only through the price they
+produce, but also through the quality of the hedging strategies they
+generate.
+
+\subsection{Main lessons from the European option example}
+
+This first example contains most of the central ideas of option pricing
+and hedging.
+
+\paragraph{First lesson: pricing and hedging are linked.}
+Once a model for the underlying is specified, one obtains:
+\begin{itemize}[leftmargin=1.4em]
+    \item a risk-neutral pricing formula,
+    \item a pricing PDE,
+    \item and a delta hedge.
+\end{itemize}
+
+Thus a pricing model is not only a machine for generating a price: it is
+also a machine for generating a hedging strategy.
+
+\paragraph{Second lesson: the same contract can lead to different hedges.}
+We considered the same European call option under two models:
+\begin{itemize}[leftmargin=1.4em]
+    \item Black--Scholes,
+    \item local volatility.
+\end{itemize}
+
+The payoff did not change, but the price function changed, and therefore
+the delta changed as well.
+
+Thus the hedge ratio is fundamentally model-dependent.
+
+\paragraph{Third lesson: market consistency matters.}
+The Black--Scholes hedge is simple, explicit, and conceptually central.
+The local-volatility hedge is more complex, but it is calibrated to the
+current market smile.
+
+Hence the local-volatility model can be seen as a market-consistent
+extension of the Black--Scholes benchmark.
+
+\paragraph{Fourth lesson: model risk remains even for a vanilla product.}
+Even for a simple European call, if the true underlying dynamics are
+stochastic volatility, neither the Black--Scholes hedge nor the
+local-volatility hedge is exact.
+
+Therefore, a model should be judged not only by its pricing formula, but
+also by the distribution of the hedging error it produces in realistic
+market scenarios.
+
+\paragraph{Final transition.}
+This concludes the first case study.
+It already illustrates the main relation between:
+\[
+\text{model}
+\longrightarrow
+\text{price}
+\longrightarrow
+\text{PDE}
+\longrightarrow
+\text{delta}
+\longrightarrow
+\text{hedging P\&L}.
+\]
+
+In the next example, we will move to a more path-dependent contract, for
+which the choice of model becomes even more important.
+
+% ============================================================
+\section{Path-dependent option: the lookback option}
+% ============================================================
+
+\subsection{The contract and why path dependence matters}
+
+We now move from a European vanilla option to a path-dependent option.
+The purpose of this second example is to understand how the pricing and
+hedging problem changes when the payoff depends not only on the terminal
+stock price \(S_T\), but also on the past trajectory of the stock.
+
+\paragraph{The contract.}
+We consider a fixed-strike lookback call option with maturity \(T\) and
+strike \(K\).
+Its payoff is
+\[
+(M_T-K)^+,
+\qquad
+\text{where }
+M_T:=\max_{0\le u\le T} S_u.
+\]
+
+Thus the holder receives the positive part of the difference between the
+running maximum of the stock over the whole life of the contract and the
+strike \(K\).
+
+\paragraph{Why this product is different from a vanilla European call.}
+For a European call, the payoff is
+\[
+(S_T-K)^+,
+\]
+so only the terminal value \(S_T\) matters.
+
+For the lookback option, this is no longer true.
+The payoff depends on the whole path of the stock through the quantity
+\[
+M_T=\max_{0\le u\le T}S_u.
+\]
+
+Therefore, two stock paths with the same terminal value \(S_T\) may lead
+to different option payoffs if they have reached different maxima before
+maturity.
+
+\paragraph{A simple illustration.}
+Suppose that two stock paths both end at the same terminal level
+\[
+S_T=100.
+\]
+If the first path has reached a maximum of \(120\) during the life of
+the option, while the second path has never gone above \(105\), then the
+lookback option will produce two different payoffs:
+\[
+(120-K)^+
+\qquad\text{and}\qquad
+(105-K)^+.
+\]
+
+This illustrates the central feature of path dependence:
+the current spot price alone does not contain enough information to
+price the contract.
+
+\paragraph{Why path dependence matters for pricing.}
+For a European option in a Markovian model, the price can often be
+written as a function of the current time and current stock price only:
+\[
+u(t,S_t).
+\]
+For a lookback option, this is no longer sufficient.
+At time \(t\), the future payoff depends not only on the current stock
+price \(S_t\), but also on the current running maximum
+\[
+M_t:=\max_{0\le u\le t}S_u.
+\]
+
+Hence the natural state variable is no longer one-dimensional.
+To price the contract, we must keep track of both:
+\begin{itemize}[leftmargin=1.4em]
+    \item the current stock price \(S_t\),
+    \item and the current running maximum \(M_t\).
+\end{itemize}
+
+Thus the option price will naturally be written as
+\[
+u(t,S_t,M_t).
+\]
+
+\paragraph{Why path dependence matters for hedging.}
+The same issue appears in the hedging problem.
+For a European call, the hedge ratio depends on the current stock price
+and time.
+For a lookback option, the hedge ratio is also affected by the position
+of the current stock relative to the running maximum.
+
+Intuitively:
+\begin{itemize}[leftmargin=1.4em]
+    \item if the current stock is far below the running maximum, the
+    chance of creating a new maximum before maturity may be small;
+    \item if the stock is close to the running maximum, then a small
+    upward move may change the future payoff structure significantly.
+\end{itemize}
+
+Thus the delta of a lookback option is usually more sensitive and more
+unstable than the delta of a vanilla European call.
+
+\paragraph{Main objective of this example.}
+In this second example, we want to understand how the general
+pricing--hedging methodology changes when the payoff becomes
+path-dependent.
+
+As in the European-option case, we will follow the same sequence:
+\begin{itemize}[leftmargin=1.4em]
+    \item define the contract,
+    \item choose a pricing model,
+    \item write the risk-neutral pricing formula,
+    \item derive the PDE in the relevant state variables,
+    \item discuss the numerical implementation,
+    \item and compare hedging strategies through their final P\&L.
+\end{itemize}
+
+The main difference is that the state space and the hedging problem are
+now richer.
+
+\subsection{Choice of the model}
+
+A path-dependent option such as a lookback option raises immediately the
+question of model choice.
+
+As before, we could start from a simple benchmark model and then move to
+a richer one.
+However, the role of the model is even more important here than in the
+European case, because the payoff depends on the whole path of the
+underlying.
+
+We now explain how to think about this choice.
+
+\subsubsection{Why a simple Black--Scholes benchmark is still useful}
+
+Even though the lookback option is more complex than a vanilla option,
+the Black--Scholes model remains a very useful benchmark.
+
+\paragraph{Black--Scholes benchmark.}
+Under the risk-neutral measure, the Black--Scholes model assumes
+\[
+\mathrm{d}S_t=rS_t\,\mathrm{d}t+\sigma S_t\,\mathrm{d}W_t,
+\]
+with constant volatility \(\sigma\).
+
+This model is attractive as a first benchmark for several reasons.
+
+\paragraph{First reason: conceptual simplicity.}
+The model is familiar from the European-option case.
+Students already know:
+\begin{itemize}[leftmargin=1.4em]
+    \item the risk-neutral dynamics,
+    \item the pricing logic,
+    \item the PDE derivation,
+    \item and the meaning of dynamic hedging.
+\end{itemize}
+
+Thus using Black--Scholes first allows us to focus on what is genuinely
+new, namely the path dependence, without changing too many ingredients
+at once.
+
+\paragraph{Second reason: the new difficulty comes from the payoff, not yet from the model.}
+Even under Black--Scholes, the lookback option is already a much richer
+problem than the European call, because one must keep track of the
+running maximum.
+Thus the first source of difficulty is already present before any
+volatility smile or stochastic volatility effect is introduced.
+
+\paragraph{Third reason: it provides a clean benchmark for comparison.}
+Later, when we introduce a richer model, we will want to compare:
+\begin{itemize}[leftmargin=1.4em]
+    \item prices,
+    \item hedging strategies,
+    \item and hedging P\&L.
+\end{itemize}
+
+For this, it is essential to have a simple reference model.
+Black--Scholes plays that role.
+
+\paragraph{Fourth reason: numerical implementation remains manageable.}
+In the Black--Scholes setting, the dynamics are simple and simulation is
+straightforward.
+Thus the additional complexity of the product can be handled clearly:
+\begin{itemize}[leftmargin=1.4em]
+    \item in Monte Carlo, one must simulate the path and track the
+    running maximum;
+    \item in PDE form, one must enlarge the state space to include the
+    running maximum.
+\end{itemize}
+
+So Black--Scholes is still pedagogically very useful.
+
+\paragraph{Important limitation.}
+Of course, Black--Scholes is only a benchmark.
+It assumes constant volatility and therefore ignores smile, skew, and
+the possible randomness of future volatility.
+For a path-dependent product, this can be a serious limitation.
+
+That is exactly why we need to think more carefully about richer models.
+
+\subsubsection{Why path dependence makes the problem more complex}
+
+The main source of additional complexity comes from the structure of the
+payoff itself.
+
+\paragraph{Loss of a one-dimensional state description.}
+For a European option in a Markovian stock model, the option price can
+be written as
+\[
+u(t,s),
+\]
+because the current stock price \(s\) contains all the information
+needed about the future distribution of the payoff.
+
+For a lookback option, this is no longer true.
+At time \(t\), the future payoff depends on both:
+\begin{itemize}[leftmargin=1.4em]
+    \item the current stock price \(S_t\),
+    \item and the current running maximum
+    \[
+    M_t=\max_{0\le u\le t}S_u.
+    \]
+\end{itemize}
+
+Thus the problem is no longer one-dimensional.
+The natural price function becomes
+\[
+u(t,s,m),
+\qquad \text{with } s\le m.
+\]
+
+\paragraph{The product is path-sensitive even when the model is simple.}
+This is a very important point:
+even if the stock follows the simplest possible diffusion, the option is
+still nontrivial because its payoff depends on the path.
+
+So the complexity here does not come only from the model.
+It already comes from the contract.
+
+\paragraph{The running maximum creates a moving boundary effect.}
+The running maximum does not evolve like an ordinary diffusion variable.
+Its dynamics are constrained:
+\begin{itemize}[leftmargin=1.4em]
+    \item if \(S_t<M_t\), then the running maximum stays constant;
+    \item if \(S_t=M_t\) and the stock moves upward, then the running
+    maximum also moves upward.
+\end{itemize}
+
+Thus the additional state variable \(M_t\) is not just another
+independent factor.
+It is a path functional tied to the stock process.
+
+This creates additional subtleties in PDE formulations and in numerical
+methods.
+
+\paragraph{The hedge is more sensitive to the path history.}
+For a vanilla call, the delta depends mainly on the current spot and
+time to maturity.
+For a lookback option, the delta depends also on how close the stock is
+to the running maximum.
+
+In particular, if \(S_t\) is very close to \(M_t\), then a small upward
+move may create a new maximum, which changes the future payoff in a
+highly nonlinear way.
+This can make the hedge more fragile and more sensitive to model choice.
+
+\paragraph{Discrete hedging becomes more delicate.}
+Since the payoff depends on the running maximum, a continuous-time model
+may react very differently from a discrete-time hedging strategy.
+Missing a short-lived move above a previous maximum can have a strong
+effect on the final payoff.
+Thus discretization error is often more important for path-dependent
+products than for standard European options.
+
+\paragraph{Main message.}
+Even before discussing local volatility or stochastic volatility, the
+lookback option is already more difficult than the European call because
+the relevant state variable is no longer just the current stock level.
+Path dependence forces us to enlarge the state space and to rethink both
+pricing and hedging.
+
+\subsubsection{Why a richer volatility model may matter more for this product}
+
+The next question is whether a simple Black--Scholes benchmark is enough
+in practice for a path-dependent product such as a lookback option.
+
+The short answer is: often, no.
+
+\paragraph{Sensitivity to the whole path.}
+A European option depends only on the terminal marginal distribution of
+\(S_T\).
+A lookback option depends on the whole trajectory of \(S\), because the
+payoff involves the maximum over time.
+
+This means that the model must describe not only where the stock ends,
+but also how it gets there.
+
+\paragraph{Why volatility modeling matters more here.}
+Different volatility models may generate similar prices for some liquid
+European options at time \(0\), but very different path behavior for the
+stock.
+In particular, the probability that the stock reaches high levels before
+maturity can be strongly affected by:
+\begin{itemize}[leftmargin=1.4em]
+    \item the shape of the implied volatility smile,
+    \item the local behavior of volatility as a function of spot,
+    \item or the stochastic evolution of volatility itself.
+\end{itemize}
+
+Since a lookback option is directly sensitive to extreme values reached
+by the stock, it is naturally more model-sensitive than a vanilla call.
+
+\paragraph{Why local volatility is a natural next step.}
+A local volatility model has the form
+\[
+\mathrm{d}S_t
+=
+rS_t\,\mathrm{d}t
++
+\sigma_{\mathrm{loc}}(t,S_t)S_t\,\mathrm{d}W_t.
+\]
+
+Compared with Black--Scholes, this keeps the model one-dimensional and
+Markovian in the stock, but it incorporates the market smile through the
+state-dependent function \(\sigma_{\mathrm{loc}}(t,s)\).
+
+For a path-dependent product, this is attractive because:
+\begin{itemize}[leftmargin=1.4em]
+    \item the model remains relatively tractable,
+    \item the stock dynamics are consistent with the current vanilla
+    surface,
+    \item and the probability of hitting high levels can change
+    significantly compared with the constant-volatility case.
+\end{itemize}
+
+Thus local volatility is a natural market-consistent extension of the
+Black--Scholes benchmark.
+
+\paragraph{Why even local volatility may still be insufficient.}
+At the same time, local volatility remains a deterministic volatility
+model.
+It fits today's smile, but it does not introduce an independent random
+volatility factor.
+
+For a path-dependent product, this can matter even more than for a
+vanilla option, because the future path of the stock may be strongly
+affected by the future path of volatility.
+This is why stochastic volatility models are often considered more
+realistic for exotic products.
+
+\paragraph{Pedagogical strategy for this section.}
+For the purposes of the course, the right approach is therefore:
+\begin{itemize}[leftmargin=1.4em]
+    \item start from Black--Scholes as a clean benchmark,
+    \item then explain why the path-dependent nature of the product makes
+    model choice more important,
+    \item and use a richer model, such as local volatility, to produce a
+    more market-consistent pricing and hedging framework.
+\end{itemize}
+
+\paragraph{Main lesson.}
+For a path-dependent product such as a lookback option, the choice of
+model matters more than for a standard European call.
+The reason is simple:
+\begin{quote}
+the contract depends on the whole path of the stock, so the model must
+describe path behavior well, not only terminal distributions.
+\end{quote}
+
+\subsection{State variables and pricing problem}
+
+We now explain how the pricing problem must be reformulated once the
+payoff depends on the running extremum of the stock price.
+
+For a standard European option, the current stock price \(S_t\) is
+enough to describe the state of the problem.
+For a lookback option, this is no longer true.
+The relevant state variable must contain additional information about
+the past path of the stock.
+
+\subsubsection{Running maximum / running minimum as additional state variables}
+
+The key observation is that the payoff of a lookback option depends on a
+running extremum of the stock process.
+
+For a fixed-strike lookback call, the payoff is
+\[
+(M_T-K)^+,
+\qquad
+M_T:=\max_{0\le u\le T}S_u.
+\]
+So the natural additional state variable is the running maximum
+\[
+M_t:=\max_{0\le u\le t}S_u.
+\]
+
+Similarly, for a lookback put or for other path-dependent contracts, one
+may need the running minimum
+\[
+m_t:=\min_{0\le u\le t}S_u.
+\]
+
+\paragraph{Why this additional variable is necessary.}
+If at time \(t\) we know only the current stock value \(S_t\), then in
+general we do not know the current running maximum \(M_t\).
+But the future payoff depends on it.
+
+Indeed, two trajectories may share the same current value \(S_t\) while
+having reached different historical maxima.
+Since the future payoff depends on the maximum over the whole interval
+\([0,T]\), these two states are not equivalent from the point of view of
+pricing.
+
+\paragraph{State constraints.}
+By construction, we always have
+\[
+S_t\le M_t.
+\]
+Thus the relevant state space is not the whole plane, but the region
+\[
+\{(s,m)\in\R_+^2:\ s\le m\}.
+\]
+
+If we were instead working with a running minimum, we would have
+\[
+m_t\le S_t.
+\]
+
+\paragraph{Interpretation.}
+The running maximum \(M_t\) summarizes the part of the past trajectory
+that is relevant for future pricing.
+It is not an independent stochastic factor like a second Brownian
+motion; rather, it is a path functional generated by the stock process
+itself.
+
+This is precisely what makes the problem path-dependent but still
+amenable to a Markovian reformulation.
+
+\subsubsection{Markovian reformulation of the problem}
+
+Even though the original payoff depends on the whole past path of the
+stock, one can recover a Markovian structure by enlarging the state
+space.
+
+\paragraph{From a path-dependent problem to a Markovian one.}
+If the stock alone follows a Markov process under the pricing model, then
+the pair
+\[
+(S_t,M_t)
+\]
+is itself Markov.
+In other words, once we know:
+\begin{itemize}[leftmargin=1.4em]
+    \item the current stock level \(S_t\),
+    \item and the current running maximum \(M_t\),
+\end{itemize}
+we have all the information needed to price the option from time \(t\)
+onward.
+
+Thus the option price can be written as a deterministic function
+\[
+u(t,s,m),
+\qquad \text{with } s\le m.
+\]
+
+\paragraph{Why this is useful.}
+This enlarged Markovian formulation is the key step that allows us to:
+\begin{itemize}[leftmargin=1.4em]
+    \item write a risk-neutral pricing formula,
+    \item derive a PDE,
+    \item and implement numerical methods.
+\end{itemize}
+
+Without this state augmentation, the problem would remain truly
+path-dependent and much harder to analyze through PDE methods.
+
+\paragraph{Dynamics of the running maximum.}
+The variable \(M_t\) evolves in a constrained way:
+\begin{itemize}[leftmargin=1.4em]
+    \item if \(S_t<M_t\), then the running maximum stays constant;
+    \item if \(S_t=M_t\) and the stock moves upward, then the running
+    maximum moves with the stock.
+\end{itemize}
+
+Thus \(M_t\) changes only when the stock hits a new historical maximum.
+
+This feature will later appear in the PDE formulation through a boundary
+condition on the diagonal \(s=m\).
+
+\paragraph{A useful analogy.}
+For a European option, the state variable is simply
+\[
+(t,S_t).
+\]
+For a lookback option, the state variable becomes
+\[
+(t,S_t,M_t).
+\]
+
+So the logic is unchanged, but the state space has gained one dimension.
+This is the mathematical price one pays for path dependence.
+
+\paragraph{The same idea for the running minimum.}
+If the contract involved the running minimum instead of the running
+maximum, then the appropriate Markovian state would be
+\[
+(t,S_t,m_t),
+\qquad
+m_t:=\min_{0\le u\le t}S_u.
+\]
+
+Thus the general principle is the following:
+\begin{quote}
+for a path-dependent payoff, one must identify the smallest collection
+of path functionals that makes the problem Markov again.
+\end{quote}
+
+\subsubsection{Risk-neutral pricing formula}
+
+Once the state variable has been enlarged, the pricing problem takes a
+form very similar to the one used for European options.
+
+\paragraph{Pricing function.}
+Let
+\[
+u(t,s,m)
+\]
+denote the time-\(t\) price of the fixed-strike lookback call when
+\[
+S_t=s,
+\qquad
+M_t=m.
+\]
+
+\paragraph{Risk-neutral valuation.}
+Under the chosen pricing model and under the risk-neutral measure
+\(\Qbb\), the option price is given by
+\[
+\boxed{
+u(t,s,m)
+=
+\E^\Qbb\!\left[
+e^{-r(T-t)}(M_T-K)^+
+\;\middle|\;
+S_t=s,\ M_t=m
+\right].
+}
+\]
+
+This is the exact analogue of the risk-neutral pricing formula for a
+European option, except that the conditioning now includes the running
+maximum.
+
+\paragraph{Interpretation.}
+This formula says that, conditional on the current stock level \(s\) and
+the current running maximum \(m\), the option price is the discounted
+conditional expectation of the final payoff.
+
+So the pricing principle itself has not changed:
+it is still risk-neutral valuation.
+What has changed is only the state variable.
+
+\paragraph{Special role of the current maximum.}
+At time \(t\), the future running maximum \(M_T\) can be written
+informally as the larger of:
+\begin{itemize}[leftmargin=1.4em]
+    \item the maximum already achieved, namely \(M_t=m\),
+    \item and the future maxima reached by the stock over \([t,T]\).
+\end{itemize}
+
+Thus the current value \(m\) acts as a memory variable summarizing the
+relevant past information.
+
+\paragraph{Comparison with the European case.}
+For a European call, we had
+\[
+u(t,s)
+=
+\E^\Qbb\!\left[
+e^{-r(T-t)}(S_T-K)^+
+\;\middle|\;
+S_t=s
+\right].
+\]
+
+For the lookback call, the corresponding formula becomes
+\[
+u(t,s,m)
+=
+\E^\Qbb\!\left[
+e^{-r(T-t)}(M_T-K)^+
+\;\middle|\;
+S_t=s,\ M_t=m
+\right].
+\]
+
+Thus the structure is the same, but the dependence on the path is now
+captured through the additional conditioning variable \(m\).
+
+\paragraph{What comes next.}
+Once this risk-neutral pricing formula is written, the next step is to
+derive the PDE satisfied by the function \(u(t,s,m)\), together with the
+appropriate terminal and boundary conditions.
+
+This will show explicitly how the additional state variable enters the
+pricing problem.
+
+\subsection{Pricing PDE for the lookback option}
+
+We now derive the PDE satisfied by the price of the lookback option once
+the problem has been reformulated in the enlarged state space
+\[
+(t,S_t,M_t).
+\]
+
+The key point is that the state variable is now two-dimensional in
+space:
+\begin{itemize}[leftmargin=1.4em]
+    \item the current stock price \(S_t\),
+    \item the current running maximum \(M_t\).
+\end{itemize}
+
+This is the main mathematical difference with the European call case.
+
+\subsubsection{PDE in the extended state space}
+
+Let
+\[
+u(t,s,m)
+\]
+denote the time-\(t\) price of the fixed-strike lookback call when
+\[
+S_t=s,
+\qquad
+M_t=m,
+\qquad
+s\le m.
+\]
+
+We assume for the moment that the stock follows the Black--Scholes
+dynamics under the risk-neutral measure:
+\[
+\mathrm{d}S_t=rS_t\,\mathrm{d}t+\sigma S_t\,\mathrm{d}W_t.
+\]
+
+\paragraph{Interior region.}
+Consider first the region
+\[
+\{(t,s,m): 0<s<m\}.
+\]
+In this region, the stock is strictly below the running maximum.
+Therefore, over an infinitesimal time interval, the running maximum does
+not change unless the stock hits the boundary \(s=m\).
+
+So, inside the region \(s<m\), the variable \(m\) is locally frozen and
+the dynamics are driven only by the stock process.
+
+\paragraph{It\^o formula in the interior.}
+Assume that \(u\) is sufficiently smooth.
+As long as \(s<m\), the process \(M_t\) remains locally constant, so
+applying It\^o's formula to \(u(t,S_t,M_t)\) gives
+\[
+\mathrm{d}u(t,S_t,M_t)
+=
+\partial_t u\,\mathrm{d}t
++
+\partial_s u\,\mathrm{d}S_t
++
+\frac12 \partial_{ss}u\,\mathrm{d}\langle S\rangle_t.
+\]
+
+Since
+\[
+\mathrm{d}S_t=rS_t\,\mathrm{d}t+\sigma S_t\,\mathrm{d}W_t
+\]
+and
+\[
+\mathrm{d}\langle S\rangle_t=\sigma^2S_t^2\,\mathrm{d}t,
+\]
+we obtain
+\[
+\mathrm{d}u(t,S_t,M_t)
+=
+\Big(
+\partial_t u
++
+rs\,\partial_s u
++
+\frac12 \sigma^2 s^2\,\partial_{ss}u
+\Big)\mathrm{d}t
++
+\sigma s\,\partial_s u\,\mathrm{d}W_t.
+\]
+
+\paragraph{Risk-neutral martingale condition.}
+Under the risk-neutral measure, the discounted option price must be a
+martingale.
+Therefore, in the interior region \(s<m\), the drift of
+\[
+e^{-rt}u(t,S_t,M_t)
+\]
+must vanish.
+This yields the PDE
+\[
+\boxed{
+\partial_t u(t,s,m)
++
+rs\,\partial_s u(t,s,m)
++
+\frac12 \sigma^2 s^2\,\partial_{ss}u(t,s,m)
+-r\,u(t,s,m)
+=
+0,
+\qquad 0<s<m.
+}
+\]
+
+\paragraph{Important observation.}
+This equation looks almost identical to the Black--Scholes PDE for a
+European option.
+The difference is that:
+\begin{itemize}[leftmargin=1.4em]
+    \item the price depends on the extra variable \(m\),
+    \item but inside the continuation region \(s<m\), there are no
+    derivatives with respect to \(m\).
+\end{itemize}
+
+This is because the running maximum does not evolve continuously in the
+interior.
+It changes only when the stock reaches a new maximum, that is, on the
+boundary \(s=m\).
+
+\paragraph{Generalization to local volatility.}
+If instead the stock follows a local volatility model
+\[
+\mathrm{d}S_t
+=
+rS_t\,\mathrm{d}t
++
+\sigma_{\mathrm{loc}}(t,S_t)S_t\,\mathrm{d}W_t,
+\]
+then the same reasoning gives
+\[
+\boxed{
+\partial_t u(t,s,m)
++
+rs\,\partial_s u(t,s,m)
++
+\frac12 \sigma_{\mathrm{loc}}(t,s)^2 s^2\,\partial_{ss}u(t,s,m)
+-r\,u(t,s,m)
+=
+0,
+\qquad 0<s<m.
+}
+\]
+
+Thus, as in the European case, one simply replaces the constant
+volatility \(\sigma\) by the local volatility function.
+
+\subsubsection{Terminal condition}
+
+At maturity \(T\), the contract pays
+\[
+(M_T-K)^+.
+\]
+
+Therefore the terminal condition for the pricing function is
+\[
+\boxed{
+u(T,s,m)=(m-K)^+,
+\qquad 0<s\le m.
+}
+\]
+
+\paragraph{Interpretation.}
+This terminal condition is fundamentally different from the one for a
+European call.
+
+For a European call, the payoff at maturity depends on the terminal
+stock value:
+\[
+u(T,s)=(s-K)^+.
+\]
+
+For the lookback call, the payoff depends on the running maximum:
+\[
+u(T,s,m)=(m-K)^+.
+\]
+
+So at maturity, the current stock price \(s\) is not enough to determine
+the payoff.
+The relevant variable is the running maximum \(m\).
+
+\paragraph{A useful remark.}
+At time \(T\), one always has
+\[
+s=S_T\le M_T=m.
+\]
+Thus the payoff is determined by the largest value reached by the stock
+up to maturity, not necessarily by its final position.
+
+This is exactly the feature that makes the lookback option path
+dependent.
+
+\subsubsection{Boundary conditions}
+
+To complete the PDE formulation, we must specify the appropriate
+boundary conditions.
+
+There are two main boundaries to consider:
+\begin{itemize}[leftmargin=1.4em]
+    \item the lower boundary in the stock variable,
+    \item the diagonal boundary \(s=m\), where the stock is at its
+    running maximum.
+\end{itemize}
+
+\paragraph{Boundary at \(s=0\).}
+If the stock reaches zero, then under the Black--Scholes model it
+remains at zero afterward.
+The running maximum, however, remains equal to its past value \(m\).
+
+Therefore, if \(s=0\), the value of the contract is simply the discounted
+expected payoff based on the already achieved maximum:
+\[
+u(t,0,m)=e^{-r(T-t)}(m-K)^+.
+\]
+
+So the boundary condition at \(s=0\) is
+\[
+\boxed{
+u(t,0,m)=e^{-r(T-t)}(m-K)^+.
+}
+\]
+
+\paragraph{Interpretation.}
+Once the stock is at zero, no new maximum can be reached.
+The future payoff is therefore already determined by the current running
+maximum \(m\), and all that remains is discounting.
+
+\paragraph{Boundary on the diagonal \(s=m\).}
+This is the most important and most characteristic boundary of the
+lookback problem.
+
+When \(s=m\), the stock is exactly at its running maximum.
+If the stock moves upward, then the running maximum moves upward with
+it.
+Thus, along the diagonal, a small increase in \(s\) must be accompanied
+by the same increase in \(m\).
+\paragraph{Boundary condition on the diagonal \(s=m\).}
+On the diagonal, the stock is at its running maximum. Over a short time
+interval \([t,t+\Delta t]\), if the stock moves upward, then the running
+maximum also increases. More precisely, starting from \(S_t=M_t=m\), one
+has
+\[
+M_{t+\Delta t}-m \approx (S_{t+\Delta t}-S_t)^+.
+\]
+Since
+\[
+S_{t+\Delta t}-S_t = O(\sqrt{\Delta t}),
+\]
+the increment of the running maximum has expectation of order
+\(\sqrt{\Delta t}\). Writing the dynamic programming relation and
+expanding \(u(t+\Delta t,S_{t+\Delta t},M_{t+\Delta t})\) around
+\((t,m,m)\), the term involving \(\partial_m u(t,m,m)\) would therefore
+produce a contribution of order \(\sqrt{\Delta t}\). Such a term must
+vanish in order to obtain a consistent backward PDE. Hence the diagonal
+boundary condition is
+\[
+\boxed{
+\partial_m u(t,m,s)\vert_{s = m} = 0,
+\qquad t<T.
+}
+\]
+
+\paragraph{Upper boundary in \(m\).}
+In numerical implementations, one usually truncates the \(m\)-domain at
+some large value \(M_{\max}\).
+Then one must impose an artificial boundary condition there, for
+instance by using the asymptotic behavior
+\[
+u(t,s,m)\approx m-Ke^{-r(T-t)}
+\]
+for large \(m\), or by choosing a sufficiently large truncation so that
+the numerical error is negligible.
+
+\paragraph{Summary of the main conditions.}
+The pricing problem is therefore characterized by:
+\begin{itemize}[leftmargin=1.4em]
+    \item the PDE in the interior \(0<s<m\),
+    \item the terminal condition
+    \[
+    u(T,s,m)=(m-K)^+,
+    \]
+    \item the boundary condition at \(s=0\),
+    \[
+    u(t,0,m)=e^{-r(T-t)}(m-K)^+,
+    \]
+    \item and the diagonal condition at \(s=m\),
+    \[
+    \partial_m u(t,m,m)=0.
+    \]
+\end{itemize}
+
+\subsubsection{Interpretation of the additional state variable}
+
+The variable \(m\) plays a very special role in the problem.
+
+\paragraph{A memory variable.}
+The running maximum is not an independent market factor like a second
+Brownian motion or a stochastic volatility process.
+Rather, it is a \emph{memory variable}: it records the relevant part of
+the past trajectory of the stock.
+
+This is what allows us to convert a path-dependent problem into a
+Markovian one.
+
+\paragraph{Why this variable is enough.}
+Although the full stock path \((S_u)_{0\le u\le t}\) contains infinitely
+much information, the payoff of the lookback option depends on the past
+only through the maximum already achieved.
+Therefore the single variable
+\[
+M_t=\max_{0\le u\le t}S_u
+\]
+is sufficient to summarize the relevant history.
+
+This is why the augmented state
+\[
+(t,S_t,M_t)
+\]
+is enough for pricing.
+
+\paragraph{How \(m\) changes the geometry of the problem.}
+For a European option, the state space is simply the half-line
+\[
+s\in \R_+.
+\]
+For the lookback option, the state space becomes the wedge
+\[
+\{(s,m): 0\le s\le m\}.
+\]
+
+Thus the introduction of the running maximum enlarges the dimension of
+the problem and changes the geometry of the PDE domain.
+
+\paragraph{How \(m\) changes the hedge.}
+The additional state variable also affects the hedge.
+The price is now
+\[
+u(t,s,m),
+\]
+so the delta is
+\[
+\Delta_t=\partial_s u(t,S_t,M_t).
+\]
+
+Thus the hedge ratio depends not only on the current stock level, but
+also on the current running maximum.
+This already suggests that hedging a lookback option will be more
+delicate than hedging a vanilla European call.
+
+\paragraph{Main lesson.}
+The additional state variable is the mathematical expression of path
+dependence.
+It transforms a non-Markovian payoff into a Markovian pricing problem,
+but at the cost of increasing the dimension of the state space and
+making the pricing and hedging problem more complex.
+\subsection{Numerical implementation}
+
+We now discuss how the pricing problem can be implemented numerically.
+
+Compared with the European call case, the main additional difficulty is
+that the payoff depends on the running maximum
+\[
+M_T=\max_{0\le u\le T}S_u.
+\]
+Therefore, the numerical method must not only simulate or approximate
+the stock price, but also keep track of the relevant path functional.
+
+There are two natural numerical viewpoints:
+\begin{itemize}[leftmargin=1.4em]
+    \item a Monte Carlo viewpoint, where one simulates stock paths and
+    tracks the running maximum pathwise;
+    \item a PDE viewpoint, where one solves a pricing equation in the
+    enlarged state space \((t,s,m)\).
+\end{itemize}
+
+For this course, Monte Carlo is often the most intuitive starting point,
+because the lookback payoff is directly expressed in terms of the path.
+The PDE viewpoint is still important conceptually, because it shows how
+path dependence changes the state space and the boundary conditions.
+
+\subsubsection{Choice of numerical method}
+
+For a lookback option, there is no unique numerical method that is
+always best.
+The choice depends on the objective:
+\begin{itemize}[leftmargin=1.4em]
+    \item if one wants a simple and flexible pricing tool, Monte Carlo is
+    very natural;
+    \item if one wants a full pricing surface and numerical Greeks, a PDE
+    approach may be preferable;
+    \item if one wants to study hedging path by path, Monte Carlo is
+    again the natural framework.
+\end{itemize}
+
+\paragraph{Why Monte Carlo is natural here.}
+The payoff of the fixed-strike lookback call is
+\[
+(M_T-K)^+.
+\]
+This payoff is defined directly in terms of the realized stock path.
+Therefore, once one can simulate a path
+\[
+(S_{t_n})_{0\le n\le N},
+\]
+it is straightforward to compute the discrete running maximum and then
+the payoff.
+
+This makes Monte Carlo particularly convenient for:
+\begin{itemize}[leftmargin=1.4em]
+    \item pricing,
+    \item pathwise analysis,
+    \item and hedging P\&L comparisons.
+\end{itemize}
+
+\paragraph{Why PDEs are still useful.}
+The PDE formulation remains important for two reasons.
+
+First, it shows how path dependence can still be treated in a Markovian
+framework once the state is enlarged to
+\[
+(t,S_t,M_t).
+\]
+
+Second, the PDE viewpoint is closer to the logic used in the European
+option example:
+\begin{itemize}[leftmargin=1.4em]
+    \item derive the pricing equation,
+    \item solve it numerically,
+    \item then recover the delta by differentiation.
+\end{itemize}
+
+Thus, even if Monte Carlo is often the easiest implementation route for
+a lookback payoff, the PDE formulation remains very informative.
+
+\paragraph{Our practical strategy.}
+For this example, a natural pedagogical strategy is:
+\begin{itemize}[leftmargin=1.4em]
+    \item use Monte Carlo as the main pricing tool,
+    \item explain clearly how the running maximum is tracked,
+    \item and keep the finite-difference viewpoint as a conceptual
+    extension of the PDE approach already used for the European option.
+\end{itemize}
+
+\subsubsection{Monte Carlo pricing under the pricing model}
+
+Assume first that the stock follows the Black--Scholes dynamics under
+the risk-neutral measure:
+\[
+\mathrm{d}S_t=rS_t\,\mathrm{d}t+\sigma S_t\,\mathrm{d}W_t.
+\]
+
+Then the price of the fixed-strike lookback call is
+\[
+u(0,S_0,M_0)
+=
+\E^\Qbb\!\left[
+e^{-rT}(M_T-K)^+
+\right].
+\]
+
+\paragraph{Discrete-time approximation.}
+To implement this numerically, we choose a time grid
+\[
+t_n=n\Delta t,
+\qquad
+\Delta t=\frac{T}{N},
+\qquad
+n=0,\dots,N.
+\]
+
+We simulate the stock path on this grid, for instance with the exact
+lognormal scheme
+\[
+S_{n+1}
+=
+S_n\exp\!\Big(
+\big(r-\tfrac12\sigma^2\big)\Delta t+\sigma\sqrt{\Delta t}\,Z_n
+\Big),
+\]
+where \(Z_n\sim\mathcal N(0,1)\) are independent.
+
+We then define the discrete running maximum by
+\[
+M_N^{\mathrm{disc}}
+:=
+\max_{0\le n\le N}S_n.
+\]
+
+The Monte Carlo estimator of the option price is
+\[
+\widehat u_0
+=
+e^{-rT}\frac1M
+\sum_{j=1}^M
+\Big(M_{N,j}^{\mathrm{disc}}-K\Big)^+,
+\]
+where \(M\) is the number of simulated paths.
+
+\paragraph{Interpretation.}
+The logic is exactly the same as in standard Monte Carlo pricing:
+\begin{itemize}[leftmargin=1.4em]
+    \item simulate independent sample paths under the risk-neutral
+    measure,
+    \item compute the payoff along each path,
+    \item average the discounted payoffs.
+\end{itemize}
+
+The new feature is only that the payoff is computed from the path
+maximum rather than from the terminal stock value alone.
+
+\paragraph{Non-vectorized Python implementation.}
+A first direct implementation is as follows.
+
+\begin{lstlisting}[language=Python]
+import numpy as np
+
+def simulate_bs_lookback_path_non_vectorized(S0, r, sigma, T, N):
+    dt = T / N
+    S = np.zeros(N + 1)
+    S[0] = S0
+
+    for n in range(N):
+        z = np.random.randn()
+        S[n + 1] = S[n]*np.exp((r-0.5*sigma**2)*dt+sigma*np.sqrt(dt)*z)
+
+    M = np.max(S)
+    return S, M
+
+def price_lookback_mc_non_vectorized(S0, K, r, sigma, T, N, M_paths):
+    payoffs = np.zeros(M_paths)
+
+    for j in range(M_paths):
+        S_path,M_path=simulate_bs_lookback_path_non_vectorized(S0,r,sigma,T,N)
+        payoffs[j] = max(M_path - K, 0.0)
+
+    price = np.exp(-r * T) * np.mean(payoffs)
+    return price
+\end{lstlisting}
+
+\paragraph{Vectorized Python implementation.}
+The same idea can be written much more efficiently in vectorized form.
+
+\begin{lstlisting}[language=Python]
+import numpy as np
+
+def simulate_bs_lookback_paths_vectorized(S0, r, sigma, T, N, M_paths):
+    dt = T / N
+    Z = np.random.randn(M_paths, N)
+
+    log_increments = (r - 0.5 * sigma**2) * dt + sigma * np.sqrt(dt) * Z
+    log_paths = np.cumsum(log_increments, axis=1)
+
+    S = np.zeros((M_paths, N + 1))
+    S[:, 0] = S0
+    S[:, 1:] = S0 * np.exp(log_paths)
+
+    M_running = np.max(S, axis=1)
+    return S, M_running
+
+def price_lookback_mc_vectorized(S0, K, r, sigma, T, N, M_paths):
+    S,M_running=simulate_bs_lookback_paths_vectorized(S0,r,sigma,T,N,M_paths)
+    payoffs = np.maximum(M_running - K, 0.0)
+    price = np.exp(-r * T) * np.mean(payoffs)
+    return price
+\end{lstlisting}
+
+\paragraph{Confidence interval.}
+As in any Monte Carlo method, one may also compute an approximate
+confidence interval based on the empirical standard deviation of the
+discounted payoffs.
+
+If
+\[
+Y_j=e^{-rT}(M_{N,j}^{\mathrm{disc}}-K)^+,
+\]
+then an approximate \(95\%\) confidence interval is
+\[
+\widehat u_0
+\pm
+1.96\,
+\frac{\widehat{\mathrm{std}}(Y)}{\sqrt{M}}.
+\]
+
+This is useful when comparing prices or hedging strategies numerically.
+
+\subsubsection{Tracking the running maximum / minimum}
+
+The crucial numerical step for a lookback option is the computation of
+the running extremum.
+
+\paragraph{Running maximum on a discrete grid.}
+Given a simulated stock path
+\[
+(S_{t_n})_{0\le n\le N},
+\]
+the discrete running maximum is defined by
+\[
+M_n=\max_{0\le k\le n}S_{t_k}.
+\]
+
+Thus it can be updated recursively as
+\[
+M_{n+1}=\max(M_n,S_{t_{n+1}}).
+\]
+
+Similarly, if one were working with a running minimum, one would define
+\[
+m_n=\min_{0\le k\le n}S_{t_k},
+\qquad
+m_{n+1}=\min(m_n,S_{t_{n+1}}).
+\]
+
+\paragraph{Why this is numerically simple but conceptually important.}
+At the algorithmic level, updating a running maximum is easy.
+However, this simple recursion is the numerical expression of the path
+dependence of the contract.
+
+The state variable has changed from:
+\[
+S_n
+\]
+to
+\[
+(S_n,M_n).
+\]
+
+This is why path-dependent products are more expensive to price and
+hedge numerically than standard European options.
+
+\paragraph{Non-vectorized implementation.}
+\begin{lstlisting}[language=Python]
+def running_max_non_vectorized(S_path):
+    N = len(S_path)
+    M_path = np.zeros(N)
+    M_path[0] = S_path[0]
+
+    for n in range(1, N):
+        M_path[n] = max(M_path[n - 1], S_path[n])
+
+    return M_path
+\end{lstlisting}
+
+\paragraph{Vectorized implementation.}
+In NumPy, the running maximum over each path can be computed very
+efficiently using \texttt{maximum.accumulate}.
+
+\begin{lstlisting}[language=Python]
+def running_max_vectorized(S_paths):
+    return np.maximum.accumulate(S_paths, axis=1)
+\end{lstlisting}
+
+\paragraph{Discretization bias.}
+A very important practical issue is that the true running maximum of a
+continuous-time process is not exactly equal to the maximum observed on
+a discrete simulation grid.
+
+Indeed, the stock may exceed the observed discrete maximum between two
+sampling dates and come back down before the next date.
+Therefore, the discrete-time approximation
+\[
+\max_{0\le n\le N}S_{t_n}
+\]
+typically underestimates the true continuous-time maximum.
+
+As a consequence, the Monte Carlo price of a lookback option computed on
+a coarse grid is usually biased downward.
+
+\paragraph{Implication.}
+This means that path-dependent products are particularly sensitive to
+time discretization.
+To reduce the bias, one may:
+\begin{itemize}[leftmargin=1.4em]
+    \item refine the time grid,
+    \item use Brownian-bridge corrections,
+    \item or use specialized schemes tailored to extrema.
+\end{itemize}
+
+For a first numerical implementation, refining the grid is usually the
+simplest approach.
+
+\subsubsection{Finite-difference viewpoint in the extended state space}
+
+Although Monte Carlo is often the most natural implementation tool for a
+lookback payoff, it is useful to understand how the PDE point of view
+extends to this setting.
+
+\paragraph{The pricing PDE.}
+For the fixed-strike lookback call under Black--Scholes, the price
+\(u(t,s,m)\) solves in the interior region \(0<s<m\) the PDE
+\[
+\partial_t u
++
+rs\,\partial_s u
++
+\frac12 \sigma^2 s^2\,\partial_{ss}u
+-r\,u
+=
+0,
+\]
+with terminal condition
+\[
+u(T,s,m)=(m-K)^+,
+\]
+and suitable boundary conditions at \(s=0\) and \(s=m\).
+
+\paragraph{Main numerical difference with the European case.}
+For a European option, the PDE is solved on a two-dimensional grid
+\[
+(t,s).
+\]
+For a lookback option, the PDE must be solved on a three-dimensional
+grid
+\[
+(t,s,m),
+\qquad 0\le s\le m.
+\]
+
+Thus the state space has gained one additional dimension.
+
+\paragraph{Grid structure.}
+A finite-difference method would require:
+\begin{itemize}[leftmargin=1.4em]
+    \item a time grid \(t_n\),
+    \item a stock grid \(s_i\),
+    \item a maximum grid \(m_j\),
+    \item and a price array
+    \[
+    U[n,i,j]\approx u(t_n,s_i,m_j).
+    \]
+\end{itemize}
+
+The main complication is that the domain is triangular:
+\[
+s_i\le m_j.
+\]
+So not all pairs \((s_i,m_j)\) are admissible.
+
+\paragraph{Interior finite-difference scheme.}
+Inside the region \(s<m\), the PDE has no derivative with respect to
+\(m\), because the running maximum remains frozen there.
+Thus the interior step resembles a Black--Scholes update in the stock
+variable, performed for each fixed level of \(m\).
+
+In other words, for each fixed \(m_j\), one solves a one-dimensional PDE
+in the stock direction, but coupled through the boundary condition on
+the diagonal \(s=m\).
+
+\paragraph{Diagonal boundary.}
+The most delicate part of the PDE implementation is the diagonal
+boundary \(s=m\), where the stock is at its running maximum.
+This is where the geometry of the state space matters.
+
+Numerically, one must impose the compatibility condition derived in the
+continuous theory, for instance
+\[
+\partial_m u(t,m,m)=0,
+\]
+or an equivalent discrete relation.
+
+This is one reason why PDE methods for lookback options are more
+delicate than for vanilla options.
+
+\paragraph{Why PDEs are still worth mentioning.}
+Even if one ultimately prices the lookback option by Monte Carlo, the
+finite-difference viewpoint remains important because:
+\begin{itemize}[leftmargin=1.4em]
+    \item it makes explicit the role of the enlarged state space,
+    \item it shows how path dependence enters the pricing equation,
+    \item and it clarifies how the delta hedge can in principle be
+    obtained from a grid-based pricing function.
+\end{itemize}
+
+\paragraph{Main practical message.}
+For path-dependent products such as lookbacks:
+\begin{itemize}[leftmargin=1.4em]
+    \item Monte Carlo is often the most direct method for pricing and for
+    pathwise hedging studies,
+    \item while PDE methods remain very informative conceptually, but
+    become more expensive and more delicate because of the enlarged state
+    space and the special boundary geometry.
+\end{itemize}
+\subsection{Hedging the lookback option}
+
+We now turn to the hedging problem.
+As in the European-option case, the general idea is to construct a
+self-financing portfolio in the stock and the money market account, and
+to choose the stock position so as to offset the local exposure of the
+option price to stock movements.
+
+However, the lookback option is more delicate to hedge than a European
+call, because its price depends not only on the current stock price, but
+also on the running maximum of the stock.
+Thus the hedge ratio is no longer a function of \((t,S_t)\) only, but of
+\((t,S_t,M_t)\).
+
+\subsubsection{Delta hedge under the pricing model}
+
+Let
+\[
+u(t,s,m)
+\]
+denote the price of the fixed-strike lookback call at time \(t\) when
+\[
+S_t=s,
+\qquad
+M_t=m.
+\]
+
+We assume first that this price is computed under the chosen pricing
+model, for instance Black--Scholes or local volatility, and that the
+function \(u\) is smooth enough.
+
+\paragraph{Self-financing portfolio.}
+We consider a hedging portfolio of the form
+\[
+\Pi_t=\Delta_t S_t+\beta_t B_t,
+\]
+where:
+\begin{itemize}[leftmargin=1.4em]
+    \item \(\Delta_t\) is the number of shares held in the stock,
+    \item \(\beta_t\) is the amount invested in the money market account,
+    \item \(B_t=e^{rt}\).
+\end{itemize}
+
+Assuming the strategy is self-financing, the portfolio dynamics satisfy
+\[
+\mathrm{d}\Pi_t=\Delta_t\,\mathrm{d}S_t+\beta_t\,\mathrm{d}B_t.
+\]
+
+Since
+\[
+\mathrm{d}B_t=rB_t\,\mathrm{d}t,
+\]
+this can also be written as
+\[
+\mathrm{d}\Pi_t
+=
+\Delta_t\,\mathrm{d}S_t+r(\Pi_t-\Delta_t S_t)\,\mathrm{d}t.
+\]
+
+\paragraph{Dynamics of the option price in the interior region.}
+Inside the region \(S_t<M_t\), the running maximum stays locally
+constant.
+Therefore, applying It\^o's formula to \(u(t,S_t,M_t)\) gives
+\[
+\mathrm{d}u(t,S_t,M_t)
+=
+\Big(
+\partial_t u
++
+rS_t\,\partial_s u
++
+\frac12 \sigma(t,S_t)^2S_t^2\,\partial_{ss}u
+\Big)\mathrm{d}t
++
+\sigma(t,S_t)S_t\,\partial_s u\,\mathrm{d}W_t,
+\]
+where \(\sigma(t,S_t)\) denotes the volatility coefficient of the chosen
+pricing model:
+\begin{itemize}[leftmargin=1.4em]
+    \item \(\sigma(t,s)\equiv \sigma\) in Black--Scholes,
+    \item \(\sigma(t,s)=\sigma_{\mathrm{loc}}(t,s)\) in the local
+    volatility model.
+\end{itemize}
+
+\paragraph{Matching the Brownian terms.}
+If we want the hedging portfolio to replicate the option price, then in
+the interior region we must match the diffusion terms of
+\(\Pi_t\) and \(u(t,S_t,M_t)\).
+This yields
+\[
+\Delta_t \sigma(t,S_t)S_t
+=
+\sigma(t,S_t)S_t\,\partial_s u(t,S_t,M_t),
+\]
+and therefore
+\[
+\boxed{
+\Delta_t=\partial_s u(t,S_t,M_t).
+}
+\]
+
+Thus the delta hedge for the lookback option is still the derivative of
+the price with respect to the stock, but now the price depends on the
+additional state variable \(M_t\).
+
+\paragraph{Interpretation.}
+This formula shows that the formal hedging rule looks identical to the
+European case:
+\[
+\Delta_t=\partial_s u.
+\]
+The crucial difference is that \(u\) is no longer a function of only
+\((t,s)\), but of \((t,s,m)\).
+Hence the hedge ratio now depends on the current running maximum as
+well:
+\[
+\Delta_t=\partial_s u(t,S_t,M_t).
+\]
+
+\paragraph{Black--Scholes benchmark versus richer models.}
+If the pricing model is Black--Scholes, then the delta is obtained from
+the lookback price function
+\[
+u^{BS}(t,s,m).
+\]
+If the pricing model is local volatility, then the hedge ratio becomes
+\[
+\Delta_t^{LV}=\partial_s u^{LV}(t,S_t,M_t).
+\]
+
+So, as in the European-option example, the hedge is model-dependent.
+But now the impact of model choice is potentially stronger because the
+price depends on path information through \(M_t\).
+
+\subsubsection{Why hedging is more delicate than for a European option}
+
+The lookback option is more difficult to hedge than a standard European
+call for several related reasons.
+
+\paragraph{First reason: the payoff depends on the whole path.}
+A European call depends only on \(S_T\), so its hedge is driven by the
+sensitivity of the price to the current stock level.
+
+A lookback option depends on
+\[
+M_T=\max_{0\le u\le T}S_u,
+\]
+so the future payoff is affected not only by where the stock ends, but
+also by whether and when the stock reaches new maxima before maturity.
+
+Thus the option is sensitive to the full trajectory of the stock.
+
+\paragraph{Second reason: the state variable is richer.}
+For a European call, the price is
+\[
+u(t,s),
+\]
+and the delta is a function of \((t,s)\).
+For a lookback option, the price is
+\[
+u(t,s,m),
+\]
+and the delta depends on both \(s\) and \(m\).
+
+So two states with the same current stock price \(s\) but different
+running maxima \(m\) will generally lead to different hedge ratios.
+
+\paragraph{Third reason: the behavior near the diagonal is delicate.}
+When the stock is close to the running maximum, that is, when
+\[
+S_t\approx M_t,
+\]
+a small upward move may generate a new maximum and thereby change the
+future payoff structure.
+
+This creates a region where the price function is especially sensitive
+to the interaction between the stock and the path variable.
+As a consequence, the delta may vary rapidly near the diagonal
+\[
+s=m.
+\]
+
+\paragraph{Fourth reason: discrete hedging is more fragile.}
+In continuous time, the model updates the running maximum continuously.
+In practice, however, rebalancing is done on a discrete grid of times.
+Between two rebalancing dates, the stock may make a brief excursion
+above the previous maximum and then come back.
+Such a move may have a significant effect on the final payoff, even if
+it is not perfectly captured by the discrete hedge.
+
+Thus discretization error is often more severe for path-dependent
+products than for standard vanillas.
+
+\paragraph{Fifth reason: model misspecification matters more.}
+For a European call, the hedge depends mainly on the marginal behavior
+of the stock under the chosen model.
+For a lookback option, the hedge depends on the path behavior of the
+stock, and therefore on how the model describes:
+\begin{itemize}[leftmargin=1.4em]
+    \item the frequency of upward excursions,
+    \item the probability of reaching new maxima,
+    \item the local behavior of volatility along the path.
+\end{itemize}
+
+So the hedging performance is typically more sensitive to model choice.
+
+\paragraph{Main message.}
+The lookback option is harder to hedge not because the formal hedging
+rule changes, but because the underlying price function is more complex,
+more path-sensitive, and more model-dependent than in the European case.
+
+\subsubsection{Discrete-time rebalancing}
+
+As in the European-option example, the ideal hedge in continuous time is
+only a theoretical benchmark.
+In practice, the hedging portfolio is rebalanced at discrete dates
+\[
+0=t_0<t_1<\cdots<t_N=T.
+\]
+
+\paragraph{Discrete hedge ratio.}
+At each rebalancing date \(t_n\), we compute the hedge ratio from the
+pricing model:
+\[
+\Delta_{t_n}
+=
+\partial_s u(t_n,S_{t_n},M_{t_n}).
+\]
+
+Thus the strategy must keep track of both:
+\begin{itemize}[leftmargin=1.4em]
+    \item the current stock price \(S_{t_n}\),
+    \item the current running maximum \(M_{t_n}\).
+\end{itemize}
+
+\paragraph{Portfolio decomposition.}
+Suppose that we sell one lookback option at time \(0\), and use the
+initial model price \(u(0,S_0,M_0)\) to set up the hedging portfolio.
+The portfolio value is written as
+\[
+\Pi_{t_n}
+=
+\Delta_{t_n}S_{t_n}
++
+B_{t_n}^{\mathrm{cash}},
+\]
+where \(B_{t_n}^{\mathrm{cash}}\) is the cash position.
+
+Initially, one may set
+\[
+\Pi_0=u(0,S_0,M_0),
+\qquad
+B_0^{\mathrm{cash}}
+=
+u(0,S_0,M_0)-\Delta_0 S_0.
+\]
+
+\paragraph{Update between two dates.}
+Between \(t_n\) and \(t_{n+1}\), the stock holding is kept constant, and
+the cash position accrues interest.
+Therefore, just before rebalancing at time \(t_{n+1}\), the portfolio
+value is
+\[
+\Pi_{t_{n+1}}^{-}
+=
+e^{r\Delta t}
+\big(\Pi_{t_n}-\Delta_{t_n}S_{t_n}\big)
++
+\Delta_{t_n}S_{t_{n+1}},
+\]
+where
+\[
+\Delta t=t_{n+1}-t_n.
+\]
+
+\paragraph{Rebalancing at the new date.}
+At time \(t_{n+1}\), we update the running maximum:
+\[
+M_{t_{n+1}}=\max(M_{t_n},S_{t_{n+1}}),
+\]
+compute the new hedge ratio
+\[
+\Delta_{t_{n+1}}=\partial_s u(t_{n+1},S_{t_{n+1}},M_{t_{n+1}}),
+\]
+and redefine the cash position so that
+\[
+\Pi_{t_{n+1}}
+=
+\Delta_{t_{n+1}}S_{t_{n+1}}
++
+B_{t_{n+1}}^{\mathrm{cash}}.
+\]
+
+\paragraph{What is new compared with the European case?}
+The portfolio update itself is formally the same as before.
+The crucial difference is that the hedge ratio is no longer determined
+by \((t_n,S_{t_n})\) alone, but by the augmented state
+\[
+(t_n,S_{t_n},M_{t_n}).
+\]
+
+So, at each date, the hedger must update not only the stock position and
+the cash account, but also the running maximum used in the pricing and
+hedging formula.
+
+\paragraph{Practical implication.}
+This makes the hedge more sensitive to path recording and to the
+accuracy of the numerical scheme.
+Any error in tracking the running maximum may translate into an error in
+the hedge ratio.
+
+\subsubsection{Sensitivity to the path and to the proximity of the maximum / minimum}
+
+The lookback option is especially sensitive to where the current stock
+stands relative to the running maximum.
+
+\paragraph{When the stock is far below the maximum.}
+If
+\[
+S_t\ll M_t,
+\]
+then the option payoff is already strongly influenced by the previously
+reached maximum.
+In that situation, the probability that a new higher maximum will be
+created before maturity may be relatively small.
+The hedge is then less driven by immediate stock moves and more by the
+fact that a large historical maximum is already locked in.
+
+\paragraph{When the stock is close to the maximum.}
+If
+\[
+S_t\approx M_t,
+\]
+then even a small upward move may create a new maximum.
+This can materially affect the future payoff
+\[
+(M_T-K)^+.
+\]
+
+As a result, the option price may become very sensitive to local stock
+movements in this region, and the delta may change rapidly.
+This is one of the reasons why hedging is particularly delicate near the
+diagonal
+\[
+s=m.
+\]
+
+\paragraph{Interpretation in terms of path sensitivity.}
+The current value of the running maximum summarizes the relevant history
+of the stock path.
+The closer the stock is to this historical maximum, the more the future
+payoff is sensitive to the next local move of the stock.
+
+So the hedge is not determined only by the current level of the stock,
+but by the interaction between:
+\begin{itemize}[leftmargin=1.4em]
+    \item the current stock value,
+    \item the historical maximum already achieved,
+    \item and the remaining time to maturity.
+\end{itemize}
+
+\paragraph{Extension to the running minimum.}
+If the contract depended on the running minimum instead of the running
+maximum, the same logic would apply in reverse.
+The hedge would then be particularly sensitive when the stock is close
+to the running minimum.
+
+Thus, for path-dependent products based on extrema, proximity to the
+relevant boundary is a key driver of hedging sensitivity.
+
+\paragraph{Why this matters for model risk.}
+Any pricing model determines how likely the stock is to create new
+maxima or minima.
+Since the lookback hedge is highly sensitive to those events, a wrong
+model may produce a significantly wrong hedge ratio, especially near the
+extremal boundary.
+
+This makes the lookback option an excellent example for studying the
+interaction between:
+\begin{itemize}[leftmargin=1.4em]
+    \item path dependence,
+    \item numerical approximation,
+    \item and model misspecification.
+\end{itemize}
+
+\paragraph{Main lesson.}
+The hedge of a lookback option is more fragile than the hedge of a
+vanilla option because it depends on the whole relevant history of the
+path through the running extremum.
+This path sensitivity becomes especially strong when the stock is close
+to the current maximum or minimum.
+
+\subsection{Model risk for path-dependent products}
+
+We now return to the issue of model risk, but in the more demanding
+setting of a path-dependent product.
+
+For the European call, model risk was already visible: two different
+hedging models could lead to different deltas and different hedging
+P\&L distributions when the true dynamics were stochastic volatility.
+
+For a lookback option, this effect is typically even stronger.
+The reason is that the payoff depends on the whole path of the stock,
+and therefore on the way the model describes the pathwise evolution of
+volatility, the probability of reaching new extrema, and the frequency
+of large excursions.
+
+\subsubsection{A reference stochastic volatility model for the true dynamics}
+
+To study model risk concretely, we assume that the \emph{true} stock
+dynamics are given by a stochastic volatility model, while the hedging
+strategies are built under simpler pricing models.
+
+A natural reference choice is a Heston-type model under the
+risk-neutral measure:
+\[
+\mathrm{d}S_t
+=
+rS_t\,\mathrm{d}t
++
+\sqrt{V_t}\,S_t\,\mathrm{d}W_t^{(1)},
+\]
+\[
+\mathrm{d}V_t
+=
+\kappa(\theta-V_t)\,\mathrm{d}t
++
+\eta\sqrt{V_t}\,\mathrm{d}W_t^{(2)},
+\]
+with
+\[
+\mathrm{d}\langle W^{(1)},W^{(2)}\rangle_t=\rho\,\mathrm{d}t.
+\]
+
+Here:
+\begin{itemize}[leftmargin=1.4em]
+    \item \(S_t\) is the stock price,
+    \item \(V_t\) is the instantaneous variance,
+    \item \(\kappa\) is the mean-reversion speed,
+    \item \(\theta\) is the long-run variance level,
+    \item \(\eta\) is the volatility of volatility,
+    \item \(\rho\) is the correlation between stock and variance shocks.
+\end{itemize}
+
+\paragraph{Why this is a natural benchmark.}
+This model is rich enough to produce:
+\begin{itemize}[leftmargin=1.4em]
+    \item time-varying volatility,
+    \item volatility clustering,
+    \item asymmetric smile effects when \(\rho\neq 0\),
+    \item and path behavior that differs substantially from a constant-
+    volatility diffusion.
+\end{itemize}
+
+Thus it provides a meaningful ``true world'' against which simpler
+hedging models can be tested.
+
+\paragraph{Risk-neutral pricing under the true model.}
+If we were to price the lookback option directly under this stochastic
+volatility model, the natural risk-neutral value would be
+\[
+u^{SV}(t,s,v,m)
+=
+\E^\Qbb\!\left[
+e^{-r(T-t)}(M_T-K)^+
+\;\middle|\;
+S_t=s,\ V_t=v,\ M_t=m
+\right].
+\]
+
+So the true Markovian state variable would now be
+\[
+(t,S_t,V_t,M_t),
+\]
+which is even richer than the state space used under the benchmark
+Black--Scholes or local-volatility pricing models.
+
+\paragraph{Why we do not necessarily hedge under the true model.}
+In practice, a trader rarely knows the true model.
+The whole point of model risk is precisely that the true dynamics are
+unknown.
+So in our numerical experiment, the stochastic volatility model is used
+only to generate the true stock paths and the true running maximums,
+while the hedging strategies themselves are computed under simpler
+models.
+
+This is exactly the right setup for illustrating model misspecification.
+
+\subsubsection{Why model misspecification matters more here}
+
+Model misspecification already affects the hedge of a European option,
+but it typically matters even more for a path-dependent product such as
+a lookback option.
+
+\paragraph{European case versus lookback case.}
+For a European call, the payoff depends only on the terminal stock
+value:
+\[
+(S_T-K)^+.
+\]
+So pricing and hedging depend essentially on the model's description of
+the terminal distribution of \(S_T\).
+
+For a lookback option, the payoff depends on the running maximum:
+\[
+(M_T-K)^+,
+\qquad
+M_T=\max_{0\le u\le T}S_u.
+\]
+Thus pricing and hedging depend not only on where the stock ends, but
+also on how it moves during the whole interval \([0,T]\).
+
+\paragraph{Why the path matters.}
+Two models may produce similar prices for liquid European options at
+time \(0\), yet generate very different path behavior for the stock.
+In particular, they may differ in:
+\begin{itemize}[leftmargin=1.4em]
+    \item how often the stock approaches its running maximum,
+    \item how likely it is to break through an existing maximum,
+    \item how volatility behaves during large upward or downward moves,
+    \item how extreme path realizations are distributed over time.
+\end{itemize}
+
+These differences can have a strong effect on a lookback payoff.
+
+\paragraph{Why stochastic volatility is particularly relevant.}
+In a stochastic volatility model, the variance itself evolves randomly.
+This means that some paths may experience:
+\begin{itemize}[leftmargin=1.4em]
+    \item periods of low volatility,
+    \item periods of high volatility,
+    \item bursts of volatility coinciding with large stock moves.
+\end{itemize}
+
+Such effects may significantly alter the probability that the stock
+reaches new maxima before maturity.
+
+A simple Black--Scholes or local-volatility hedging model does not
+reproduce these dynamics in the same way.
+Therefore the resulting hedge may be significantly misspecified.
+
+\paragraph{Path dependence amplifies model risk.}
+This is the key intuition:
+\begin{quote}
+for a path-dependent product, a model error affects not only the final
+distribution of the stock, but the whole evolution of the path, and
+therefore the whole mechanism that generates the payoff.
+\end{quote}
+
+As a result, the impact of model misspecification is often amplified for
+lookback options compared with standard European calls.
+
+\paragraph{Another source of fragility: the hedge depends on the running maximum.}
+The hedge ratio of a lookback option depends on
+\[
+(t,S_t,M_t).
+\]
+So any model error that changes the distribution of future maxima also
+changes the relevance of the hedge ratio computed under the wrong model.
+
+This is especially important near the region where
+\[
+S_t\approx M_t,
+\]
+because in that region the hedge is very sensitive to the probability of
+creating a new maximum.
+
+\paragraph{Main message.}
+For a path-dependent product, model misspecification matters more
+because the model must get the \emph{path dynamics} reasonably right,
+not only the terminal law.
+This is why model risk is particularly visible in the hedging P\&L of
+lookback options.
+
+\subsubsection{Hedging with a simple model versus hedging with a richer model}
+
+We now compare two ways of building a hedge for the lookback option when
+the true dynamics are stochastic volatility.
+
+\paragraph{A simple hedging model.}
+A first approach is to hedge under a simple benchmark model, for
+instance Black--Scholes:
+\[
+\mathrm{d}S_t=rS_t\,\mathrm{d}t+\sigma S_t\,\mathrm{d}W_t.
+\]
+
+In this case, the hedge ratio is computed from the benchmark lookback
+price
+\[
+u^{BS}(t,s,m),
+\]
+and the corresponding delta is
+\[
+\Delta_t^{BS}
+=
+\partial_s u^{BS}(t,S_t,M_t).
+\]
+
+This strategy is easy to interpret and to implement.
+It provides a clean benchmark.
+But it ignores:
+\begin{itemize}[leftmargin=1.4em]
+    \item smile effects,
+    \item state dependence of volatility,
+    \item and random fluctuations of the true variance process.
+\end{itemize}
+
+\paragraph{A richer hedging model.}
+A second approach is to hedge under a richer model, such as local
+volatility:
+\[
+\mathrm{d}S_t
+=
+rS_t\,\mathrm{d}t
++
+\sigma_{\mathrm{loc}}(t,S_t)S_t\,\mathrm{d}W_t.
+\]
+
+The hedge ratio is then computed from the local-volatility lookback
+price
+\[
+u^{LV}(t,s,m),
+\]
+and takes the form
+\[
+\Delta_t^{LV}
+=
+\partial_s u^{LV}(t,S_t,M_t).
+\]
+
+This strategy is still simpler than a full stochastic-volatility hedge,
+but it is at least consistent with the current market smile through the
+local volatility surface.
+
+\paragraph{Why the richer model may help.}
+Even if local volatility is not the true model, it may provide a better
+hedge than Black--Scholes because it uses more information from liquid
+market vanillas.
+In particular, it may produce stock-path dynamics that are more
+consistent with observed smile effects than the constant-volatility
+benchmark.
+
+Thus it may lead to a hedge ratio that is more robust when the true
+world is not Black--Scholes.
+
+\paragraph{Why the richer model may still fail.}
+However, local volatility is still not the true stochastic volatility
+model.
+It incorporates the current smile, but volatility remains a deterministic
+function of \((t,S_t)\).
+It does not have a separate random volatility factor.
+
+So even the richer hedge remains misspecified when the true dynamics are
+stochastic volatility.
+
+\paragraph{What we want to compare numerically.}
+The numerical experiment therefore compares:
+\begin{itemize}[leftmargin=1.4em]
+    \item a simple hedge built under Black--Scholes,
+    \item a richer hedge built under local volatility,
+    \item both tested on paths generated under stochastic volatility.
+\end{itemize}
+
+This allows us to ask a concrete and practically meaningful question:
+\begin{quote}
+does a richer hedging model produce a smaller and more stable hedging
+error when the true dynamics are pathwise more complex?
+\end{quote}
+
+\paragraph{What we should not expect.}
+We should not expect either hedge to be perfect.
+Since the true dynamics are stochastic volatility, both the
+Black--Scholes hedge and the local-volatility hedge are misspecified.
+So the purpose of the comparison is not to find an exact replication
+strategy, but to compare the size and distribution of the residual
+hedging error.
+
+\paragraph{Main lesson.}
+For a path-dependent product such as a lookback option, one expects the
+difference between a simple hedge and a richer hedge to be more visible
+than for a vanilla European option.
+The reason is that the product is more sensitive to the detailed
+pathwise behavior of the stock, and therefore more sensitive to model
+choice.
+
+\subsection{Comparing hedging P\&L}
+
+We now explain how to compare the performance of the hedging strategies
+for the lookback option.
+
+As in the European-option example, the idea is to:
+\begin{itemize}[leftmargin=1.4em]
+    \item choose a pricing and hedging model,
+    \item simulate the \emph{true} stock dynamics under a richer model,
+    \item implement the hedge in discrete time,
+    \item and study the terminal profit and loss.
+\end{itemize}
+
+For a path-dependent product, this comparison is especially informative,
+because the hedge depends not only on the stock level, but also on the
+running maximum, and therefore on the whole realized path.
+
+\subsubsection{Definition of the hedging error}
+
+Suppose that we sell one fixed-strike lookback call at time \(0\), with
+payoff
+\[
+(M_T-K)^+,
+\qquad
+M_T=\max_{0\le u\le T}S_u.
+\]
+
+Assume that the option is priced under the chosen hedging model, giving
+the initial price
+\[
+u(0,S_0,M_0).
+\]
+
+We use this initial amount to set up a self-financing hedging
+portfolio, which is then rebalanced at discrete dates
+\[
+0=t_0<t_1<\cdots<t_N=T.
+\]
+
+Let \(\Pi_T\) denote the final value of this hedging portfolio at
+maturity.
+
+\paragraph{Terminal hedging P\&L.}
+Since we are short one option, the terminal hedging profit and loss is
+defined by
+\[
+\boxed{
+\mathrm{PnL}
+=
+\Pi_T-(M_T-K)^+.
+}
+\]
+
+\paragraph{Interpretation.}
+If the hedge were perfect and rebalancing continuous in the true model,
+then one would have
+\[
+\Pi_T=(M_T-K)^+,
+\]
+so that
+\[
+\mathrm{PnL}=0.
+\]
+
+In practice, however, the terminal P\&L is generally not zero because of
+several sources of error:
+\begin{itemize}[leftmargin=1.4em]
+    \item discrete rebalancing,
+    \item numerical approximation,
+    \item and, most importantly here, model misspecification.
+\end{itemize}
+
+\paragraph{Why the notion of error is more subtle here.}
+For a European option, the payoff depends only on \(S_T\), so the
+hedging error is driven mainly by how well the model captures the
+terminal exposure of the option.
+
+For a lookback option, the payoff depends on the running maximum over
+the whole interval \([0,T]\).
+Thus the hedging error reflects not only the final stock level, but also
+how well the model captures the full path behavior of the stock.
+
+\paragraph{Two candidate hedging errors.}
+In our numerical comparison, we typically define:
+\begin{itemize}[leftmargin=1.4em]
+    \item one P\&L associated with the Black--Scholes hedge,
+    \item one P\&L associated with the local-volatility hedge.
+\end{itemize}
+
+If \(\Pi_T^{BS}\) and \(\Pi_T^{LV}\) denote the final values of the two
+hedging portfolios, then
+\[
+\mathrm{PnL}^{BS}
+=
+\Pi_T^{BS}-(M_T-K)^+,
+\]
+\[
+\mathrm{PnL}^{LV}
+=
+\Pi_T^{LV}-(M_T-K)^+.
+\]
+
+The comparison of these two random variables is the central object of
+this part of the analysis.
+
+\subsubsection{Pathwise comparison of hedging strategies}
+
+A first level of analysis is to compare the two hedging strategies
+\emph{path by path}.
+
+\paragraph{What is done pathwise.}
+For each simulated trajectory of the true stock dynamics, we can:
+\begin{itemize}[leftmargin=1.4em]
+    \item compute the realized stock path \((S_{t_n})_{0\le n\le N}\),
+    \item compute the corresponding running maximum path
+    \((M_{t_n})_{0\le n\le N}\),
+    \item construct the Black--Scholes hedge along that path,
+    \item construct the local-volatility hedge along that path,
+    \item compute the final payoff \((M_T-K)^+\),
+    \item and evaluate the terminal P\&L for each strategy.
+\end{itemize}
+
+\paragraph{Why pathwise comparison is useful.}
+Pathwise comparison is particularly important for a lookback option,
+because the difference between the two strategies may be driven by very
+specific events along the path, for example:
+\begin{itemize}[leftmargin=1.4em]
+    \item a sudden approach to the running maximum,
+    \item the creation of a new historical maximum,
+    \item a period of elevated volatility,
+    \item or a sequence of oscillations near the maximum.
+\end{itemize}
+
+Such events may have a moderate impact on a vanilla European option, but
+a much stronger effect on a path-dependent product.
+
+\paragraph{A typical pathwise scenario.}
+Suppose that two hedging models produce similar deltas when the stock is
+far below the running maximum.
+Then along such parts of the trajectory, the two portfolios may evolve
+similarly.
+
+However, if at some date the stock comes close to the running maximum,
+then the local-volatility hedge and the Black--Scholes hedge may react
+very differently.
+This may lead to significantly different portfolio values by maturity,
+even though both strategies started from the same initial contract.
+
+\paragraph{What one may plot.}
+A pathwise comparison is often best illustrated by plotting, for one or
+several simulated paths:
+\begin{itemize}[leftmargin=1.4em]
+    \item the stock path \(S_t\),
+    \item the running maximum \(M_t\),
+    \item the two hedge ratios \(\Delta_t^{BS}\) and \(\Delta_t^{LV}\),
+    \item the cumulative values of the two hedging portfolios,
+    \item and the final realized payoff.
+\end{itemize}
+
+These plots help visualize where the two hedges begin to diverge and why
+their final P\&L may differ.
+
+\paragraph{Main pathwise intuition.}
+For a path-dependent product, the hedging error is often produced by a
+small number of critical path events rather than by a smooth accumulation
+of small local errors.
+This is one reason why the analysis of hedging P\&L is especially
+interesting for lookback options.
+
+\subsubsection{Distribution of the hedging P\&L}
+
+Pathwise analysis is useful qualitatively, but to compare the two
+strategies in a systematic way we need to study the full distribution of
+their terminal P\&L.
+
+\paragraph{Monte Carlo sample of hedging errors.}
+After simulating many independent paths of the true stochastic
+volatility model, we obtain:
+\begin{itemize}[leftmargin=1.4em]
+    \item a sample of values of \(\mathrm{PnL}^{BS}\),
+    \item a sample of values of \(\mathrm{PnL}^{LV}\).
+\end{itemize}
+
+These samples can be analyzed statistically.
+
+\paragraph{Natural summary statistics.}
+Useful quantities to compare include:
+\begin{itemize}[leftmargin=1.4em]
+    \item the empirical mean,
+    \item the empirical standard deviation,
+    \item lower and upper quantiles,
+    \item the probability of large negative P\&L,
+    \item and more generally the overall concentration around zero.
+\end{itemize}
+
+\paragraph{Interpretation of the mean.}
+If the empirical mean of the hedging P\&L is significantly different
+from zero, this may indicate a systematic bias in the hedge.
+Such a bias may come from:
+\begin{itemize}[leftmargin=1.4em]
+    \item model misspecification,
+    \item discretization effects,
+    \item or a persistent mismatch between the hedging model and the
+    true path dynamics.
+\end{itemize}
+
+\paragraph{Interpretation of the variance.}
+The empirical variance measures how volatile the residual hedging error
+is.
+A smaller variance means that the hedge is more stable across scenarios,
+which is generally desirable.
+
+\paragraph{Why quantiles matter.}
+For risk management, the tails of the P\&L distribution are often more
+important than the mean.
+A hedge that performs well on average but occasionally produces very
+large losses may be less attractive than a hedge with a slightly larger
+average error but much smaller tail risk.
+
+This is especially relevant for path-dependent products, where rare path
+events may generate large hedging losses.
+
+\paragraph{Visual comparison.}
+The distribution of the hedging P\&L can be displayed using:
+\begin{itemize}[leftmargin=1.4em]
+    \item histograms,
+    \item kernel density estimates,
+    \item boxplots,
+    \item or empirical cumulative distribution functions.
+\end{itemize}
+
+These visual tools make it easy to compare:
+\begin{itemize}[leftmargin=1.4em]
+    \item the center of the distribution,
+    \item the spread,
+    \item and the shape of the tails.
+\end{itemize}
+
+\paragraph{What we are really comparing.}
+We are not only comparing two numbers.
+We are comparing two full distributions:
+\[
+\mathrm{Law}(\mathrm{PnL}^{BS})
+\qquad\text{and}\qquad
+\mathrm{Law}(\mathrm{PnL}^{LV}).
+\]
+
+This is important because one strategy may have:
+\begin{itemize}[leftmargin=1.4em]
+    \item a smaller mean error,
+    \item but a larger dispersion,
+\end{itemize}
+while another may:
+\begin{itemize}[leftmargin=1.4em]
+    \item have a slightly larger average error,
+    \item but much smaller downside tail risk.
+\end{itemize}
+
+Thus the comparison of hedging models is naturally a comparison of risk
+profiles, not just of average performance.
+
+\subsubsection{Interpretation of the numerical results}
+
+The numerical results should be interpreted with care.
+
+\paragraph{We do not expect a perfect hedge.}
+Since the true dynamics are stochastic volatility, while the hedging
+strategies are computed under simpler models such as Black--Scholes or
+local volatility, neither hedge is exact.
+
+Thus the purpose of the experiment is not to identify a perfect
+replication strategy, but rather to compare the size and nature of the
+residual hedging errors.
+
+\paragraph{What one may expect qualitatively.}
+Because local volatility incorporates information from the current
+vanilla smile, one may expect it to perform better than Black--Scholes
+in some scenarios.
+This is especially plausible when the lookback option is sensitive to
+regions of the state space where the smile matters strongly.
+
+However, this is not guaranteed.
+Since the true world is stochastic volatility rather than local
+volatility, the local-volatility hedge is itself misspecified.
+Its advantage is therefore only partial.
+
+\paragraph{Why the difference may be stronger than for a vanilla option.}
+For a European option, the hedge depends mainly on the terminal
+distribution of the stock.
+For a lookback option, the hedge depends on the whole path, and therefore
+on how well the model captures:
+\begin{itemize}[leftmargin=1.4em]
+    \item the frequency of excursions to new maxima,
+    \item the volatility of the path near the running maximum,
+    \item and the interaction between path behavior and local hedging.
+\end{itemize}
+
+For this reason, the difference between two hedging models is often more
+visible for a lookback option than for a vanilla call.
+
+\paragraph{Why no universal ranking should be expected.}
+The comparison between Black--Scholes and local volatility depends on:
+\begin{itemize}[leftmargin=1.4em]
+    \item the strike,
+    \item the maturity,
+    \item the true stochastic-volatility parameters,
+    \item the rebalancing frequency,
+    \item and the numerical approximation scheme.
+\end{itemize}
+
+Therefore, one should not expect a universal theorem of the form
+\[
+\text{local volatility hedge is always better than Black--Scholes}.
+\]
+
+Rather, the correct interpretation is that richer models may reduce some
+forms of model risk, but they do not eliminate model risk entirely.
+
+\paragraph{Main interpretation.}
+The key lesson of the numerical experiment is the following:
+\begin{quote}
+for path-dependent products, model choice matters not only for the
+initial price, but even more for the distribution of the future hedging
+error.
+\end{quote}
+
+This is the practical meaning of model risk in a hedging context.
+
+\subsection{Main lessons from the lookback option example}
+
+The lookback option example highlights several important ideas that go
+beyond the standard European-option setting.
+
+\paragraph{First lesson: path dependence changes the state space.}
+For a European option, the current stock price is enough to describe the
+pricing problem.
+For a lookback option, the current stock price is not sufficient.
+One must also keep track of the running maximum or running minimum.
+
+Thus the state space becomes larger:
+\[
+(t,S_t)
+\quad\longrightarrow\quad
+(t,S_t,M_t).
+\]
+
+This is the mathematical expression of path dependence.
+
+\paragraph{Second lesson: path dependence makes pricing and hedging more complex.}
+The formal pricing logic remains the same:
+\begin{itemize}[leftmargin=1.4em]
+    \item choose a model,
+    \item write the risk-neutral pricing formula,
+    \item derive the PDE,
+    \item compute the delta,
+    \item and construct a self-financing hedge.
+\end{itemize}
+
+But each of these steps becomes more delicate because the payoff depends
+on the whole stock path through the running maximum.
+
+\paragraph{Third lesson: the hedge depends on the path history.}
+The hedge ratio of a lookback option is no longer just a function of
+time and spot.
+It depends also on the current running maximum:
+\[
+\Delta_t=\partial_s u(t,S_t,M_t).
+\]
+
+Thus two states with the same stock price but different historical
+maxima may require different hedging positions.
+
+\paragraph{Fourth lesson: model risk is amplified for path-dependent products.}
+Because the payoff depends on the full path, any model error in the
+description of stock-path behavior can have a strong effect on:
+\begin{itemize}[leftmargin=1.4em]
+    \item the price,
+    \item the hedge ratio,
+    \item and the final hedging P\&L.
+\end{itemize}
+
+This is why model misspecification is often more serious for path-
+dependent products than for standard European options.
+
+\paragraph{Fifth lesson: richer models may help, but do not solve everything.}
+A richer model such as local volatility may provide a more
+market-consistent hedge than the Black--Scholes benchmark, because it
+incorporates smile information from liquid vanilla options.
+
+However, if the true dynamics are stochastic volatility, even the local-
+volatility hedge remains misspecified.
+So the comparison is not between a wrong model and a perfect model, but
+between different imperfect hedging models.
+
+\paragraph{Final message.}
+Taken together, the European-call example and the lookback-option
+example illustrate a central theme of the course:
+\[
+\text{contract structure}
+\longrightarrow
+\text{model choice}
+\longrightarrow
+\text{pricing formula}
+\longrightarrow
+\text{hedging strategy}
+\longrightarrow
+\text{hedging P\&L}.
+\]
+
+The more path-dependent and model-sensitive the contract is, the more
+important this chain becomes.
+
+\paragraph{Transition.}
+This concludes the second case study.
+The contrast with the European option is now clear:
+\begin{itemize}[leftmargin=1.4em]
+    \item for a vanilla option, a simple benchmark model already gives a
+    very clean pricing and hedging framework;
+    \item for a path-dependent option, the state space is richer, the
+    hedge is more fragile, and model risk becomes more visible.
+\end{itemize}
+
+
+\section{Option pricing with stochastic interest rates}
+
+\subsection{Why stochastic rates change the problem}
+
+In the standard Black--Scholes framework, the interest rate is usually
+assumed to be constant.
+This simplification is mathematically very convenient, because it means
+that discounting is deterministic:
+\[
+e^{-r(T-t)}.
+\]
+As a consequence, the time value of money does not introduce any
+additional source of uncertainty.
+
+When interest rates become stochastic, this changes the nature of the
+pricing and hedging problem in several important ways.
+
+\paragraph{First change: discounting becomes random.}
+If the short rate is now a stochastic process \((r_t)_{t\ge0}\), then
+the discount factor between \(t\) and \(T\) becomes
+\[
+\exp\!\Big(-\int_t^T r_u\,\mathrm{d}u\Big),
+\]
+which is no longer deterministic.
+
+Therefore, even for a payoff that depends only on the stock price, such
+as
+\[
+(S_T-K)^+,
+\]
+the discounting part of the pricing formula becomes random.
+
+This is already a major conceptual difference with the constant-rate
+case.
+
+\paragraph{Second change: the stock dynamics depend on the short rate.}
+Under the risk-neutral measure, the drift of the stock is the short
+rate.
+So if the short rate is random, then the stock dynamics also change.
+Instead of
+\[
+\mathrm{d}S_t=rS_t\,\mathrm{d}t+\sigma S_t\,\mathrm{d}W_t,
+\]
+we now have
+\[
+\mathrm{d}S_t=r_tS_t\,\mathrm{d}t+\cdots.
+\]
+
+Thus the random evolution of rates affects not only discounting, but
+also the drift of the stock under the pricing measure.
+
+\paragraph{Third change: the state space becomes larger.}
+In the constant-rate Black--Scholes model, the option price can be
+written as a function
+\[
+u(t,s),
+\]
+because the relevant state variables are just time and the current stock
+price.
+
+With stochastic rates, the current short rate is itself a state
+variable.
+So the pricing function naturally becomes
+\[
+u(t,s,r).
+\]
+
+This means:
+\begin{itemize}[leftmargin=1.4em]
+    \item the pricing problem becomes higher-dimensional,
+    \item the PDE becomes more complex,
+    \item and the hedge is no longer driven only by the stock
+    sensitivity.
+\end{itemize}
+
+\paragraph{Fourth change: stock delta alone is no longer enough.}
+In the constant-rate case, hedging a European option can often be
+explained using only:
+\begin{itemize}[leftmargin=1.4em]
+    \item the stock,
+    \item and the money market account.
+\end{itemize}
+
+When rates are stochastic, the option price depends not only on the
+stock level, but also on the current interest-rate environment.
+So the option is exposed to rate risk as well.
+
+This suggests that, in general, a hedge based only on the stock will not
+be sufficient.
+One may also need to trade in interest-rate-sensitive instruments such
+as zero-coupon bonds or swaps.
+
+\paragraph{Fifth change: the issue of completeness becomes more subtle.}
+With stochastic rates, the market may involve several sources of
+uncertainty:
+\begin{itemize}[leftmargin=1.4em]
+    \item one source driving the stock,
+    \item one source driving the short rate,
+    \item and possibly a correlation between them.
+\end{itemize}
+
+Whether or not the option payoff can be perfectly replicated depends on
+whether the available traded assets span all these sources of risk.
+
+Thus, compared with the Black--Scholes benchmark, the relation between:
+\[
+\text{pricing} \quad\text{and}\quad \text{replication}
+\]
+becomes richer and more delicate.
+
+\paragraph{Main message.}
+The introduction of stochastic rates changes the problem because:
+\begin{itemize}[leftmargin=1.4em]
+    \item discounting is no longer deterministic,
+    \item the stock drift under the risk-neutral measure becomes random,
+    \item the state space becomes larger,
+    \item hedging requires rate-sensitive instruments,
+    \item and exact replication is no longer automatic.
+\end{itemize}
+
+So, even for a standard option payoff, stochastic rates create a more
+realistic but also more complex pricing and hedging problem.
+
+\subsection{A simple market model with stock and short rate}
+
+We now introduce a simple continuous-time market model in which both the
+stock price and the short rate evolve randomly.
+
+The purpose of this model is not to capture every feature of fixed-
+income markets, but rather to provide the simplest framework in which we
+can discuss:
+\begin{itemize}[leftmargin=1.4em]
+    \item option pricing with stochastic discounting,
+    \item the associated PDE,
+    \item and the question of hedging and replication.
+\end{itemize}
+
+\subsubsection{Risk-neutral dynamics}
+
+We consider a filtered probability space carrying two Brownian motions.
+Under the risk-neutral measure \(\Qbb\), we assume that the stock price
+\(S_t\) and the short rate \(r_t\) satisfy
+\[
+\mathrm{d}S_t
+=
+r_tS_t\,\mathrm{d}t
++
+\sigma_S(t,S_t,r_t)\,S_t\,\mathrm{d}W_t^{(1)},
+\]
+\[
+\mathrm{d}r_t
+=
+b(t,r_t)\,\mathrm{d}t
++
+\sigma_r(t,r_t)\,\mathrm{d}W_t^{(2)},
+\]
+with
+\[
+\mathrm{d}\langle W^{(1)},W^{(2)}\rangle_t=\rho\,\mathrm{d}t,
+\qquad -1\le \rho\le 1.
+\]
+
+\paragraph{Interpretation of the stock equation.}
+The stock still has drift equal to the short rate under the
+risk-neutral measure, exactly as in the Black--Scholes model.
+The difference is that the rate is now random.
+
+The volatility coefficient of the stock may depend on:
+\begin{itemize}[leftmargin=1.4em]
+    \item time,
+    \item the current stock level,
+    \item and the current short rate.
+\end{itemize}
+
+For a first reading, one may keep in mind the simpler specification
+\[
+\mathrm{d}S_t
+=
+r_tS_t\,\mathrm{d}t
++
+\sigma S_t\,\mathrm{d}W_t^{(1)},
+\]
+with constant stock volatility \(\sigma\).
+
+\paragraph{Interpretation of the short-rate equation.}
+The short rate \(r_t\) is itself modeled as a diffusion.
+Its drift is given by a function
+\[
+b(t,r),
+\]
+and its diffusion coefficient by
+\[
+\sigma_r(t,r).
+\]
+
+This is the main new ingredient compared with the standard
+Black--Scholes framework.
+
+\paragraph{Role of the correlation.}
+The correlation parameter \(\rho\) captures the dependence between:
+\begin{itemize}[leftmargin=1.4em]
+    \item shocks on the stock,
+    \item and shocks on the short rate.
+\end{itemize}
+
+When \(\rho\neq 0\), stock risk and rate risk are not independent.
+This matters for both pricing and hedging, because it creates a mixed
+second-order term in the pricing PDE.
+
+\paragraph{Markovian state variable.}
+In this model, the natural state variable is
+\[
+(t,S_t,r_t).
+\]
+Therefore, the price of a European claim will generally be written as a
+function
+\[
+u(t,s,r).
+\]
+
+This is the simplest extension of the Black--Scholes Markovian setting
+to the case of stochastic rates.
+
+\paragraph{A useful benchmark simplification.}
+For many pedagogical derivations, it is helpful to start with the
+simpler model
+\[
+\mathrm{d}S_t
+=
+r_tS_t\,\mathrm{d}t
++
+\sigma S_t\,\mathrm{d}W_t^{(1)},
+\]
+\[
+\mathrm{d}r_t
+=
+b(t,r_t)\,\mathrm{d}t
++
+\eta(t,r_t)\,\mathrm{d}W_t^{(2)},
+\]
+where \(\sigma\) is constant.
+This keeps the main conceptual novelty, namely stochastic rates, while
+avoiding too much notational complexity.
+
+\subsubsection{Money market account}
+
+As in the usual arbitrage-pricing framework, we include in the market a
+money market account \(B_t\), whose dynamics are now driven by the
+stochastic short rate.
+
+\paragraph{Definition.}
+The money market account satisfies
+\[
+\mathrm{d}B_t=r_tB_t\,\mathrm{d}t,
+\qquad
+B_0=1.
+\]
+
+Solving this ordinary differential equation pathwise gives
+\[
+\boxed{
+B_t=\exp\!\Big(\int_0^t r_u\,\mathrm{d}u\Big).
+}
+\]
+
+\paragraph{Interpretation.}
+The quantity \(B_t\) is the value at time \(t\) of one unit of cash
+invested continuously at the short rate.
+
+In the constant-rate case, this reduces to
+\[
+B_t=e^{rt}.
+\]
+So the money market account is the natural stochastic generalization of
+the deterministic bank account used in Black--Scholes.
+
+\paragraph{Discount factor.}
+The associated discount factor between \(t\) and \(T\) is
+\[
+\frac{B_t}{B_T}
+=
+\exp\!\Big(-\int_t^T r_u\,\mathrm{d}u\Big).
+\]
+
+This is precisely the random discounting term that appears in the
+risk-neutral pricing formula under stochastic rates.
+
+\paragraph{Why this matters.}
+In the Black--Scholes model with constant \(r\), discounting is easy
+because
+\[
+\frac{B_t}{B_T}=e^{-r(T-t)}
+\]
+is deterministic.
+
+Under stochastic rates, the discount factor itself is random, and this
+changes both:
+\begin{itemize}[leftmargin=1.4em]
+    \item the pricing formula,
+    \item and the structure of hedging portfolios.
+\end{itemize}
+
+\paragraph{Connection with zero-coupon bonds.}
+The money market account is only one possible numéraire.
+Another fundamental quantity in stochastic-rate models is the
+zero-coupon bond price
+\[
+P(t,T),
+\]
+which gives the time-\(t\) value of one unit of currency paid at time
+\(T\).
+
+These bonds will play a central role later, because they are the natural
+instruments used to hedge rate exposure and to perform changes of
+numéraire.
+
+\subsubsection{Examples of short-rate models}
+
+The abstract dynamics
+\[
+\mathrm{d}r_t=b(t,r_t)\,\mathrm{d}t+\sigma_r(t,r_t)\,\mathrm{d}W_t
+\]
+become concrete once we choose a specific short-rate model.
+
+We briefly recall three classical examples.
+
+\paragraph{Vasicek model.}
+In the Vasicek model, the short rate follows
+\[
+\boxed{
+\mathrm{d}r_t=a(b-r_t)\,\mathrm{d}t+\sigma_r\,\mathrm{d}W_t.
+}
+\]
+
+Here:
+\begin{itemize}[leftmargin=1.4em]
+    \item \(a>0\) is the mean-reversion speed,
+    \item \(b\) is the long-run mean level,
+    \item \(\sigma_r>0\) is the rate volatility.
+\end{itemize}
+
+\paragraph{Interpretation.}
+This model is Gaussian and mean reverting.
+It is analytically convenient, but it allows the short rate to become
+negative.
+
+\paragraph{Why it is useful pedagogically.}
+The Vasicek model is often the simplest short-rate model for explicit
+calculations.
+It is therefore a good benchmark for theoretical discussions.
+
+\paragraph{Cox--Ingersoll--Ross (CIR) model.}
+In the CIR model, the short rate satisfies
+\[
+\boxed{
+\mathrm{d}r_t=a(b-r_t)\,\mathrm{d}t+\sigma_r\sqrt{r_t}\,\mathrm{d}W_t.
+}
+\]
+
+The square-root diffusion structure makes the model qualitatively
+different from Vasicek.
+
+\paragraph{Interpretation.}
+Like Vasicek, the CIR model is mean reverting.
+But because the volatility is proportional to \(\sqrt{r_t}\), the short
+rate tends to remain non-negative under suitable parameter conditions.
+
+This makes the model more realistic from an interest-rate perspective.
+
+\paragraph{Hull--White model.}
+A very common model in practice is the Hull--White model, which may be
+written as
+\[
+\boxed{
+\mathrm{d}r_t=\big(\theta(t)-a r_t\big)\,\mathrm{d}t+\sigma_r\,\mathrm{d}W_t.
+}
+\]
+
+\paragraph{Interpretation.}
+This is a time-inhomogeneous Gaussian short-rate model.
+Its main practical advantage is that the function \(\theta(t)\) can be
+chosen so as to fit the initial term structure exactly.
+
+This makes Hull--White particularly attractive for practical calibration
+and interest-rate derivative pricing.
+
+\paragraph{What these models have in common.}
+All these models aim to capture the same basic economic idea:
+the short rate is random, but tends to revert toward some level or term
+structure.
+
+They differ mainly in:
+\begin{itemize}[leftmargin=1.4em]
+    \item whether rates can become negative,
+    \item how volatility depends on the rate level,
+    \item and how easily the model can be calibrated to the observed
+    yield curve.
+\end{itemize}
+
+\paragraph{What matters for us in this section.}
+For the pricing and hedging discussion that follows, the exact choice of
+short-rate model is less important than the general consequences of
+stochastic rates:
+\begin{itemize}[leftmargin=1.4em]
+    \item the option price depends on the current short rate,
+    \item discounting becomes random,
+    \item and rate-sensitive instruments will generally be needed for
+    hedging.
+\end{itemize}
+
+So, in what follows, the reader may keep in mind either a generic
+short-rate diffusion or a simple benchmark such as Vasicek or
+Hull--White.
+
+\subsection{Pricing a European option}
+
+We now consider the pricing of a European option when the stock and the
+short rate are both stochastic.
+
+For definiteness, we take a payoff of the form
+\[
+H=g(S_T),
+\]
+for example
+\[
+g(S_T)=(S_T-K)^+.
+\]
+
+Even though the payoff depends only on the stock at maturity, the option
+price will in general depend on the current short rate as well, because:
+\begin{itemize}[leftmargin=1.4em]
+    \item discounting is random,
+    \item the stock drift under the risk-neutral measure is \(r_t\),
+    \item and stock and rate shocks may be correlated.
+\end{itemize}
+
+Therefore, the pricing function is naturally written as
+\[
+u(t,s,r).
+\]
+
+\subsubsection{Risk-neutral pricing formula}
+
+We begin with the fundamental risk-neutral valuation formula.
+
+\paragraph{General pricing formula.}
+Let \(H=g(S_T)\) be the payoff of a European option maturing at time
+\(T\).
+Under the risk-neutral measure \(\Qbb\), its price at time \(t\) is
+\[
+\boxed{
+u(t,s,r)
+=
+\E^\Qbb\!\left[
+\exp\!\Big(-\int_t^T r_u\,\mathrm{d}u\Big)\,g(S_T)
+\;\middle|\;
+S_t=s,\ r_t=r
+\right].
+}
+\]
+
+Equivalently, along the stochastic path,
+\[
+u(t,S_t,r_t)
+=
+\E^\Qbb\!\left[
+\exp\!\Big(-\int_t^T r_u\,\mathrm{d}u\Big)\,g(S_T)
+\;\middle|\;
+\mathcal F_t
+\right].
+\]
+
+\paragraph{Comparison with the constant-rate case.}
+Under Black--Scholes with constant \(r\), the corresponding formula is
+\[
+u(t,s)
+=
+\E^\Qbb\!\left[
+e^{-r(T-t)}g(S_T)
+\;\middle|\;
+S_t=s
+\right].
+\]
+
+The only visible change is that the deterministic factor
+\[
+e^{-r(T-t)}
+\]
+has been replaced by the random discount factor
+\[
+\exp\!\Big(-\int_t^T r_u\,\mathrm{d}u\Big).
+\]
+
+But this apparently simple modification has major consequences:
+\begin{itemize}[leftmargin=1.4em]
+    \item the price now depends on the current short rate,
+    \item the state space is enlarged,
+    \item and the associated PDE becomes two-dimensional.
+\end{itemize}
+
+\paragraph{Why this formula is natural.}
+The money market account satisfies
+\[
+B_t=\exp\!\Big(\int_0^t r_u\,\mathrm{d}u\Big),
+\]
+so the discounted value of any self-financing replicable claim must be a
+martingale under \(\Qbb\).
+This implies that the current option value is the conditional
+expectation of the discounted payoff.
+
+Thus the core principle of no-arbitrage pricing remains unchanged:
+\begin{quote}
+price equals discounted expectation under the risk-neutral measure.
+\end{quote}
+
+\paragraph{Markovian structure.}
+Since we are working in a Markovian model for the pair
+\[
+(S_t,r_t),
+\]
+the option price depends only on the current time and the current values
+of the two state variables:
+\[
+u=u(t,s,r).
+\]
+
+This is what allows us to derive a PDE in the extended state space.
+
+\paragraph{A useful special case.}
+For a European call with strike \(K\), the formula becomes
+\[
+\boxed{
+u(t,s,r)
+=
+\E^\Qbb\!\left[
+\exp\!\Big(-\int_t^T r_u\,\mathrm{d}u\Big)(S_T-K)^+
+\;\middle|\;
+S_t=s,\ r_t=r
+\right].
+}
+\]
+
+Even though the payoff depends only on \(S_T\), the price still depends
+on \(r\) because the short rate affects both discounting and stock
+dynamics.
+
+\subsubsection{Pricing under a bond numeraire}
+
+The risk-neutral formula above is correct, but it is not always the most
+convenient one.
+Since the payoff is paid at a fixed date \(T\), a more natural numéraire
+is often the zero-coupon bond maturing at that same date.
+
+\paragraph{Zero-coupon bond.}
+Recall that
+\[
+P(t,T)
+\]
+denotes the time-\(t\) price of one unit of currency paid at time \(T\).
+
+This asset is a natural numéraire for any claim with payment date \(T\).
+
+\paragraph{Bond-numéraire pricing formula.}
+Let \(\Qbb^T\) denote the \(T\)-forward measure associated with the bond
+\(P(t,T)\).
+Then the European option price can be written as
+\[
+\boxed{
+u(t,s,r)
+=
+P(t,T)\,
+\E^{\Qbb^T}\!\left[
+g(S_T)
+\;\middle|\;
+S_t=s,\ r_t=r
+\right].
+}
+\]
+
+\paragraph{Why this is useful.}
+This formula has a major advantage:
+the random discount factor no longer appears explicitly inside the
+expectation.
+All discounting has been absorbed into the bond numéraire \(P(t,T)\).
+
+So the pricing problem becomes:
+\begin{itemize}[leftmargin=1.4em]
+    \item multiply by the current bond price \(P(t,T)\),
+    \item then take an expectation under the appropriate forward
+    measure.
+\end{itemize}
+
+\paragraph{Comparison with the previous formula.}
+Under the money market numéraire, we had
+\[
+u(t,s,r)
+=
+\E^\Qbb\!\left[
+\exp\!\Big(-\int_t^T r_u\,\mathrm{d}u\Big)\,g(S_T)
+\;\middle|\;
+S_t=s,\ r_t=r
+\right].
+\]
+
+Under the bond numéraire, this becomes
+\[
+u(t,s,r)
+=
+P(t,T)\,
+\E^{\Qbb^T}\!\left[
+g(S_T)
+\;\middle|\;
+S_t=s,\ r_t=r
+\right].
+\]
+
+The two formulas are equivalent, but the second one is often more
+convenient conceptually and computationally.
+
+\paragraph{Interpretation.}
+The \(T\)-forward measure is the probability measure under which prices
+expressed in units of the bond \(P(t,T)\) are martingales.
+This is the fixed-income analogue of the change-of-numéraire ideas
+already seen earlier.
+
+\paragraph{Example: European call.}
+For a call payoff
+\[
+g(S_T)=(S_T-K)^+,
+\]
+the bond-numéraire formula reads
+\[
+\boxed{
+u(t,s,r)
+=
+P(t,T)\,
+\E^{\Qbb^T}\!\left[
+(S_T-K)^+
+\;\middle|\;
+S_t=s,\ r_t=r
+\right].
+}
+\]
+
+So the option price may be viewed as:
+\begin{itemize}[leftmargin=1.4em]
+    \item the bond price \(P(t,T)\),
+    \item times the forward-measure expectation of the payoff.
+\end{itemize}
+
+\paragraph{Main lesson.}
+With stochastic rates, pricing can be written either:
+\begin{itemize}[leftmargin=1.4em]
+    \item under the risk-neutral measure with random discounting,
+    \item or under a bond numéraire, with discounting absorbed into the
+    bond price.
+\end{itemize}
+
+The second viewpoint is often cleaner and more natural for claims paid
+at a fixed maturity.
+
+\subsubsection{PDE in the extended state space}
+
+We now derive the PDE satisfied by the pricing function
+\[
+u(t,s,r).
+\]
+
+\paragraph{Model dynamics.}
+Assume that under the risk-neutral measure,
+\[
+\mathrm{d}S_t
+=
+r_tS_t\,\mathrm{d}t
++
+\sigma_S(t,S_t,r_t)\,S_t\,\mathrm{d}W_t^{(1)},
+\]
+\[
+\mathrm{d}r_t
+=
+b(t,r_t)\,\mathrm{d}t
++
+\sigma_r(t,r_t)\,\mathrm{d}W_t^{(2)},
+\]
+with
+\[
+\mathrm{d}\langle W^{(1)},W^{(2)}\rangle_t=\rho\,\mathrm{d}t.
+\]
+
+Let \(u(t,s,r)\) be the price of a European claim with payoff
+\[
+u(T,s,r)=g(s).
+\]
+
+\paragraph{It\^o's formula.}
+Applying It\^o's formula to \(u(t,S_t,r_t)\), we obtain
+\begin{align*}
+\mathrm{d}u(t,S_t,r_t)
+&=
+\partial_t u\,\mathrm{d}t
++
+\partial_s u\,\mathrm{d}S_t
++
+\partial_r u\,\mathrm{d}r_t
+\\
+&\quad
++
+\frac12 \partial_{ss}u\,\mathrm{d}\langle S\rangle_t
++
+\frac12 \partial_{rr}u\,\mathrm{d}\langle r\rangle_t
++
+\partial_{sr}u\,\mathrm{d}\langle S,r\rangle_t.
+\end{align*}
+
+Now:
+\[
+\mathrm{d}\langle S\rangle_t
+=
+\sigma_S(t,S_t,r_t)^2 S_t^2\,\mathrm{d}t,
+\]
+\[
+\mathrm{d}\langle r\rangle_t
+=
+\sigma_r(t,r_t)^2\,\mathrm{d}t,
+\]
+and
+\[
+\mathrm{d}\langle S,r\rangle_t
+=
+\rho\,\sigma_S(t,S_t,r_t)S_t\,\sigma_r(t,r_t)\,\mathrm{d}t.
+\]
+
+Substituting the dynamics of \(S_t\) and \(r_t\), we obtain
+\begin{align*}
+\mathrm{d}u(t,S_t,r_t)
+&=
+\Big(
+\partial_t u
++
+r_tS_t\,\partial_s u
++
+b(t,r_t)\,\partial_r u
+\\
+&\qquad
++
+\frac12 \sigma_S(t,S_t,r_t)^2 S_t^2\,\partial_{ss}u
++
+\rho\,\sigma_S(t,S_t,r_t)S_t\,\sigma_r(t,r_t)\,\partial_{sr}u
+\\
+&\qquad
++
+\frac12 \sigma_r(t,r_t)^2\,\partial_{rr}u
+\Big)\mathrm{d}t
++\text{martingale terms.}
+\end{align*}
+
+\paragraph{Martingale condition for the discounted price.}
+Under the risk-neutral measure, the discounted option price
+\[
+\frac{u(t,S_t,r_t)}{B_t}
+\]
+must be a martingale.
+Therefore the drift of the discounted process must vanish.
+
+This yields the PDE
+\[
+\boxed{
+\partial_t u
++
+rs\,\partial_s u
++
+b(t,r)\,\partial_r u
++
+\frac12 \sigma_S(t,s,r)^2 s^2\,\partial_{ss}u
++
+\rho\,\sigma_S(t,s,r)s\,\sigma_r(t,r)\,\partial_{sr}u
++
+\frac12 \sigma_r(t,r)^2\,\partial_{rr}u
+-r\,u
+=
+0.
+}
+\]
+
+The terminal condition is
+\[
+\boxed{
+u(T,s,r)=g(s).
+}
+\]
+
+\paragraph{Comparison with Black--Scholes.}
+This is the natural extension of the Black--Scholes PDE to the case of
+stochastic rates.
+
+Compared with the constant-rate case, we now have:
+\begin{itemize}[leftmargin=1.4em]
+    \item an additional state variable \(r\),
+    \item an additional first derivative \(\partial_r u\),
+    \item an additional second derivative \(\partial_{rr}u\),
+    \item and a mixed derivative \(\partial_{sr}u\) when stock and rate
+    shocks are correlated.
+\end{itemize}
+
+\paragraph{Interpretation of the PDE.}
+The terms in the PDE have a clear meaning:
+\begin{itemize}[leftmargin=1.4em]
+    \item \(rs\,\partial_s u\) comes from the stock drift under
+    \(\Qbb\),
+    \item \(b(t,r)\partial_r u\) comes from the short-rate drift,
+    \item the second-order terms capture the local variances and
+    covariance of the two factors,
+    \item and the term \(-ru\) reflects discounting at the short rate.
+\end{itemize}
+
+\paragraph{A simple special case.}
+If the stock volatility is constant and does not depend on the short
+rate, so that
+\[
+\sigma_S(t,s,r)\equiv \sigma,
+\]
+then the PDE becomes
+\[
+\boxed{
+\partial_t u
++
+rs\,\partial_s u
++
+b(t,r)\,\partial_r u
++
+\frac12 \sigma^2 s^2\,\partial_{ss}u
++
+\rho\,\sigma s\,\sigma_r(t,r)\,\partial_{sr}u
++
+\frac12 \sigma_r(t,r)^2\,\partial_{rr}u
+-r\,u
+=
+0.
+}
+\]
+
+This is often the simplest form to keep in mind for a first treatment of
+stochastic-rate option pricing.
+
+\paragraph{Main message.}
+With stochastic rates, the pricing PDE remains a no-arbitrage valuation
+equation, but the problem now lives in the extended state space
+\[
+(t,s,r).
+\]
+So the conceptual structure is the same as in Black--Scholes, while the
+dimension and the hedging implications become richer.
+
+\subsection{Hedging with stochastic rates}
+
+We now turn to the hedging problem in the presence of stochastic
+interest rates.
+
+The main new feature compared with the Black--Scholes benchmark is that
+the option price depends not only on the stock price, but also on the
+current short rate:
+\[
+u=u(t,s,r).
+\]
+Therefore, the option is exposed to both:
+\begin{itemize}[leftmargin=1.4em]
+    \item stock risk,
+    \item and interest-rate risk.
+\end{itemize}
+
+This immediately suggests that a hedge based only on the stock will in
+general not be sufficient.
+
+\subsubsection{Why stock delta alone is not enough}
+
+In the constant-rate Black--Scholes model, the option price is a
+function
+\[
+u(t,s),
+\]
+and the hedge is naturally built from the stock and the money market
+account.
+The key quantity is the stock delta
+\[
+\Delta_t=\partial_s u(t,S_t).
+\]
+
+When rates are stochastic, however, the option price becomes
+\[
+u(t,s,r),
+\]
+so the current short rate \(r_t\) is now a state variable of the pricing
+problem.
+
+\paragraph{A first indication from the pricing function.}
+Since the option price depends on \(r\), its total local variation
+contains a term in \(\partial_r u\).
+Applying It\^o's formula to \(u(t,S_t,r_t)\), one obtains diffusion
+terms coming from both Brownian shocks:
+\begin{align*}
+\mathrm{d}u(t,S_t,r_t)
+&=
+\cdots
++
+\partial_s u(t,S_t,r_t)\,\sigma_S(t,S_t,r_t)S_t\,\mathrm{d}W_t^{(1)}
+\\
+&\quad
++
+\partial_r u(t,S_t,r_t)\,\sigma_r(t,r_t)\,\mathrm{d}W_t^{(2)}.
+\end{align*}
+
+So the option is locally exposed to two sources of randomness.
+
+\paragraph{Why the stock cannot hedge rate risk by itself.}
+If we hedge only with the stock and cash, then the stock position can
+only generate exposure to the Brownian shocks carried by the stock
+process itself.
+It does not automatically span an independent short-rate shock.
+
+Therefore, even if we choose the stock holding so as to match the stock
+sensitivity
+\[
+\partial_s u,
+\]
+we will generally still be left with residual exposure to the short-rate
+factor through \(\partial_r u\).
+
+\paragraph{A simple one-factor intuition.}
+Suppose for a moment that the stock and the short rate are driven by two
+independent Brownian motions.
+Then a hedge based only on:
+\begin{itemize}[leftmargin=1.4em]
+    \item the stock,
+    \item and the money market account,
+\end{itemize}
+can neutralize the stock risk, but not the independent rate risk.
+
+So, unless the rate factor is degenerate or fully spanned by the stock,
+stock delta alone cannot produce exact replication.
+
+\paragraph{What this means financially.}
+An option on the stock may be exposed to rate movements even if its
+payoff depends only on \(S_T\).
+This happens because:
+\begin{itemize}[leftmargin=1.4em]
+    \item discounting depends on rates,
+    \item the risk-neutral drift of the stock depends on rates,
+    \item and stock and rate shocks may be correlated.
+\end{itemize}
+
+Thus, under stochastic rates, a hedge based only on the stock is in
+general incomplete.
+
+\paragraph{Main lesson.}
+The classical stock delta remains an important sensitivity, but it is no
+longer the whole story.
+Once rates are stochastic, the option carries a second source of risk,
+and hedging requires rate-sensitive instruments.
+
+\subsubsection{Hedging with stock and bonds}
+
+A natural way to hedge rate exposure is to include in the hedging
+portfolio a traded fixed-income instrument, for example a zero-coupon
+bond.
+
+\paragraph{Choice of hedging instruments.}
+We consider a hedging portfolio built from:
+\begin{itemize}[leftmargin=1.4em]
+    \item the stock \(S_t\),
+    \item a zero-coupon bond \(P(t,T^\star)\) with some maturity
+    \(T^\star\),
+    \item and the money market account \(B_t\).
+\end{itemize}
+
+We write the portfolio value as
+\[
+\Pi_t=\phi_t S_t+\psi_t P(t,T^\star)+\beta_t B_t.
+\]
+
+Here:
+\begin{itemize}[leftmargin=1.4em]
+    \item \(\phi_t\) is the stock position,
+    \item \(\psi_t\) is the bond position,
+    \item \(\beta_t\) is the cash position.
+\end{itemize}
+
+\paragraph{Why a bond is the right additional instrument.}
+A zero-coupon bond is directly sensitive to the short rate.
+Its price moves when the interest-rate environment changes.
+So it is the natural instrument for hedging the rate exposure of the
+option.
+
+This is the stochastic-rate analogue of using the stock to hedge stock
+risk.
+
+\paragraph{Dynamics of a zero-coupon bond under the risk-neutral measure.}
+Let \(P(t,T)\) denote the price at time \(t\) of a zero-coupon bond
+maturing at time \(T\), and let \(B_t\) be the money market account,
+defined by
+\[
+\mathrm{d}B_t=r_t B_t\,\mathrm{d}t.
+\]
+Under the risk-neutral measure associated with the money market account,
+the discounted bond price
+\[
+\frac{P(t,T)}{B_t}
+\]
+must be a martingale. Therefore, the bond price has drift
+\(r_tP(t,T)\). In a diffusion setting, its dynamics can be written as
+\[
+\mathrm{d}P(t,T)
+=
+r_t P(t,T)\,\mathrm{d}t
++
+P(t,T)\,\Sigma_P(t,T)\cdot \mathrm{d}W_t^{\Qbb},
+\]
+or equivalently
+\[
+\frac{\mathrm{d}P(t,T)}{P(t,T)}
+=
+r_t\,\mathrm{d}t
++
+\Sigma_P(t,T)\cdot \mathrm{d}W_t^{\Qbb},
+\]
+where \(\Sigma_P(t,T)\) denotes the volatility vector of the bond price.
+Thus, under the risk-neutral measure, a zero-coupon bond behaves like
+any traded asset: its drift is the short rate, while its volatility
+depends on the maturity \(T\). In particular, the process
+\[
+\frac{P(t,T)}{B_t}
+\]
+is a martingale.
+
+In a short-rate model, bond prices are typically obtained as functions
+of the current short rate, namely
+\[
+P(t,T)=F(t,r_t).
+\]
+Applying It\^o's formula then shows that the bond volatility is directly
+induced by the volatility of the short rate. More precisely, if
+\[
+\mathrm{d}r_t=b(t,r_t)\,\mathrm{d}t+\sigma_r(t,r_t)\,\mathrm{d}W_t,
+\]
+then the diffusion part of \(P(t,T)\) is given by
+\[
+\partial_r F(t,r_t)\,\sigma_r(t,r_t)\,\mathrm{d}W_t.
+\]
+So the volatility of the zero-coupon bond is directly linked to two
+quantities:
+\begin{itemize}[leftmargin=1.4em]
+    \item the volatility of the short rate itself,
+    \item and the sensitivity of the bond price to the short rate.
+\end{itemize}
+In this sense, short-rate models generate bond-price dynamics
+endogenously: once the process \(r_t\) is specified, the corresponding
+zero-coupon bond dynamics follow. Conversely, one may also choose to
+model bond prices or forward rates directly, as in HJM-type frameworks,
+rather than starting from the short rate.
+
+\paragraph{Local replication idea.}
+Suppose that the stock and the bond have diffusive dynamics of the form
+\[
+\mathrm{d}S_t=\cdots+\Gamma_S^{(1)}\,\mathrm{d}W_t^{(1)}+\Gamma_S^{(2)}\,\mathrm{d}W_t^{(2)},
+\]
+\[
+\mathrm{d}P(t,T^\star)=\cdots+\Gamma_P^{(1)}\,\mathrm{d}W_t^{(1)}+\Gamma_P^{(2)}\,\mathrm{d}W_t^{(2)}.
+\]
+
+The option price has diffusion terms
+\[
+\mathrm{d}u(t,S_t,r_t)
+=
+\cdots+\Gamma_u^{(1)}\,\mathrm{d}W_t^{(1)}+\Gamma_u^{(2)}\,\mathrm{d}W_t^{(2)}.
+\]
+
+If the matrix
+\[
+\begin{pmatrix}
+\Gamma_S^{(1)} & \Gamma_S^{(2)}\\
+\Gamma_P^{(1)} & \Gamma_P^{(2)}
+\end{pmatrix}
+\]
+has full rank, then we can choose \(\phi_t\) and \(\psi_t\) so as to
+match both Brownian exposures of the option.
+
+This is the local replication condition.
+
+\paragraph{Interpretation.}
+The stock hedges the stock-like part of the option's exposure.
+The bond hedges the rate-like part.
+The cash account then adjusts the deterministic part of the portfolio.
+
+So, in the simplest two-factor setting, the natural analogue of the
+Black--Scholes delta hedge becomes:
+\begin{quote}
+stock \(+\) bond \(+\) cash.
+\end{quote}
+
+\paragraph{The role of the bond maturity.}
+The maturity \(T^\star\) of the hedging bond matters.
+Different bonds have different sensitivities to the short rate and to the
+yield curve.
+
+In a one-factor short-rate model, a single bond of suitable maturity may
+already be enough to span the rate risk.
+In richer term-structure models, one may need several bonds or swaps to
+hedge all relevant rate factors.
+
+\paragraph{A useful special case.}
+Suppose the market has only two Brownian sources of risk:
+\begin{itemize}[leftmargin=1.4em]
+    \item one stock-related factor,
+    \item one rate-related factor.
+\end{itemize}
+
+If the stock and the chosen bond span these two directions, then a
+European option can be replicated locally using:
+\[
+\phi_t \text{ units of stock}
+\quad + \quad
+\psi_t \text{ units of bond}
+\quad + \quad
+\beta_t \text{ in cash.}
+\]
+
+So stochastic rates do not automatically imply incompleteness.
+Completeness depends on whether the traded assets span all the sources of
+risk.
+
+\paragraph{Practical viewpoint.}
+Even when exact replication is not available globally, the same idea is
+still useful:
+\begin{itemize}[leftmargin=1.4em]
+    \item use the stock to hedge stock exposure,
+    \item use bonds or swaps to hedge rate exposure,
+    \item and interpret the residual error as model or spanning error.
+\end{itemize}
+
+Thus the bond-augmented hedge is the natural generalization of the
+classical Black--Scholes hedge.
+
+\subsubsection{Sensitivity to the short rate}
+
+Since the price depends on the current short rate, a natural quantity to
+consider is the rate sensitivity
+\[
+\partial_r u(t,s,r).
+\]
+
+\paragraph{Definition.}
+The quantity
+\[
+\partial_r u(t,s,r)
+\]
+measures how the option price changes when the current short rate is
+perturbed, all else being held fixed.
+
+It is the analogue, in the rate direction, of the stock delta
+\[
+\partial_s u(t,s,r).
+\]
+
+\paragraph{Why this sensitivity appears.}
+The short rate affects the option price through several channels:
+\begin{itemize}[leftmargin=1.4em]
+    \item it changes the discount factor,
+    \item it changes the risk-neutral drift of the stock,
+    \item and it may be correlated with the stock shocks.
+\end{itemize}
+
+So even if the payoff depends only on \(S_T\), the current rate matters
+for the current value of the option.
+
+\paragraph{Relation with fixed-income hedging.}
+In practice, the quantity \(\partial_r u\) is not usually hedged by
+trading directly in the short rate, since the short rate is not itself a
+traded asset.
+Instead, one hedges this rate sensitivity using traded fixed-income
+instruments such as:
+\begin{itemize}[leftmargin=1.4em]
+    \item zero-coupon bonds,
+    \item bond futures,
+    \item swaps,
+    \item or swaptions in richer settings.
+\end{itemize}
+
+Thus the short-rate sensitivity should be understood as the source of
+the hedge, not as the traded hedge instrument itself.
+
+\paragraph{A simple interpretation in PDE terms.}
+The presence of the derivative \(\partial_r u\) and the second-order
+term \(\partial_{rr}u\) in the pricing PDE already tells us that the
+option price reacts to movements in the short rate.
+So the PDE itself makes visible the need for an interest-rate hedge.
+
+\paragraph{Comparison with the constant-rate case.}
+In Black--Scholes with constant \(r\), one may still differentiate with
+respect to the parameter \(r\), but the rate is not a state variable.
+So such a sensitivity is only a parameter sensitivity.
+
+With stochastic rates, by contrast, \(r_t\) is a genuine random state
+variable.
+Therefore \(\partial_r u\) is a true dynamic sensitivity of the option
+price.
+
+\paragraph{Main message.}
+Under stochastic rates, the option carries not only stock delta risk but
+also short-rate risk.
+This is why the natural hedge is no longer built solely from the stock:
+one also needs fixed-income instruments to manage the sensitivity of the
+price to the current rate environment.
+
+\subsection{Replication versus incompleteness}
+
+We now address one of the central conceptual questions raised by
+stochastic interest-rate models:
+
+\begin{quote}
+Can the option payoff still be replicated exactly, as in the standard
+Black--Scholes setting, or does the market become incomplete?
+\end{quote}
+
+The answer depends on the number of underlying sources of risk and on
+the set of traded assets available for hedging.
+
+This is an important point, because it determines whether the pricing
+problem can be understood as an exact replication problem or only as a
+problem of approximate hedging.
+
+\subsubsection{When exact replication is possible}
+
+The guiding principle is the following:
+\begin{quote}
+exact replication is possible when the traded assets span all sources of
+risk driving the option price.
+\end{quote}
+
+\paragraph{A reminder from Black--Scholes.}
+In the standard Black--Scholes model, there is only one Brownian source
+of uncertainty.
+The risky asset \(S_t\) carries this source of risk, while the money
+market account is deterministic once the short rate is fixed.
+
+Therefore, one risky asset together with the money market account is
+enough to replicate a European option.
+This is why the model is complete.
+
+\paragraph{What changes with stochastic rates.}
+When the short rate is stochastic, the state variable becomes
+\[
+(t,S_t,r_t),
+\]
+and there may now be two sources of randomness:
+\begin{itemize}[leftmargin=1.4em]
+    \item one affecting the stock,
+    \item one affecting the short rate.
+\end{itemize}
+
+If the option price depends on both \(S_t\) and \(r_t\), then exact
+replication requires enough traded risky assets to hedge both sources of
+risk.
+
+\paragraph{A simple two-factor situation.}
+Suppose that under the risk-neutral measure the economy is driven by two
+Brownian motions and that we can trade:
+\begin{itemize}[leftmargin=1.4em]
+    \item the stock \(S_t\),
+    \item a zero-coupon bond \(P(t,T^\star)\),
+    \item and the money market account \(B_t\).
+\end{itemize}
+
+If the stock and the bond have linearly independent exposures to the two
+Brownian sources, then they span the whole risk space.
+
+In that case, a self-financing portfolio of the form
+\[
+\Pi_t=\phi_t S_t+\psi_t P(t,T^\star)+\beta_t B_t
+\]
+can be chosen so as to match both diffusion terms of the option price.
+
+\paragraph{Local replication condition.}
+This is most clearly seen at the level of the diffusion coefficients.
+If the stock and the bond satisfy
+\[
+\mathrm{d}S_t=\cdots+\Gamma_S^{(1)}\,\mathrm{d}W_t^{(1)}+\Gamma_S^{(2)}\,\mathrm{d}W_t^{(2)},
+\]
+\[
+\mathrm{d}P(t,T^\star)=\cdots+\Gamma_P^{(1)}\,\mathrm{d}W_t^{(1)}+\Gamma_P^{(2)}\,\mathrm{d}W_t^{(2)},
+\]
+and the option price satisfies
+\[
+\mathrm{d}u(t,S_t,r_t)=\cdots+\Gamma_u^{(1)}\,\mathrm{d}W_t^{(1)}+\Gamma_u^{(2)}\,\mathrm{d}W_t^{(2)},
+\]
+then exact local replication is possible if the linear system
+\[
+\phi_t \Gamma_S^{(1)}+\psi_t \Gamma_P^{(1)}=\Gamma_u^{(1)},
+\]
+\[
+\phi_t \Gamma_S^{(2)}+\psi_t \Gamma_P^{(2)}=\Gamma_u^{(2)}
+\]
+admits a unique solution.
+
+This is the case precisely when the matrix
+\[
+\begin{pmatrix}
+\Gamma_S^{(1)} & \Gamma_P^{(1)}\\
+\Gamma_S^{(2)} & \Gamma_P^{(2)}
+\end{pmatrix}
+\]
+is invertible.
+
+\paragraph{Interpretation.}
+So, in a two-factor model:
+\begin{itemize}[leftmargin=1.4em]
+    \item if we have two risky traded assets with independent exposures,
+    \item then exact replication may still be possible.
+\end{itemize}
+
+Thus, stochastic rates do \emph{not} automatically imply market
+incompleteness.
+What matters is whether the available traded assets span all the
+relevant risk factors.
+
+\paragraph{Examples where replication may remain possible.}
+In a one-factor short-rate model, if both the stock and all bond prices
+are driven by the same single Brownian motion, then the market may still
+be complete.
+
+More generally, in a two-factor model, exact replication may be
+available if we can trade the stock and a sufficiently sensitive
+interest-rate instrument.
+
+So the correct message is:
+\[
+\boxed{
+\text{stochastic rates enlarge the problem, but do not automatically
+destroy replication.}
+}
+\]
+
+\subsubsection{When the market is incomplete}
+
+Although exact replication may be possible in some models, it is not
+automatic.
+In many situations, stochastic-rate models lead naturally to market
+incompleteness.
+
+\paragraph{Basic source of incompleteness.}
+The market becomes incomplete whenever there are more relevant sources of
+risk than traded assets available to hedge them.
+
+For example, suppose that:
+\begin{itemize}[leftmargin=1.4em]
+    \item the stock and the short rate are driven by two independent
+    Brownian factors,
+    \item but the only traded risky asset is the stock itself.
+\end{itemize}
+
+Then a portfolio built from:
+\begin{itemize}[leftmargin=1.4em]
+    \item the stock,
+    \item and the money market account,
+\end{itemize}
+cannot hedge the rate factor independently.
+So exact replication fails.
+
+\paragraph{Why the money market account does not solve the problem.}
+This is an important point.
+The money market account evolves as
+\[
+\mathrm{d}B_t=r_tB_t\,\mathrm{d}t,
+\]
+so its local variation contains no independent Brownian term.
+It is therefore not a risky asset in the sense needed to span a new
+diffusion direction.
+
+Thus adding the bank account does not add a new hedging factor.
+To hedge a genuinely stochastic rate factor, one needs a traded
+rate-sensitive risky instrument, such as a bond or a swap.
+
+\paragraph{More general sources of incompleteness.}
+Even if one can trade a stock and some bonds, the market may still be
+incomplete if:
+\begin{itemize}[leftmargin=1.4em]
+    \item the term-structure model is driven by more factors than the
+    available traded instruments span,
+    \item volatility is itself stochastic,
+    \item or there are additional sources of basis risk or model risk.
+\end{itemize}
+
+So incompleteness is not a special pathology of one particular model.
+It is the natural outcome whenever the risk structure is richer than the
+traded asset set.
+
+\paragraph{Consequence for pricing.}
+When exact replication is not possible, no-arbitrage alone does not
+necessarily pin down a unique price via replication.
+Instead, pricing depends on the chosen martingale measure or, more
+practically, on the chosen pricing model.
+
+Thus the link between
+\[
+\text{price} \quad \text{and} \quad \text{exact replication}
+\]
+becomes weaker than in the Black--Scholes benchmark.
+
+\paragraph{Consequence for hedging.}
+In an incomplete market, the best one can generally do is:
+\begin{itemize}[leftmargin=1.4em]
+    \item hedge the main risk factors,
+    \item minimize some criterion for the residual error,
+    \item and interpret the remaining exposure as unhedgeable risk.
+\end{itemize}
+
+So the hedging problem becomes one of risk management rather than exact
+replication.
+
+\paragraph{Main message.}
+Under stochastic rates, incompleteness appears whenever the option is
+exposed to risk factors that are not fully spanned by the traded asset
+set.
+In that case, the option can still be priced and hedged, but not
+replicated perfectly.
+
+\subsubsection{Practical hedging interpretation}
+
+From a practical perspective, the distinction between complete and
+incomplete markets changes the way one interprets hedging.
+
+\paragraph{In a complete model.}
+If the market is complete, then the hedging strategy has a strong
+interpretation:
+\begin{itemize}[leftmargin=1.4em]
+    \item it replicates the payoff exactly,
+    \item it determines the option price uniquely by no-arbitrage,
+    \item and any deviation from the model hedge is a genuine
+    mis-hedge.
+\end{itemize}
+
+This is the idealized Black--Scholes picture.
+
+\paragraph{In an incomplete model.}
+If the market is incomplete, then the hedge no longer has the status of
+an exact replication strategy.
+Instead, it should be viewed as an \emph{approximate} hedge designed to
+control the main sources of risk.
+
+In practice, one typically:
+\begin{itemize}[leftmargin=1.4em]
+    \item hedges the stock sensitivity with the stock,
+    \item hedges the rate sensitivity with bonds, swaps, or related
+    instruments,
+    \item and accepts a residual hedging error that cannot be eliminated
+    exactly.
+\end{itemize}
+
+\paragraph{What the sensitivities mean in practice.}
+The stock delta
+\[
+\partial_s u(t,s,r)
+\]
+still measures the local exposure to the stock.
+The rate sensitivity
+\[
+\partial_r u(t,s,r)
+\]
+measures the local exposure to the short-rate environment.
+
+These sensitivities guide the construction of a hedge, even when exact
+replication is impossible.
+
+\paragraph{Practical objective.}
+So, in practice, the aim is often not:
+\[
+\text{``replicate exactly.''}
+\]
+Rather, it is:
+\[
+\text{``hedge the dominant factors and reduce the residual risk as much
+as possible.''}
+\]
+
+This is a much more realistic interpretation of hedging in multi-factor
+markets.
+
+\paragraph{Why the distinction still matters pedagogically.}
+Even if exact replication is not always available in practice, the
+complete-market benchmark remains extremely useful:
+\begin{itemize}[leftmargin=1.4em]
+    \item it clarifies what a perfect hedge would mean,
+    \item it helps us understand the structure of the PDE,
+    \item and it shows which additional instruments are needed to span
+    the risk.
+\end{itemize}
+
+So the theory of replication remains central even when the real market
+is only approximately hedgeable.
+
+\paragraph{Main practical message.}
+With stochastic rates, one should think of hedging as a layered problem:
+\begin{itemize}[leftmargin=1.4em]
+    \item stock hedge for stock risk,
+    \item bond or swap hedge for rate risk,
+    \item and residual exposure if the market does not span all factors.
+\end{itemize}
+
+Thus the presence of stochastic rates enriches both the theory and the
+practice of hedging.
+
+\subsection{Main lessons}
+
+This section extends the standard option-pricing logic to the case of
+stochastic interest rates.
+
+The central ideas are the following.
+
+\paragraph{First lesson: random discounting changes pricing.}
+Once the short rate becomes stochastic, the discount factor is no longer
+deterministic.
+As a result, even a payoff depending only on \(S_T\) leads to a price of
+the form
+\[
+u(t,s,r)
+=
+\E^\Qbb\!\left[
+\exp\!\Big(-\int_t^T r_u\,\mathrm{d}u\Big)\,g(S_T)
+\;\middle|\;
+S_t=s,\ r_t=r
+\right].
+\]
+
+So the option price depends naturally on both the stock price and the
+current short rate.
+
+\paragraph{Second lesson: the state space is enlarged.}
+With stochastic rates, the natural state variable is
+\[
+(t,S_t,r_t),
+\]
+and the pricing PDE becomes two-dimensional in the spatial variables.
+This leads to additional first- and second-order terms, including a
+mixed derivative term when stock and rate shocks are correlated.
+
+\paragraph{Third lesson: a bond numéraire is often the natural viewpoint.}
+For a payoff paid at time \(T\), it is often convenient to use the
+zero-coupon bond \(P(t,T)\) as numéraire.
+This leads to the formula
+\[
+u(t,s,r)
+=
+P(t,T)\,
+\E^{\Qbb^T}\!\left[
+g(S_T)
+\;\middle|\;
+S_t=s,\ r_t=r
+\right],
+\]
+which is often cleaner than working directly with random discounting
+under the money market numéraire.
+
+\paragraph{Fourth lesson: stock delta alone is no longer enough.}
+Since the option price depends on the short rate, the hedge must account
+for both:
+\begin{itemize}[leftmargin=1.4em]
+    \item stock exposure,
+    \item and rate exposure.
+\end{itemize}
+
+Therefore, the natural hedge is not only a stock hedge, but generally a
+combination of:
+\begin{itemize}[leftmargin=1.4em]
+    \item stock,
+    \item fixed-income instruments such as bonds or swaps,
+    \item and cash.
+\end{itemize}
+
+\paragraph{Fifth lesson: replication depends on spanning.}
+Stochastic rates do not automatically imply incompleteness.
+Exact replication is possible whenever the traded risky assets span all
+relevant sources of randomness.
+
+But if the market does not span all factors, then the option cannot be
+replicated perfectly, and hedging becomes approximate rather than exact.
+
+\paragraph{Sixth lesson: hedging becomes a risk-management problem.}
+In incomplete markets, hedging should be interpreted as the management
+of the dominant exposures, not as exact replication.
+The residual error is part of the problem and must be understood as
+unhedgeable risk.
+
+\paragraph{Final summary.}
+So the general philosophy remains the same as before:
+\[
+\text{model}
+\longrightarrow
+\text{risk-neutral pricing formula}
+\longrightarrow
+\text{PDE}
+\longrightarrow
+\text{hedging strategy}.
+\]
+
+But with stochastic rates, every step becomes richer:
+\begin{itemize}[leftmargin=1.4em]
+    \item discounting is random,
+    \item the state space is larger,
+    \item the hedge requires more instruments,
+    \item and exact replication is no longer guaranteed.
+\end{itemize}
+
+
+\end{document}

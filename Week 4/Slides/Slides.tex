@@ -1,0 +1,2216 @@
+% =====================================================
+% Merged header (Bootcamp palette + Metropolis look)
+% =====================================================
+\documentclass[10pt,aspectratio=169]{beamer}
+
+% -----------------------------
+% Language & encoding
+% -----------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english,french]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+
+% -----------------------------
+% Math / tables / layout
+% -----------------------------
+\usepackage{amsmath,amssymb,bm,mathtools}
+\usepackage{booktabs}
+\usepackage{multicol}
+\usepackage{changepage}
+
+% -----------------------------
+% Graphics
+% -----------------------------
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc,decorations.pathreplacing}
+
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+
+% -----------------------------
+% Theme (Metropolis)
+% -----------------------------
+\usetheme[numbering=fraction,progressbar=frametitle]{metropolis}
+\setbeamertemplate{frame numbering}[fraction]
+\setbeamertemplate{navigation symbols}{}
+
+% -----------------------------
+% Colors (unified palette)
+% -----------------------------
+\definecolor{BootcampBlueDark}{HTML}{1A3C68}
+\definecolor{BootcampBlue}{RGB}{31,110,178}
+\definecolor{AccentGold}{HTML}{DAA520}
+\definecolor{SoftGray}{RGB}{245,246,248}
+\definecolor{TextBlack}{HTML}{000000}
+\definecolor{Crimson}{HTML}{990000}
+\definecolor{MatrixGreen}{HTML}{228B22}
+\definecolor{MatrixRed}{HTML}{B22222}
+
+\newenvironment{theoremblock}[1]{%
+  \begin{theorem}[#1]%
+}{%
+  \end{theorem}%
+}
+% -----------------------------
+% Global formatting
+% -----------------------------
+\setbeamercolor{normal text}{fg=TextBlack,bg=white}
+\setbeamercolor{title}{fg=TextBlack}
+\setbeamercolor{structure}{fg=BootcampBlueDark}
+\setbeamercolor{progress bar}{fg=BootcampBlueDark,bg=gray!30}
+
+% -----------------------------
+% Proof block (Beamer)
+% Usage: \begin{proofblock}{Title} ... \end{proofblock}
+% -----------------------------
+\newenvironment{proofblock}[1]{%
+  \par\vspace{0.4em}%
+  \begin{beamercolorbox}[
+      wd=\textwidth,
+      sep=0.4em,
+      leftskip=0.3em,
+      rightskip=0.6em,
+      rounded=false,
+      shadow=false
+    ]{block title example}%
+    \raisebox{0.15em}{\usebeamerfont{block title example}#1}%
+  \end{beamercolorbox}%
+  \vspace{-0.4em}%
+  \begin{beamercolorbox}[
+      wd=\textwidth,
+      sep=0.9em,
+      leftskip=0.6em,
+      rightskip=0.6em,
+      rounded=false,
+      shadow=false
+    ]{block body example}%
+    \usebeamerfont{block body example}%
+}{%
+  \end{beamercolorbox}%
+  \par\vspace{0.6em}%
+}
+
+% -----------------------------
+% Thick frametitle band (your “Bootcamp” look)
+% -----------------------------
+\setbeamercolor{frametitle}{bg=BootcampBlueDark,fg=white}
+\setbeamerfont{frametitle}{series=\bfseries,size=\large}
+\setbeamertemplate{frametitle}{
+  \nointerlineskip
+  \begin{beamercolorbox}[wd=\paperwidth,ht=3.2ex,dp=1.4ex,leftskip=1em,rightskip=1em]{frametitle}
+    \usebeamerfont{frametitle}\insertframetitle
+  \end{beamercolorbox}
+}
+
+% -----------------------------
+% Blocks (coherent with prior lectures)
+% -----------------------------
+\setbeamercolor{block title example}{bg=BootcampBlueDark!90!black,fg=white}
+\setbeamercolor{block body example}{bg=BootcampBlueDark!5!white,fg=black}
+\setbeamertemplate{blocks}[rounded][shadow=false]
+
+\newcommand{\courserefs}{%
+\footnotesize
+\textbf{Main references.}\par
+\begin{itemize}\setlength{\itemsep}{0.15em}
+  \item \textit{Shreve}, \emph{Stochastic Calculus for Finance II}: Ch. 3 (Ito integral), pp.~XX--YY; Ch. 4 (Ito formula), pp.~AA--BB.
+  \item \textit{Karatzas \& Shreve}, \emph{Brownian Motion and Stochastic Calculus}: Sec. 3.2--3.3, pp.~XX--YY.
+  \item \textit{Tomas Bjork}, \emph{Arbitrage Theory in Continuous Time}: Ch. 3, pp.~XX--YY.
+\end{itemize}
+}
+
+% Custom Definition Block (same API as before)
+\newenvironment{definitionblock}[1]{%
+  \par\vspace{0.4em}%
+  \begin{beamercolorbox}[
+      wd=\textwidth,
+      sep=0.4em,
+      leftskip=0.3em,
+      rightskip=0.6em,
+      rounded=false,
+      shadow=false
+    ]{block title example}%
+    \raisebox{0.15em}{\usebeamerfont{block title example}#1}%
+  \end{beamercolorbox}%
+  \vspace{-0.4em}%
+  \begin{beamercolorbox}[
+      wd=\textwidth,
+      sep=1em,
+      leftskip=0.6em,
+      rightskip=0.6em,
+      rounded=false,
+      shadow=false
+    ]{block body example}%
+    \usebeamerfont{block body example}%
+}{%
+  \end{beamercolorbox}%
+  \par\vspace{0.6em}%
+}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\cF}{\mathcal{F}}
+\newcommand{\Var}{\text{Var}}
+\newcommand{\Cov}{\text{Cov}}
+% -----------------------------
+% Section / subsection transition pages
+% -----------------------------
+\metroset{
+  sectionpage=progressbar,
+  subsectionpage=progressbar
+}
+\AtBeginSection{
+  \frame[plain]{\sectionpage}
+}
+\AtBeginSubsection{
+  \frame[plain]{\subsectionpage}
+}
+
+% Graphics folder (extracted from the provided PDF)
+\graphicspath{{bm_figs/}}
+
+% =====================================================
+% Metadata
+% =====================================================
+\title{Option Pricing : Ito Calculus and Formula}
+\author{}
+\date{}
+
+\AtBeginSection[]{
+  \begin{frame}{\insertsectionhead}
+    \tableofcontents[
+      currentsection,
+      hideothersubsections
+    ]
+  \end{frame}
+}
+
+
+\begin{document}
+
+% =====================================================
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\begin{frame}{References (chapters/pages)}
+
+\footnotesize
+\textbf{Main references.}
+\begin{itemize}\setlength{\itemsep}{0.35em}
+  \item \textit{Shreve}, \emph{Stochastic Calculus for Finance II}:
+  Ch.~3 (Brownian Motion), pp.~137--168.
+  \item \textit{Karatzas \& Shreve}, \emph{Brownian Motion
+and Stochastic Calculus}:
+  Ch~2, pp.~148--155.
+  \item \textit{Tomas Bj\"ork}, \emph{Arbitrage Theory in Continuous Time}:
+  Ch.~3, pp.~49--65.
+\end{itemize}
+\end{frame}
+% =====================================================
+\begin{frame}{Roadmap}
+  \tableofcontents[hideallsubsections]
+\end{frame}
+
+% =====================================================
+% 0) Warm-up / recap
+% =====================================================
+\section{Warm-up: what we already built}
+
+% =====================================================
+\subsection{Last time in 5 minutes}
+
+% --------------------------------------
+% --------------------------------------
+\begin{frame}{Recap (1/2): Ito integral as an $L^2$-limit}
+
+\begin{definitionblock}{It\^o integral (construction idea)}
+Start with \textbf{simple (step) processes}
+\[
+\phi_t=\sum_{i=0}^{n-1}\phi_{t_i}\,\mathbf{1}_{(t_i,t_{i+1}]}(t),
+\qquad
+\phi_{t_i}\in\mathcal{F}_{t_i},
+\vspace{-2mm}
+\]
+and define the stochastic integral by the \textbf{left-point sum}
+\[
+I_0(\phi):=\int_0^T \phi_t\,dW_t
+:=\sum_{i=0}^{n-1}\phi_{t_i}\big(W_{t_{i+1}}-W_{t_i}\big).
+\vspace{-4mm}
+\]
+\vspace{-2mm}
+\end{definitionblock}\pause
+\vspace{-1mm}
+
+\begin{block}{Extension to general integrands}
+For a general adapted process $\phi$ such that
+$
+\E\!\left[\int_0^T \phi_t^2\,dt\right]<\infty,
+$
+define $\int_0^T \phi_t\,dW_t$ as the \textbf{$L^2(\Omega)$-limit} of $I_0(\phi^n)$
+for any sequence of step processes $\phi^n\to \phi$ in $L^2([0,T]\times\Omega)$.
+\end{block}
+
+\end{frame}
+
+
+% --------------------------------------
+\begin{frame}{Recap (2/2): Ito isometry + why the left point matters}
+
+\begin{block}{Core computation (Ito isometry for step processes)}
+If $\phi$ is a step process, then
+\vspace{-4mm}
+\[
+\E[I_0(\phi)]=0,
+\qquad
+\E\!\left[I_0(\phi)^2\right]=\E\!\left[\int_0^T \phi_t^2\,dt\right].
+\vspace{-4mm}
+\]
+\vspace{-2mm}
+\end{block}\pause
+\vspace{-2mm}
+\begin{block}{Consequences}
+\begin{itemize}
+  \item The map $\phi \mapsto \int_0^T \phi_t\,dW_t$ is an \textbf{isometry} from
+  $L^2_{\mathrm{ad}}([0,T]\times\Omega)$ into $L^2(\Omega)$. \pause
+  \item In particular, the $L^2$-limit defining the integral is \textbf{unique} and
+  independent of the approximating sequence. \pause
+  \item For general $\phi$ with $\E[\int_0^T \phi_t^2dt]<\infty$,
+$$
+  \E  \big[ ( \int_0^T \phi_t\,dW_t )^2 \big]
+  =\E [\int_0^T \phi_t^2\,dt ].
+  \vspace{-2mm}
+$$
+\end{itemize}
+\end{block}\pause
+
+\begin{alertblock}{Why the \textbf{left point} matters (no anticipation)}
+Choosing $\phi_{t_i}\in\mathcal{F}_{t_i}$ means the decision is made
+\emph{before} observing $W_{t_{i+1}}-W_{t_i}$.
+Right-point sums generally change the limit and create extra drift terms.
+\end{alertblock}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{One quick check (board): why the mean is zero}
+
+Let $\phi_t=\sum_{i=0}^{n-1}\phi_{t_i}\mathbf{1}_{(t_i,t_{i+1}]}(t)$ with $\phi_{t_i}\in\mathcal{F}_{t_i}$.\pause
+
+\medskip
+Write
+\[
+I_0(\phi)=\sum_{i=0}^{n-1}\phi_{t_i}\Delta W_i,
+\qquad
+\Delta W_i:=W_{t_{i+1}}-W_{t_i}.
+\]
+\pause
+
+\begin{itemize}
+  \item $\Delta W_i$ is independent of $\mathcal{F}_{t_i}$ and $\E[\Delta W_i]=0$.\pause
+  \item Therefore $\E[\phi_{t_i}\Delta W_i]=\E\!\big[\E[\phi_{t_i}\Delta W_i\mid\mathcal{F}_{t_i}]\big]
+  =\E[\phi_{t_i}\E[\Delta W_i\mid\mathcal{F}_{t_i}]]=0$.\pause
+\end{itemize}
+
+\medskip
+So \(\E[I_0(\phi)]=0\). (Same idea will show the martingale property in $t$.)
+
+\end{frame}
+\subsection{Quadratic variation: the key new object}
+% --------------------------------------
+\begin{frame}{Reminder: quadratic variation of Brownian motion}
+
+\begin{definitionblock}{Quadratic variation (along a partition)}
+Let $\pi=\{0=t_0<t_1<\cdots<t_n=t\}$ be a partition of $[0,t]$ and $|\pi|=\max_k(t_{k+1}-t_k)$.
+Define
+\[
+[W]^{\pi}_t:=\sum_{k=0}^{n-1}\big(W_{t_{k+1}}-W_{t_k}\big)^2.
+\]
+\end{definitionblock}\pause
+
+\begin{block}{Fundamental fact (Brownian quadratic variation)}
+As $|\pi|\to 0$ (for any refining partitions),
+\[
+[W]^{\pi}_t \longrightarrow t
+\quad\text{in }L^2 \text{ (hence in probability).}
+\]
+\end{block}\pause
+
+\begin{itemize}
+  \item Compare with smooth paths: if $x\in C^1$, then $\sum (x_{t_{k+1}}-x_{t_k})^2\to 0$.\pause
+  \item For Brownian motion, the squares \emph{accumulate} and produce a non-trivial limit.
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Why Riemann--Stieltjes fails (and why Ito works)}
+
+\begin{itemize}
+  \item Typical Brownian increment over a small step $\Delta t$:
+  \[
+  \Delta W \sim \mathcal{N}(0,\Delta t)\quad\Rightarrow\quad |\Delta W|\ \text{is of order }\sqrt{\Delta t}.
+  \]
+  \pause
+
+  \item So for a uniform grid $t_k=k\Delta t$,
+  \[
+  \sum_{k=0}^{n-1}(\Delta W_k)^2 \approx \sum_{k=0}^{n-1}\Delta t = t,
+  \qquad
+  \text{but}
+  \qquad
+  \sum_{k=0}^{n-1}|\Delta W_k|
+  \approx
+  n\sqrt{\Delta t}
+  =
+  \frac{t}{\Delta t}\sqrt{\Delta t}
+  =
+  \frac{t}{\sqrt{\Delta t}}
+  \to\infty.
+  \]
+  \pause
+
+  \item \textbf{Message:} Brownian motion has \textbf{infinite total variation} on every interval,
+  hence pathwise Riemann--Stieltjes integrals $\int \phi\,dW$ are not available in general.\pause
+
+  \item Ito integration bypasses this: define $\int \phi\,dW$ as an \textbf{$L^2$-limit} of \emph{left-point} sums,
+  and the quadratic variation $[W]_t=t$ becomes the engine behind Ito calculus.\pause
+\end{itemize}
+
+\begin{alertblock}{Board heuristic to remember}
+\[
+(\Delta W)^2 \approx \Delta t
+\quad\Longrightarrow\quad
+(dW_t)^2 = dt,\;\; dW_t\,dt=0,\;\; (dt)^2=0.
+\]
+\end{alertblock}
+
+\end{frame}
+% =====================================================
+% 1) Differential rules / covariation (before Ito)
+% =====================================================
+\section{The calculus rules behind Ito}
+
+% ======================================================
+% ======================================================
+\subsection{Covariation and the ``multiplication table''}
+
+% --------------------------------------
+\begin{frame}{Why covariation? (one sentence + one picture)}
+\begin{itemize}
+  \item In ordinary calculus, products behave like
+  \[
+  (x+\Delta x)(y+\Delta y)-xy \approx x\,\Delta y + y\,\Delta x,
+  \]
+  because the term $\Delta x\,\Delta y$ is ``tiny''.\pause
+  \item For Brownian motion, $\Delta W \sim \sqrt{\Delta t}$, so
+  \[
+  \Delta W \cdot \Delta W \sim \Delta t,
+  \]
+  meaning the product of increments \textbf{does not vanish} in the limit.\pause
+  \item Covariation is the object that measures these second-order effects.
+\end{itemize}
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Quadratic variation: warm-up definition}
+\begin{definitionblock}{Quadratic variation (informal)}
+Let $X$ be a continuous process and $\pi=\{0=t_0<\cdots<t_n=t\}$ a partition of $[0,t]$.
+Define
+\[
+[X]^{\pi}_t := \sum_{k=0}^{n-1}\big(X_{t_{k+1}}-X_{t_k}\big)^2.
+\]
+If $[X]^{\pi}_t \to [X]_t$ in probability as $|\pi|\to0$, we call $[X]_t$ the quadratic variation of $X$ on $[0,t]$.
+\end{definitionblock}\pause
+
+\begin{block}{First key example}
+For Brownian motion $W$,
+\[
+[W]_t = t.
+\]
+\end{block}
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Covariation: definition (the object behind product rules)}
+\begin{definitionblock}{Covariation / quadratic covariation (informal)}
+Let $X,Y$ be continuous processes and $\pi=\{0=t_0<\cdots<t_n=t\}$ a partition of $[0,t]$.
+Define the discrete covariation
+\[
+[X,Y]^{\pi}_t := \sum_{k=0}^{n-1}\big(X_{t_{k+1}}-X_{t_k}\big)\big(Y_{t_{k+1}}-Y_{t_k}\big).
+\]
+If the limit exists (in probability) as $|\pi|\to 0$, we denote it by $[X,Y]_t$.
+\end{definitionblock}\pause
+
+\begin{itemize}
+  \item $[X,X]_t = [X]_t$ (quadratic variation).\pause
+  \item Covariation is \textbf{bilinear} and \textbf{symmetric} (when it exists):\pause
+  \[
+  [aX+bY,Z]_t=a[X,Z]_t+b[Y,Z]_t,\qquad [X,Y]_t=[Y,X]_t.
+  \]
+\end{itemize}
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{The basic table in the Brownian world}
+\begin{block}{Key examples}
+\[
+[W,W]_t = t,
+\qquad
+[W,t]_t = 0,
+\qquad
+[t,t]_t = 0.
+\]
+\end{block}\pause
+
+\begin{itemize}
+  \item Intuition: $\Delta t$ is order $\Delta t$, while $\Delta W$ is order $\sqrt{\Delta t}$.\pause
+  \item So $\Delta W\,\Delta t$ is order $(\Delta t)^{3/2}$, which vanishes after summation.\pause
+  \item And $(\Delta t)^2$ is even smaller.
+\end{itemize}
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{The ``multiplication table'' (It\^o bookkeeping)}
+\begin{alertblock}{Think in differentials: keep only terms of order $dt$}
+Heuristic rules (Brownian scaling):
+\[
+(dW_t)^2 = dt,
+\qquad
+dW_t\,dt = 0,
+\qquad
+(dt)^2 = 0.
+\]
+\end{alertblock}\pause
+
+\begin{itemize}
+  \item This is exactly what produces the extra $\tfrac12 f_{xx}\,dt$ term in It\^o's formula.\pause
+  \item It also explains why stochastic product rules differ from the classical Leibniz rule.
+\end{itemize}
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{How it appears: product rule preview}
+\begin{block}{Preview (to be justified)}
+If $X$ and $Y$ are It\^o processes, then
+\[
+d(X_tY_t)=X_t\,dY_t+Y_t\,dX_t+d[X,Y]_t.
+\]
+\end{block}\pause
+
+\begin{itemize}
+  \item Take $X=Y=W$: then $[W,W]_t=t$ gives
+  \[
+  d(W_t^2)=2W_t\,dW_t+dt.
+  \]\pause
+  \item Same idea for $X=f(W)$: the missing term comes from $(dW)^2$.
+\end{itemize}
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Covariation of an It\^o integral (stated)}
+Let
+\[
+M_t=\int_0^t \phi_s\,dW_s
+\quad\text{with}\quad
+\E\!\left[\int_0^t \phi_s^2\,ds\right]<\infty.
+\]\pause
+
+\begin{block}{Stated identities (we will prove soon)}
+\[
+[M]_t = [M,M]_t = \int_0^t \phi_s^2\,ds,
+\qquad
+[M,W]_t = \int_0^t \phi_s\,ds.
+\]
+\end{block}\pause
+
+\begin{itemize}
+  \item Message: covariation turns stochastic integrals into \textbf{deterministic time integrals}.\pause
+  \item This is the algebra engine behind It\^o calculus.
+\end{itemize}
+\end{frame}
+
+
+% --------------------------------------
+% ======================================================
+% \subsection{Product rule (``It\^o correction term'')}
+
+% % --------------------------------------
+% \begin{frame}{Product rule preview: why $d(XY)$ is not the usual one}
+
+% \begin{definitionblock}{It\^o product rule (semimartingale form)}
+% For sufficiently nice processes $X,Y$ (e.g.\ It\^o processes),
+% \vspace{-3mm}
+% \[
+% d(X_tY_t)=X_t\,dY_t+Y_t\,dX_t+d[X,Y]_t.
+% \vspace{-6mm}
+% \]
+% \vspace{-4mm}
+% \end{definitionblock}\pause
+% \vspace{-3mm}
+% \begin{block}{Why the extra term? (one-line heuristic)}
+% On a small interval,
+% \vspace{-3mm}
+% \[
+% \Delta(XY)=X\,\Delta Y+Y\,\Delta X+\Delta X\,\Delta Y.
+% \vspace{-2mm}
+% \]
+% If $X$ and $Y$ contain Brownian parts, then $\Delta X\,\Delta Y$ is typically of order $\Delta t$
+% and \textbf{accumulates} in the limit: it becomes $d[X,Y]_t$.
+% \end{block}\pause
+% \vspace{-2mm}
+
+% \begin{alertblock}{The key example: $X=Y=W$}
+% Take $X_t=Y_t=W_t$. Since $[W,W]_t=t$,
+% \[
+% d(W_t^2)=2W_t\,dW_t+d[W,W]_t
+% =2W_t\,dW_t+dt.
+% \vspace{-6mm}
+% \]
+% \vspace{-6mm}
+% \end{alertblock}\pause
+
+% \begin{itemize}
+%   \item This is the first place where you \emph{see} the It\^o correction term.\pause
+%   \item Compare with ordinary calculus: if $w$ were differentiable, then
+%   $d(w_t^2)=2w_t\,dw_t$ (no extra $dt$).
+% \end{itemize}
+
+% \end{frame}
+
+% % --------------------------------------
+% \begin{frame}{Board derivation sketch (from discrete sums)}
+
+% Take a partition $\pi=\{0=t_0<\cdots<t_n=t\}$ and write the telescoping sum\pause
+% \[
+% X_tY_t-X_0Y_0=\sum_{k=0}^{n-1}\big(X_{t_{k+1}}Y_{t_{k+1}}-X_{t_k}Y_{t_k}\big).
+% \vspace{-4mm}\]\pause
+% \vspace{-3mm}
+% Use the discrete identity\pause
+% \[
+% X_{t_{k+1}}Y_{t_{k+1}}-X_{t_k}Y_{t_k}
+% =
+% X_{t_k}\Delta Y_k
+% +
+% Y_{t_k}\Delta X_k
+% +
+% \Delta X_k\,\Delta Y_k,
+% \qquad
+% \Delta X_k:=X_{t_{k+1}}-X_{t_k}.
+% \vspace{-4mm}
+% \]\pause
+
+% Sum over $k$:\pause
+% \[
+% X_tY_t-X_0Y_0
+% =
+% \sum_{k} X_{t_k}\Delta Y_k
+% +
+% \sum_{k} Y_{t_k}\Delta X_k
+% +
+% \sum_{k}\Delta X_k\Delta Y_k.
+% \vspace{-4mm}
+% \]\pause
+
+% \begin{itemize}
+%   \item The first two sums converge to $\int_0^t X_s\,dY_s$ and $\int_0^t Y_s\,dX_s$.\pause
+%   \item The last sum converges to $[X,Y]_t$ (this is exactly the definition of covariation).\pause
+% \end{itemize}
+
+% \begin{block}{Limit form (integrated product rule)}
+% \[
+% X_tY_t
+% =
+% X_0Y_0+\int_0^t X_s\,dY_s+\int_0^t Y_s\,dX_s+[X,Y]_t.
+% \]
+% \end{block}
+
+% \end{frame}
+
+
+% ======================================================
+\subsection{A quick warning on notation}
+
+% --------------------------------------
+\begin{frame}{A warning on notation: keep $x$ vs.\ $X_t$ distinct}
+
+\begin{alertblock}{Common confusion (please avoid)}
+We often have a \textbf{process} $(X_t)_{t\ge0}$ and a \textbf{function}
+$f:\R\to\R$ (or $f:[0,T]\times\R\to\R$).\medskip
+
+\textbf{Derivatives are taken with respect to the deterministic variable $x$,
+not with respect to the random quantity $X_t$.}
+\end{alertblock}\pause
+
+\begin{block}{Correct: differentiate first, then evaluate}
+If $f\in C^2(\R)$, then
+$
+f'(x)=\frac{d}{dx}f(x),\qquad f''(x)=\frac{d^2}{dx^2}f(x).
+$
+Evaluating along the path means
+$
+f'(X_t)
+\;=\;
+\left.\frac{d}{dx}f(x)\right|_{x=X_t},
+\qquad
+f''(X_t)
+\;=\;
+\left.\frac{d^2}{dx^2}f(x)\right|_{x=X_t}.
+$
+\end{block}\pause
+
+\begin{block}{Do \emph{not} write (ambiguous / misleading)}
+\[
+\frac{\partial f}{\partial X_t},
+\qquad
+\frac{df}{dX_t}.
+\]
+\end{block}\pause
+
+\begin{itemize}
+  \item If $f=f(t,x)$, use $\partial_t f$ for time and $\partial_x f$ for space.\pause
+  \item In It\^o's formula you will see $\partial_x f(t,X_t)$ and $\partial_{xx} f(t,X_t)$.
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{A 10-second sanity check (what depends on what?)}
+
+\begin{itemize}
+  \item Think: $f$ is a \textbf{deterministic map}; $X_t$ is a \textbf{random input}.\pause
+  \item First compute derivatives of $f$ as usual in calculus.\pause
+  \item Only then plug in $x=X_t$.\pause
+\end{itemize}
+
+\medskip
+\begin{alertblock}{Rule of thumb}
+If you can write it in a first-year calculus exam with $x\in\R$, it's correct.
+Then replace $x$ by $X_t$.
+\end{alertblock}\pause
+
+\begin{block}{Example}
+If $f(x)=\ln x$ (on $(0,\infty)$), then
+\[
+f'(x)=\frac{1}{x},\qquad f''(x)=-\frac{1}{x^2},
+\]
+so along a positive process $X_t$:
+\[
+f'(X_t)=\frac{1}{X_t},\qquad f''(X_t)=-\frac{1}{X_t^2}.
+\]
+\end{block}
+
+\end{frame}
+
+% =====================================================
+% 2) Ito formula for BM
+% =====================================================
+\section{Ito's formula for Brownian motion}
+
+% ======================================================
+\subsection{Statement (BM case)}
+
+% --------------------------------------
+\begin{frame}{Ito's formula for $(t,W_t)$ (statement)}
+
+Let $(W_t)_{t\ge0}$ be a standard Brownian motion and let
+\[
+f:[0,T]\times\R\to\R
+\quad\text{with}\quad
+f\in C^{1,2}\big([0,T]\times\R\big).
+\]
+\pause
+
+\begin{theoremblock}{Ito's formula (Brownian case)}
+For every $t\in[0,T]$,
+\[
+f(t,W_t)
+=
+f(0,W_0)
++
+\int_0^t \partial_t f(s,W_s)\,ds
++
+\int_0^t \partial_x f(s,W_s)\,dW_s
++
+\frac12\int_0^t \partial_{xx} f(s,W_s)\,ds.
+\]
+\end{theoremblock}
+\pause
+
+\begin{block}{Differential form (mnemonic)}
+\[
+df(t,W_t)
+=
+\partial_t f(t,W_t)\,dt
++
+\partial_x f(t,W_t)\,dW_t
++
+\frac12\,\partial_{xx} f(t,W_t)\,dt.
+\]
+\end{block}
+\pause
+
+\begin{itemize}
+  \item Same spirit as Taylor, but with the extra $\tfrac12 f_{xx}\,dt$ term.\pause
+  \item Heuristic: $(dW_t)^2=dt$, and higher order terms vanish.
+\end{itemize}
+
+\end{frame}
+
+% ======================================================
+\subsection{Proof roadmap}
+
+% --------------------------------------
+\begin{frame}{Proof roadmap: what happens on the board (big picture)}
+
+\begin{alertblock}{Goal}
+Explain where the extra $\frac12 f_{xx}\,dt$ term comes from in It\^o's formula.
+\end{alertblock}\pause
+
+\begin{itemize}
+  \item Start from a \textbf{telescoping sum} along a fine partition.\pause
+  \item Do a Taylor expansion: \textbf{order 1 in time}, \textbf{order 2 in space}.\pause
+  \item The crucial stochastic fact is:
+  \[
+  \sum (\Delta W)^2 \to t,
+  \quad\text{while higher-order terms vanish.}
+  \]\pause
+\end{itemize}
+
+\medskip
+\textbf{Board:} we do the full decomposition and keep track of which terms survive.
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Step 1: partition + telescoping sum}
+
+Take a partition $\pi=\{0=t_0<t_1<\cdots<t_n=t\}$.\pause
+
+\medskip
+\begin{block}{Telescoping sum}
+\[
+f(t,W_t)-f(0,W_0)
+=
+\sum_{i=0}^{n-1}\Big(f(t_{i+1},W_{t_{i+1}})-f(t_i,W_{t_i})\Big).
+\]
+\end{block}\pause
+
+\begin{itemize}
+  \item Everything will be analyzed term-by-term as $|\pi|\to 0$.\pause
+  \item Notation: $\Delta t_i:=t_{i+1}-t_i$, $\Delta W_i:=W_{t_{i+1}}-W_{t_i}$.
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Step 2: split time vs.\ space}
+
+For each increment, insert and subtract $f(t_i,W_{t_{i+1}})$:\pause
+
+\begin{definitionblock}{Time/space decomposition}
+\[
+f(t_{i+1},W_{t_{i+1}})-f(t_i,W_{t_i})
+=
+\underbrace{\big(f(t_{i+1},W_{t_{i+1}})-f(t_i,W_{t_{i+1}})\big)}_{\text{time part}}
++
+\underbrace{\big(f(t_i,W_{t_{i+1}})-f(t_i,W_{t_i})\big)}_{\text{space part}}.
+\]
+\end{definitionblock}\pause
+
+\begin{itemize}
+  \item Time part: $\Delta t_i$ small in an ordinary way.\pause
+  \item Space part: $\Delta W_i$ is random, typically of size $\sqrt{\Delta t_i}$.
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Step 3: Taylor in time (order 1)}
+
+Assume $f\in C^{1,2}([0,T]\times\R)$.\pause
+
+\begin{block}{Time increment}
+For fixed $x$,
+\[
+f(t_{i+1},x)-f(t_i,x)
+=
+\partial_t f(t_i,x)\,\Delta t_i
++ r^{(t)}_{i},
+\]
+where $r^{(t)}_{i}=o(\Delta t_i)$ uniformly on compacts in $x$.
+\end{block}\pause
+
+Apply this with $x=W_{t_{i+1}}$:\pause
+\[
+f(t_{i+1},W_{t_{i+1}})-f(t_i,W_{t_{i+1}})
+=
+\partial_t f(t_i,W_{t_{i+1}})\,\Delta t_i
++ r^{(t)}_{i}.
+\]\pause
+
+\begin{itemize}
+  \item In the limit, $\sum \partial_t f(\cdot)\Delta t \to \int_0^t \partial_t f(s,W_s)\,ds$.\pause
+  \item The remainder $\sum r^{(t)}_{i}$ vanishes as $|\pi|\to0$.
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Step 4: Taylor in space (order 2) \texorpdfstring{$\Rightarrow$}{=>} the $f_{xx}$ term}
+
+For fixed $t_i$, do a second-order Taylor expansion in $x$:\pause
+
+\begin{block}{Space increment}
+\[
+f(t_i,W_{t_{i+1}})-f(t_i,W_{t_i})
+=
+\partial_x f(t_i,W_{t_i})\,\Delta W_i
++\frac12 \partial_{xx} f(t_i,W_{t_i})\,(\Delta W_i)^2
++r^{(x)}_{i},
+\]
+with $r^{(x)}_{i}=o\big((\Delta W_i)^2\big)$.
+\end{block}\pause
+
+\begin{itemize}
+  \item The linear term will become $\int_0^t \partial_x f(s,W_s)\,dW_s$.\pause
+  \item The quadratic term is the \textbf{new phenomenon}: $(\Delta W_i)^2$ accumulates!
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Step 5: the stochastic input (what survives, what vanishes)}
+
+\begin{definitionblock}{Quadratic variation facts (Brownian motion)}
+As $|\pi|\to0$,
+\[
+\sum_{i=0}^{n-1}(\Delta W_i)^2 \;\longrightarrow\; t,
+\quad\text{in probability (even in $L^2$).}
+\]
+Moreover, higher-order contributions disappear, e.g.
+\[
+\sum_{i=0}^{n-1}|\Delta W_i|^3 \;\longrightarrow\; 0
+\quad\text{in probability (under mild boundedness).}
+\]
+\end{definitionblock}\pause
+
+\begin{itemize}
+  \item Heuristic: $|\Delta W_i|\sim \sqrt{\Delta t_i}$ so
+  $\sum |\Delta W_i|^3 \sim \sum (\Delta t_i)^{3/2}\le |\pi|^{1/2}\sum\Delta t_i\to0$.\pause
+  \item This is why the \emph{second} order term stays, but the third order does not.
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Step 6: pass to the limit \texorpdfstring{$\Rightarrow$}{=>} It\^o formula}
+
+Summing all pieces and letting $|\pi|\to0$ gives:\pause
+
+\begin{block}{Limit of each part}
+\[
+\sum \partial_x f(t_i,W_{t_i})\,\Delta W_i
+\;\longrightarrow\;
+\int_0^t \partial_x f(s,W_s)\,dW_s,
+\]
+\[
+\sum \partial_t f(t_i,W_{t_i})\,\Delta t_i
+\;\longrightarrow\;
+\int_0^t \partial_t f(s,W_s)\,ds,
+\]
+\[
+\frac12\sum \partial_{xx} f(t_i,W_{t_i})\,(\Delta W_i)^2
+\;\longrightarrow\;
+\frac12\int_0^t \partial_{xx} f(s,W_s)\,ds.
+\]
+\end{block}\pause
+
+\begin{alertblock}{One-line takeaway}
+The It\^o correction term is \emph{exactly} quadratic variation showing up in the second-order Taylor term.
+\end{alertblock}
+
+\end{frame}
+
+% ======================================================
+\subsection{First drill: compute differentials fast}
+
+% --------------------------------------
+\begin{frame}{Drill 1 (warm-up): the rules you must apply automatically}
+
+\begin{definitionblock}{Multiplication table (BM case)}
+\[
+(dW_t)^2 = dt,
+\qquad
+dW_t\,dt = 0,
+\qquad
+(dt)^2 = 0.
+\]
+\end{definitionblock}\pause
+
+\begin{block}{It\^o formula (function of $W_t$ only)}
+If $f\in C^2(\R)$, then
+\[
+df(W_t)=f'(W_t)\,dW_t+\frac12 f''(W_t)\,dt.
+\]
+\end{block}\pause
+
+\begin{alertblock}{Before computing}
+Always write: (i) $f'(x)$, (ii) $f''(x)$, then substitute $x=W_t$.
+\end{alertblock}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Drill 1: compute $d(W_t^2)$, $d(W_t^3)$, $d(\sin W_t)$}
+
+\begin{block}{(2 minutes)}
+Compute:
+\[
+d(W_t^2),\qquad d(W_t^3),\qquad d(\sin W_t).
+\vspace{-4mm}
+\]
+\end{block}\pause
+\begin{alertblock}{Correction (write \emph{every} term)}
+\begin{enumerate}
+  \item $f(x)=x^2$:\quad $f'(x)=2x$, $f''(x)=2$.\pause
+  \[
+  d(W_t^2)=2W_t\,dW_t+\frac12\cdot 2\,dt
+  =
+  2W_t\,dW_t+dt.
+  \vspace{-4mm}
+  \]
+  \pause
+
+  \item $f(x)=x^3$:\quad $f'(x)=3x^2$, $f''(x)=6x$.\pause
+  \[
+  d(W_t^3)=3W_t^2\,dW_t+\frac12\cdot 6W_t\,dt
+  =
+  3W_t^2\,dW_t+3W_t\,dt.
+  \vspace{-4mm}
+  \]
+\vspace{-4mm}
+  \pause
+
+  \item $f(x)=\sin x$:\quad $f'(x)=\cos x$, $f''(x)=-\sin x$.\pause
+  \[
+  d(\sin W_t)=\cos(W_t)\,dW_t+\frac12(-\sin(W_t))\,dt
+  =
+  \cos(W_t)\,dW_t-\frac12\sin(W_t)\,dt.
+  \vspace{-4mm}
+  \]
+  \vspace{-4mm}
+\end{enumerate}
+\end{alertblock}\pause
+
+\textbf{Mini-check:}\;
+each answer has a $dW_t$ term (random) and a $dt$ term (correction/drift).
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Drill 1 (bonus): spot the martingales}
+
+From the corrections:\pause
+\[
+d(W_t^2-t)=2W_t\,dW_t,
+\qquad
+d\Big(W_t^3-3\int_0^t W_s\,ds\Big)=3W_t^2\,dW_t.
+\]\pause
+
+\begin{block}{Takeaway}
+When the $dt$ term disappears, the process becomes a martingale.
+This is a key trick for computations in finance and probability.
+\end{block}
+
+\end{frame}
+
+% =====================================================
+% 3) Ito processes / general Ito formula
+% =====================================================
+\section{Ito's formula for Ito processes}
+
+% ======================================================
+\subsection{Definition: Ito process}
+
+% --------------------------------------
+% --------------------------------------
+\begin{frame}{It\^o processes: the model class for continuous-time dynamics}
+
+\begin{itemize}
+  \item Goal: describe a process $X_t$ with a \textbf{trend} + \textbf{random fluctuations}.\pause
+  \item In continuous time, the random fluctuations are modeled by Brownian motion $W_t$.\pause
+  \item An \textbf{It\^o process} is exactly ``drift $\,+\,$ Brownian noise''.\pause
+\end{itemize}
+
+\medskip
+\begin{alertblock}{Key idea (one sentence)}
+An It\^o process is a process built from \textbf{ordinary time integration} and an \textbf{It\^o stochastic integral}.
+\end{alertblock}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{It\^o process: definition}
+
+\begin{definitionblock}{Definition (It\^o process)}
+Fix a filtered probability space
+$(\Omega,\mathcal F,(\mathcal F_t)_{t\ge0},\mathbb{P})$
+supporting a Brownian motion $(W_t)_{t\ge0}$.
+
+A real-valued adapted process $(X_t)_{t\in[0,T]}$ is an \textbf{It\^o process} if it can be written as
+\[
+X_t = X_0 + \int_0^t a_s\,ds + \int_0^t b_s\,dW_s,
+\qquad 0\le t\le T,
+\]
+for some adapted processes $(a_t)_{0\le t\le T}$ and $(b_t)_{0\le t\le T}$.
+\end{definitionblock}\pause
+
+\begin{itemize}
+  \item $a_t$ controls the \textbf{local trend} (drift).\pause
+  \item $b_t$ controls the \textbf{local randomness intensity} (volatility).
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{It\^o process: integrability assumptions (so everything is well-defined)}
+
+\begin{block}{Standing assumptions (stated)}
+We assume
+\[
+\E\!\left[\int_0^T |a_s|\,ds\right] < \infty,
+\qquad
+\E\!\left[\int_0^T b_s^2\,ds\right] < \infty.
+\]
+\end{block}\pause
+
+\begin{itemize}
+  \item The first condition ensures $\int_0^t a_s\,ds$ exists (Lebesgue integral).\pause
+  \item The second condition ensures $\int_0^t b_s\,dW_s$ exists (It\^o integral).\pause
+  \item In practice: ``$a$ integrable'' and ``$b$ square-integrable''.
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Differential notation: the shorthand you will use every day}
+
+\begin{block}{From integral form to differential form}
+If
+\[
+X_t = X_0 + \int_0^t a_s\,ds + \int_0^t b_s\,dW_s,
+\]
+we write (shorthand)
+\[
+dX_t = a_t\,dt + b_t\,dW_t.
+\]
+\end{block}\pause
+
+\begin{itemize}
+  \item This is \textbf{notation}, not an actual derivative.\pause
+  \item It tells you: “over a small $\Delta t$, $X$ moves like
+  $a_t\,\Delta t + b_t\,\Delta W_t$”.
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Finance link: self-financing gains $\Rightarrow$ stochastic integrals}
+
+\begin{itemize}
+  \item Discrete-time self-financing gain:
+  \[
+  \sum_{i=0}^{n-1}\phi_{t_i}\big(S_{t_{i+1}}-S_{t_i}\big).
+  \]\pause
+  \item ``No anticipation'' means $\phi_{t_i}$ is chosen using info at time $t_i$
+  (i.e.\ $\phi_{t_i}\in\mathcal{F}_{t_i}$).\pause
+  \item In continuous time, the limit of left-point sums becomes
+  \[
+  \int_0^t \phi_s\,dS_s,
+  \]
+  and when $S$ has a Brownian part, this uses the \textbf{It\^o integral}.\pause
+\end{itemize}
+
+\begin{alertblock}{Takeaway}
+It\^o processes are the natural class for (toy) price dynamics because they interact well with
+self-financing strategies.
+\end{alertblock}
+
+\end{frame}
+
+
+% ======================================================
+% ======================================================
+\subsection{Statement (scalar case)}
+
+% --------------------------------------
+\begin{frame}{It\^o processes: the model class we will differentiate}
+
+\begin{definitionblock}{It\^o process (1D)}
+A process $(X_t)_{0\le t\le T}$ is an \textbf{It\^o process} if it can be written as
+\vspace{-2mm}
+\[
+X_t
+=
+X_0+\int_0^t a_s\,ds+\int_0^t b_s\,dW_s,
+\vspace{-2mm}
+\]
+for some adapted processes $(a_t)$ and $(b_t)$ such that
+\vspace{-4mm}
+\[
+\E\!\left[\int_0^T |a_s|\,ds\right]<\infty,
+\qquad
+\E\!\left[\int_0^T b_s^2\,ds\right]<\infty.
+\vspace{-4mm}
+\]
+\vspace{-2mm}
+\end{definitionblock}\pause
+
+\begin{block}{Differential notation}
+We write informally
+\[
+dX_t = a_t\,dt + b_t\,dW_t,
+\]
+\end{block}\pause
+
+\begin{alertblock}{Key idea}
+It\^o processes are the objects for which the stochastic ``chain rule'' (It\^o's formula) holds.
+\end{alertblock}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Quadratic variation of an It\^o process (what enters It\^o's formula)}
+
+\begin{block}{Fact (stated; proof later via covariation)}
+If
+\[
+X_t=X_0+\int_0^t a_s\,ds+\int_0^t b_s\,dW_s,
+\]
+then the quadratic variation is
+\[
+[X]_t=\int_0^t b_s^2\,ds,
+\qquad\text{so}\qquad
+d[X]_t=b_t^2\,dt.
+\]
+\end{block}\pause
+
+\begin{itemize}
+  \item The \textbf{drift part} $\int a_s ds$ has zero quadratic variation.\pause
+  \item Only the \textbf{Brownian part} contributes (via $(dW_t)^2=dt$).\pause
+\end{itemize}
+
+\medskip
+\begin{alertblock}{Mnemonic}
+\[
+(dX_t)^2 \approx (b_t\,dW_t)^2 = b_t^2\,dt.
+\]
+\end{alertblock}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{It\^o formula for $f(t,X_t)$ (scalar case): statement}
+
+Let $X$ be an It\^o process:
+\[
+dX_t = a_t\,dt + b_t\,dW_t,
+\qquad 0\le t\le T,
+\]
+and let $f\in C^{1,2}([0,T]\times\R)$.\pause
+
+\begin{theoremblock}{It\^o's formula (1D)}
+The process $Y_t:=f(t,X_t)$ is again an It\^o process and
+\[
+df(t,X_t)
+=
+\partial_t f(t,X_t)\,dt
++
+\partial_x f(t,X_t)\,dX_t
++
+\frac12\,\partial_{xx} f(t,X_t)\,d[X]_t.
+\]
+Equivalently, using $d[X]_t=b_t^2\,dt$,
+\[
+df(t,X_t)
+=
+\Big(\partial_t f + a_t\,\partial_x f + \tfrac12 b_t^2\,\partial_{xx} f\Big)(t,X_t)\,dt
++
+b_t\,\partial_x f(t,X_t)\,dW_t.
+\]
+\end{theoremblock}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{How to use it: separate drift vs.\ martingale parts}
+
+From It\^o's formula:\pause
+\[
+dY_t = \underbrace{\Big(\partial_t f + a_t\,\partial_x f + \tfrac12 b_t^2\,\partial_{xx} f\Big)(t,X_t)\,dt}_{\text{drift part}}
+\;+\;
+\underbrace{b_t\,\partial_x f(t,X_t)\,dW_t}_{\text{martingale part}}.
+\]\pause
+
+\begin{block}{Why this matters (finance + exams)}
+\begin{itemize}
+  \item To make $Y_t$ a martingale: \textbf{kill the drift}.\pause
+  \item To compute $\E[Y_T]$: integrate the drift and use $\E\!\left[\int \cdot\, dW\right]=0$.\pause
+\end{itemize}
+\end{block}\pause
+
+\begin{alertblock}{Bookkeeping rule}
+The correction term is exactly $\frac12\,f_{xx}\,d[X]_t$.
+If $X=W$, then $d[X]_t=dt$.
+\end{alertblock}
+
+\end{frame}
+
+\subsection{Vector case}
+% --------------------------------------
+\begin{frame}{Multidimensional It\^o formula: what changes?}
+
+\begin{itemize}
+  \item In practice we often model \textbf{several assets / risk factors}.\pause
+  \item Brownian motion becomes a vector $W_t=(W_t^1,\dots,W_t^d)$.\pause
+  \item State variables become a vector $X_t\in\R^m$.\pause
+  \item The only new ingredient: \textbf{cross-variations} create extra drift terms.
+\end{itemize}
+
+\medskip
+\begin{alertblock}{Takeaway}
+Same rule as in 1D, but with \textbf{gradient + Hessian + trace} and a covariance matrix $\Sigma$.
+\end{alertblock}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Setup: $d$-dimensional Brownian motion (allowing correlation)}
+
+Let $W_t=(W_t^1,\dots,W_t^d)$ be a $d$-dimensional Brownian motion.\pause
+
+\medskip
+\begin{block}{Covariation structure}
+We allow correlations:
+\[
+[W^i,W^j]_t = \rho_{ij}\,t,
+\qquad
+\Sigma := (\rho_{ij})_{1\le i,j\le d}\succeq 0.
+\]
+In the independent case, $\Sigma=I_d$.\pause
+\end{block}
+
+\begin{itemize}
+  \item Think: $\rho_{ij}$ measures how shocks in factor $i$ and $j$ co-move.\pause
+  \item This is exactly what generates cross-terms in It\^o formulas.
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Vector It\^o process: $dX_t = a_t\,dt + B_t\,dW_t$}
+
+Let $X_t\in\R^m$ be an It\^o process:\pause
+\[
+dX_t = a_t\,dt + B_t\,dW_t,
+\]
+where $a_t\in\R^m$ and $B_t\in\R^{m\times d}$ are adapted.\pause
+
+\medskip
+\begin{block}{Integrability (stated)}
+Assume
+\[
+\E\!\left[\int_0^T \|a_t\|\,dt\right] <\infty,
+\qquad
+\E\!\left[\int_0^T \|B_t\|^2\,dt\right] <\infty.
+\]
+\end{block}\pause
+
+\begin{itemize}
+  \item $a_t$: drift vector.\pause
+  \item $B_t$: volatility/loading matrix (how each factor $W^j$ impacts each component $X^i$).
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Quadratic covariation matrix of $X$}
+
+\begin{definitionblock}{Quadratic covariation matrix}
+Define the $m\times m$ matrix process
+\[
+[X]_t := \big([X^i,X^j]_t\big)_{1\le i,j\le m}.
+\]
+For $dX_t = a_t\,dt + B_t\,dW_t$, one has the differential
+\[
+d[X]_t = \big(B_t\,\Sigma\,B_t^\top\big)\,dt.
+\]
+\end{definitionblock}\pause
+
+\begin{block}{Reading the formula}
+\begin{itemize}
+  \item If $m=1$: $d[X]_t = b_t^2\,dt$ (back to 1D).\pause
+  \item If $\Sigma$ has off-diagonal terms, cross-variations appear.
+\end{itemize}
+\end{block}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Multidimensional It\^o formula (clean statement)}
+
+Let $f\in C^{1,2}([0,T]\times\R^m)$ and set $Y_t=f(t,X_t)$.\pause
+
+\begin{theoremblock}{Multidimensional It\^o formula}
+\[
+df(t,X_t)
+=
+\partial_t f(t,X_t)\,dt
++
+\nabla f(t,X_t)^\top dX_t
++
+\frac12\,\mathrm{Tr}\!\Big(\nabla^2 f(t,X_t)\,d[X]_t\Big).
+\]
+Equivalently,
+\[
+df(t,X_t)
+=
+\Big(
+\partial_t f
++
+\nabla f^\top a_t
++
+\frac12\,\mathrm{Tr}\!\big(\nabla^2 f \, B_t\Sigma B_t^\top\big)
+\Big)(t,X_t)\,dt
++
+\nabla f(t,X_t)^\top B_t\,dW_t.
+\]
+\end{theoremblock}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Why we care: 2 immediate payoffs}
+
+\begin{alertblock}{Payoff 1: product rule from It\^o}
+Take $m=2$, $X_t=(U_t,V_t)$ and $f(u,v)=uv$.\pause\;
+Then
+\[
+d(U_tV_t)=U_t\,dV_t+V_t\,dU_t+d[U,V]_t.
+\]
+\end{alertblock}\pause
+
+\begin{alertblock}{Payoff 2: correlated assets create drift corrections}
+If $U$ and $V$ share correlated Brownian shocks, then $d[U,V]_t\neq 0$.\pause\;
+That extra term is exactly the “It\^o correction” coming from correlation.
+\end{alertblock}
+
+\medskip
+Compute $d(W_t^1W_t^2)$ when $[W^1,W^2]_t=\rho t$ to get
+\[
+d(W_t^1W_t^2)=W_t^1\,dW_t^2+W_t^2\,dW_t^1+\rho\,dt.
+\]
+
+\end{frame}
+
+% =====================================================
+% 4) Big hands-on block (the core of the lecture)
+% =====================================================
+% ======================================================
+\section{Hands-on toolbox: the 6 patterns you must master}
+
+% ======================================================
+% ======================================================
+\subsection{Pattern A: powers / polynomials}
+
+% --------------------------------------
+\begin{frame}{Pattern A: powers — the one template you reuse everywhere}
+
+\begin{itemize}
+  \item Goal: compute $d(W_t^n)$ \textbf{fast} and identify the drift vs martingale parts.\pause
+  \item Recall (BM table): $(dW_t)^2=dt$, $dt\,dW_t=0$, $(dt)^2=0$.\pause
+\end{itemize}
+
+\medskip
+\begin{definitionblock}{It\^o formula (BM case)}
+If $f\in C^2(\R)$ then
+\[
+df(W_t)=f'(W_t)\,dW_t+\frac12 f''(W_t)\,dt.
+\]
+\end{definitionblock}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Pattern A: the general formula for $d(W_t^n)$}
+
+Take $f(x)=x^n$ with $n\ge2$.\pause\;
+Then $f'(x)=n x^{n-1}$ and $f''(x)=n(n-1)x^{n-2}$, so
+
+\begin{definitionblock}{Template (powers)}
+\[
+d(W_t^n)= n W_t^{n-1}\,dW_t
++\frac12\,n(n-1)W_t^{n-2}\,dt.
+\]
+\end{definitionblock}\pause
+
+\begin{block}{How to read it}
+\[
+\underbrace{n W_t^{n-1}\,dW_t}_{\text{random / martingale term}}
+\qquad+\qquad
+\underbrace{\tfrac12 n(n-1)W_t^{n-2}\,dt}_{\text{deterministic drift correction}}.
+\]
+\end{block}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Pattern A: two must-know special cases}
+
+\textbf{Case $n=2$.}\pause\;
+\[
+d(W_t^2)=2W_t\,dW_t+dt.
+\]\pause
+
+\medskip
+\textbf{Case $n=3$.}\pause\;
+\[
+d(W_t^3)=3W_t^2\,dW_t+3W_t\,dt.
+\]\pause
+
+\medskip
+\begin{alertblock}{Exam reflex}
+Always write \emph{both} terms: a $dW_t$ term and a $dt$ term.
+\end{alertblock}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Pattern A: moment recursion (quick trick)}
+
+Start from the template:\pause
+\[
+d(W_t^n)= n W_t^{n-1}\,dW_t
++\frac12\,n(n-1)W_t^{n-2}\,dt.
+\]
+
+\medskip
+\begin{block}{Take expectations}
+The It\^o integral has mean $0$, so the $dW$ term disappears in expectation.\pause\;
+Formally:
+\[
+\frac{d}{dt}\E[W_t^n]=\frac12\,n(n-1)\E[W_t^{n-2}].
+\]
+\end{block}\pause
+
+\begin{itemize}
+  \item Odd moments are $0$ by symmetry.\pause
+  \item Even moments follow a recursion (e.g. recover $\E[W_t^2]=t$, $\E[W_t^4]=3t^2$, etc.).
+\end{itemize}
+
+\end{frame}
+
+% ======================================================
+\subsection{Pattern B: exponentials and exponential martingales}
+
+% --------------------------------------
+\begin{frame}{Pattern B: exponentials — why they are everywhere}
+
+Let $\lambda\in\R$ and set $Y_t=e^{\lambda W_t}$.\pause
+
+\begin{block}{Compute derivatives once}
+For $f(x)=e^{\lambda x}$:
+\[
+f'(x)=\lambda e^{\lambda x},\qquad f''(x)=\lambda^2 e^{\lambda x}.
+\]
+\end{block}\pause
+
+\begin{definitionblock}{It\^o differential}
+\[
+d(e^{\lambda W_t})
+=
+\lambda e^{\lambda W_t}\,dW_t
++
+\frac12\lambda^2 e^{\lambda W_t}\,dt.
+\]
+\end{definitionblock}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Pattern B: the corrected exponential martingale}
+
+\begin{alertblock}{Key idea: kill the drift}
+Define
+\[
+M_t := \exp\!\Big(\lambda W_t-\tfrac12\lambda^2 t\Big).
+\]
+Then applying It\^o (product/chain rule) gives\pause
+\[
+dM_t=\lambda M_t\,dW_t.
+\]
+So $M_t$ is a  martingale; for each fixed $t$, it is in fact integrable and $\E[M_t]=1$.\pause
+\end{alertblock}
+
+\begin{itemize}
+  \item This pattern is the engine behind: hitting times, Laplace transforms, Girsanov (later).\pause
+  \item If you remember \emph{one} martingale: remember this one.
+\end{itemize}
+
+\end{frame}
+
+% ======================================================
+\subsection{Pattern C: logarithms and positivity}
+
+% --------------------------------------
+\begin{frame}{Pattern C: logs — the finance reflex}
+
+We often assume a price stays positive: $S_t>0$.\pause
+
+\medskip
+\begin{block}{Generic It\^o dynamics}
+Let
+\[
+dS_t=\mu_t\,dt+\sigma_t\,dW_t.
+\]
+(Here $\mu_t$ and $\sigma_t$ are adapted.)\pause
+\end{block}
+
+\begin{alertblock}{Goal}
+Compute $d(\ln S_t)$ quickly.
+\end{alertblock}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Pattern C: the log formula}
+
+Use $f(x)=\ln x$ with $f'(x)=1/x$ and $f''(x)=-1/x^2$.\pause
+
+\begin{definitionblock}{Log It\^o formula (1D)}
+\[
+d(\ln S_t)
+=
+\frac{1}{S_t}\,dS_t
+-\frac12\frac{1}{S_t^2}\,d[S]_t.
+\]
+\end{definitionblock}\pause
+
+\begin{block}{Plug in $dS_t=\mu_t dt+\sigma_t dW_t$}
+Since $d[S]_t=\sigma_t^2\,dt$, we get
+\[
+d(\ln S_t)
+=
+\Big(\frac{\mu_t}{S_t}-\frac12\frac{\sigma_t^2}{S_t^2}\Big)\,dt
++
+\frac{\sigma_t}{S_t}\,dW_t.
+\]
+\end{block}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Pattern C: the compact rule of thumb}
+
+If you know the \textbf{return dynamics}
+\[
+\frac{dS_t}{S_t}=\alpha_t\,dt+\beta_t\,dW_t,
+\]
+then the log dynamics are automatically\pause
+\[
+d(\ln S_t)=\Big(\alpha_t-\tfrac12\beta_t^2\Big)\,dt+\beta_t\,dW_t.
+\]
+
+\medskip
+\begin{alertblock}{Interpretation}
+The log has the same Brownian term, but the drift is shifted by
+$-\frac12(\text{vol})^2$.
+\end{alertblock}
+
+\end{frame}
+% ======================================================
+% ======================================================
+\subsection{Pattern D: solving GBM and ``generalized GBM''}
+
+% --------------------------------------
+\begin{frame}{Pattern D: GBM — the one explicit model you must master}
+
+\begin{itemize}
+  \item Goal: solve $dS_t=\mu S_t\,dt+\sigma S_t\,dW_t$ using the \textbf{log trick}.\pause
+  \item Key memory: if $dS_t/S_t=\alpha\,dt+\beta\,dW_t$, then
+  \[
+  d(\ln S_t)=\big(\alpha-\tfrac12\beta^2\big)\,dt+\beta\,dW_t.
+  \]\pause
+\end{itemize}
+
+\begin{alertblock}{Why we do it}
+It gives a closed form solution and immediately the distribution of $S_t$ (lognormal).
+\end{alertblock}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Pattern D: Geometric Brownian Motion (solution by It\^o)}
+
+\textbf{Model (GBM).}\pause\;
+\[
+dS_t = \mu S_t\,dt + \sigma S_t\,dW_t,
+\qquad S_0>0.
+\]\pause
+
+\begin{block}{Step 1: apply Pattern C to $\ln S_t$}
+Since $\dfrac{dS_t}{S_t}=\mu\,dt+\sigma\,dW_t$ and $d[S]_t=\sigma^2 S_t^2\,dt$, we get\pause
+\[
+d(\ln S_t)
+=
+\Big(\mu-\tfrac12\sigma^2\Big)\,dt
++
+\sigma\,dW_t.
+\]
+\end{block}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Pattern D: integrate and exponentiate}
+
+\begin{block}{Step 2: integrate the SDE for $\ln S_t$}
+Integrating from $0$ to $t$:\pause
+\[
+\ln S_t
+=
+\ln S_0 + \Big(\mu-\tfrac12\sigma^2\Big)t + \sigma W_t.
+\]
+Exponentiating:\pause
+\[
+S_t
+=
+S_0\exp\!\Big(\big(\mu-\tfrac12\sigma^2\big)t+\sigma W_t\Big).
+\]
+\end{block}\pause
+
+\begin{alertblock}{Distribution (immediate)}
+\[
+\ln S_t \sim \mathcal{N}\!\Big(\ln S_0+(\mu-\tfrac12\sigma^2)t,\ \sigma^2 t\Big),
+\quad\Rightarrow\quad
+S_t \text{ is lognormal.}
+\]
+\end{alertblock}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Pattern D: ``generalized GBM'' (time-varying coefficients)}
+
+\textbf{Model (time-dependent).}\pause\;
+\[
+dS_t = \mu_t S_t\,dt + \sigma_t S_t\,dW_t,
+\qquad S_0>0,
+\]
+with adapted $\mu_t$ and $\sigma_t$ and $\int_0^T \sigma_t^2 dt<\infty$ a.s.\pause
+
+\begin{block}{Log dynamics (same computation)}
+\[
+d(\ln S_t)=\Big(\mu_t-\tfrac12\sigma_t^2\Big)\,dt+\sigma_t\,dW_t.
+\]
+\end{block}\pause
+
+\begin{block}{Solution (state it cleanly)}
+\[
+S_t
+=
+S_0\exp\!\Big(
+\int_0^t\big(\mu_s-\tfrac12\sigma_s^2\big)\,ds
++
+\int_0^t \sigma_s\,dW_s
+\Big).
+\]
+\end{block}
+
+\end{frame}
+
+% ======================================================
+\subsection{Pattern E: OU / Vasicek (mean-reversion)}
+
+% --------------------------------------
+\begin{frame}{Pattern E: mean reversion — what OU/Vasicek models}
+
+\textbf{Model.}\pause\;
+\[
+dr_t = k(m-r_t)\,dt + \sigma\,dW_t,
+\qquad k>0.
+\]
+
+\medskip
+\begin{itemize}
+  \item $m$: long-run level.\pause
+  \item $k$: speed of mean reversion.\pause
+  \item $\sigma$: noise amplitude.\pause
+\end{itemize}
+
+\begin{alertblock}{Goal}
+Get an explicit formula using an integrating factor (same spirit as ODEs).
+\end{alertblock}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Pattern E: integrating factor computation}
+
+\begin{block}{The one trick to memorize}
+Let $Y_t:=e^{kt}r_t$. Using product rule:\pause
+\[
+d(e^{kt}r_t)=ke^{kt}r_t\,dt+e^{kt}\,dr_t.
+\]
+Plug $dr_t=k(m-r_t)dt+\sigma dW_t$:\pause
+\[
+d(e^{kt}r_t)
+=
+ke^{kt}r_t\,dt
++
+e^{kt}\big(k(m-r_t)\,dt+\sigma\,dW_t\big)
+=
+km\,e^{kt}\,dt+\sigma e^{kt}\,dW_t.
+\]
+\end{block}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Pattern E: explicit solution (and what to remember)}
+
+\begin{block}{Integrate from $0$ to $t$}
+\[
+e^{kt}r_t
+=
+r_0 + km\int_0^t e^{ks}\,ds + \sigma\int_0^t e^{ks}\,dW_s.
+\]
+So
+\[
+r_t
+=
+m+(r_0-m)e^{-kt}
++\sigma\int_0^t e^{-k(t-s)}\,dW_s.
+\]
+\end{block}\pause
+
+\begin{alertblock}{Key messages (keep it simple)}
+\begin{itemize}
+  \item $r_t$ is Gaussian (linear transform of Brownian motion).\pause
+  \item The mean is $m+(r_0-m)e^{-kt}$.\pause
+  \item The noise term is a weighted integral: recent shocks matter more than old shocks.\pause
+\end{itemize}
+\end{alertblock}
+
+\end{frame}
+
+% ======================================================
+\subsection{Pattern F: product/quotient rules (2 assets)}
+
+% --------------------------------------
+\begin{frame}{Pattern F: product rule — the only safe way}
+
+Let $X_t$ and $Y_t$ be It\^o processes.\pause
+
+\begin{definitionblock}{Product rule (It\^o)}
+\[
+d(X_tY_t)=X_t\,dY_t+Y_t\,dX_t+d[X,Y]_t.
+\]
+\end{definitionblock}\pause
+
+\begin{block}{Heuristic reminder}
+$\Delta(XY)=X\Delta Y+Y\Delta X+\Delta X\,\Delta Y$.\;
+If both have Brownian parts, $\Delta X\,\Delta Y$ is order $\Delta t$ and accumulates.\pause
+\end{block}
+
+\begin{alertblock}{The sanity check you should always do}
+Take $X=Y=W$:\quad
+\[
+d(W_t^2)=2W_t\,dW_t+d[W,W]_t
+=
+2W_t\,dW_t+dt.
+\]
+\end{alertblock}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Pattern F: ratio rule (don’t guess — apply It\^o)}
+
+Assume $Y_t>0$ and define $Z_t=X_t/Y_t$.\pause
+
+\begin{block}{Do it by It\^o on $f(x,y)=x/y$}
+\[
+\partial_x f=\frac1y,\quad
+\partial_y f=-\frac{x}{y^2},\quad
+\partial_{yy} f=\frac{2x}{y^3},\quad
+\partial_{xy} f=-\frac1{y^2}.
+\]
+\end{block}\pause
+
+\begin{definitionblock}{Ratio rule (clean form)}
+\[
+d\Big(\frac{X_t}{Y_t}\Big)
+=
+\frac{1}{Y_t}\,dX_t
+-\frac{X_t}{Y_t^2}\,dY_t
++\frac{X_t}{Y_t^3}\,d[Y]_t
+-\frac{1}{Y_t^2}\,d[X,Y]_t.
+\]
+\end{definitionblock}\pause
+
+\begin{alertblock}{Practical takeaway}
+Product: \textbf{add} $d[X,Y]$.\;
+Ratio: apply It\^o to $x/y$ (never “intuit” it).
+\end{alertblock}
+
+\end{frame}
+% =====================================================
+% 5) Finance-facing mini-block: discounting / martingales
+% =====================================================
+% ======================================================
+\section{Finance links (minimal but useful)}
+
+% ======================================================
+% ======================================================
+\subsection{Discounting trick: finding the martingale drift}
+
+% --------------------------------------
+\begin{frame}{Discounting trick (idea): remove the drift}
+
+Assume a (toy) It\^o dynamics for the asset price:
+\[
+dS_t = \mu_t S_t\,dt + \sigma_t S_t\,dW_t,
+\qquad S_t>0.
+\]\pause
+
+\begin{block}{Goal}
+Build a transformed process $X_t$ with \textbf{zero drift} (hence a martingale candidate).
+\end{block}\pause
+
+\begin{itemize}
+  \item We will multiply $S_t$ by a deterministic-looking factor (a discount factor).\pause
+  \item Use the product rule: finite-variation factors do \emph{not} create $d[\cdot,\cdot]$ terms.
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Discounting trick: define the discount factor}
+
+\begin{block}{Discounted process}
+Let
+\[
+A_t := \exp\!\Big(-\int_0^t \gamma_s\,ds\Big),
+\qquad
+X_t := A_t\,S_t.
+\]
+\end{block}\pause
+
+\begin{itemize}
+  \item Think: $A_t$ is a \textbf{discount factor} driven by $\gamma_t$.\pause
+  \item Drill: choose $\gamma$ so that $X$ has no $dt$ term.
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Discounting trick: compute $dA_t$ (finite variation)}
+
+Since $A_t=\exp(-\int_0^t \gamma_s ds)$ is of finite variation,\pause
+\[
+dA_t = -\gamma_t A_t\,dt,
+\qquad
+d[A,S]_t=0.
+\]\pause
+
+\begin{alertblock}{Key point}
+Finite-variation processes have zero quadratic covariation with Brownian-driven It\^o processes.
+\end{alertblock}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Discounting trick: compute $dX_t$ and kill the drift}
+
+Use the product rule:
+\[
+dX_t = d(A_tS_t)=A_t\,dS_t+S_t\,dA_t+d[A,S]_t.
+\]\pause
+With $d[A,S]_t=0$ and $dA_t=-\gamma_tA_tdt$:\pause
+\[
+dX_t
+=
+A_t(\mu_t S_t\,dt+\sigma_t S_t\,dW_t)
+-\gamma_tA_tS_t\,dt.
+\]\pause
+So
+\[
+dX_t
+=
+A_tS_t(\mu_t-\gamma_t)\,dt
++
+A_tS_t\sigma_t\,dW_t.
+\]\pause
+
+\begin{alertblock}{Conclusion}
+Choose \(\gamma_t=\mu_t\) to remove the drift:
+\[
+dX_t = X_t\sigma_t\,dW_t,
+\]
+so $X$ is a martingale (often a true martingale under integrability).
+\end{alertblock}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Discounting trick: finance interpretation (one slide)}
+
+\begin{block}{Interpretation}
+\begin{itemize}
+  \item Under a \emph{pricing measure}, discounted prices are martingales.\pause
+  \item In the Black--Scholes world, $\gamma_t$ is typically the short rate $r_t$,
+  and $A_t$ is the money-market discount factor.\pause
+\end{itemize}
+\end{block}\pause
+
+\begin{alertblock}{Practical message}
+If you can identify the right discount factor, you can spot the “right drift” for pricing.
+\end{alertblock}
+
+\end{frame}
+
+
+
+% ======================================================
+\subsection{Self-financing + It\^o differential form (intuition)}
+
+% --------------------------------------
+\begin{frame}{Self-financing gains: the discrete-time picture}
+
+\textbf{Trading dates:}\;
+$0=t_0<\cdots<t_n=T$.\pause
+
+\begin{itemize}
+  \item Hold $\phi_{t_i}$ shares on $(t_i,t_{i+1}]$.\pause
+  \item \textbf{Predictable strategy:} $\phi_{t_i}$ uses info available at time $t_i$ (no peeking).\pause
+\end{itemize}\pause
+
+\begin{definitionblock}{Gains process}
+\[
+G_T^{\pi}(\phi)
+:=\sum_{i=0}^{n-1}\phi_{t_i}\big(S_{t_{i+1}}-S_{t_i}\big).
+\]
+\end{definitionblock}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Self-financing: what it means}
+
+\begin{block}{Self-financing (informal)}
+Your portfolio value changes only because prices move,
+not because you inject or withdraw cash.
+\end{block}\pause
+
+\begin{itemize}
+  \item Discrete-time gain is a \textbf{left-point} sum.\pause
+  \item This matches the It\^o convention: decisions are made \emph{before} the next price move.
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Self-financing in continuous time (interpretation)}
+
+\begin{alertblock}{Continuous-time notation}
+As the mesh $|\pi|\to0$, the left-point gain becomes an It\^o integral:
+\[
+G_t(\phi)=\int_0^t \phi_s\,dS_s.
+\]
+So we write heuristically:
+\[
+dV_t=\phi_t\,dS_t.
+\]
+\end{alertblock}\pause
+
+\begin{block}{Key message}
+This is \emph{shorthand} for a limit of trading gains,
+not a classical differential equation.
+\end{block}
+
+\end{frame}
+
+
+
+% ======================================================
+% 6) Mini-workshop: guided exercises (in class)
+% ======================================================
+\section{In-class workshop (guided)}
+
+\subsection{Guided exercise set}
+
+% --------------------------------------
+\begin{frame}{Workshop: Exercise 1 (warm-up)}
+
+\begin{definitionblock}{Exercise 1}
+Compute $d(W_t^2)$ and identify a martingale:\pause
+\[
+W_t^2 - t
+\quad\text{(martingale or not?)}
+\]
+\end{definitionblock}\pause
+
+\begin{block}{What to extract}
+Separate the $dW_t$ part (martingale) from the $dt$ part (drift).
+\end{block}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Workshop: Exercise 2 (kill the drift)}
+
+\begin{definitionblock}{Exercise 2}
+Let $Y_t := \exp(a t + b W_t)$.\pause\;
+Compute $dY_t$ and choose $a$ as a function of $b$
+so that $Y$ is a martingale.
+\end{definitionblock}\pause
+
+\begin{block}{What to extract}
+This is the prototype for exponential martingales.
+\end{block}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Workshop: Exercise 3 (GBM, must-know)}
+
+\begin{definitionblock}{Exercise 3}
+If $dS_t=\mu S_t\,dt+\sigma S_t\,dW_t$,\pause\;
+compute $d(\ln S_t)$, solve for $S_T$, and state the law of $\ln S_T$.
+\end{definitionblock}\pause
+
+\begin{block}{What to extract}
+Log trick $\Rightarrow$ explicit solution $\Rightarrow$ lognormal law.
+\end{block}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Workshop: Exercise 4 (power payoff intuition)}
+
+\begin{definitionblock}{Exercise 4}
+Let $X_t:=S_t^p$ with $p\in\R$ and $S$ GBM.\pause\;
+Compute $dX_t$ and identify the drift term.\pause
+
+When (for which $p$) is $X$ a martingale?
+\end{definitionblock}\pause
+
+\begin{block}{What to extract}
+Power options / moments / “drift killing” by choosing exponents.
+\end{block}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Workshop: Exercises 5 (products)}
+
+\begin{definitionblock}{Exercise 5 (product rule)}
+Let $X$ and $Y$ be It\^o processes driven by the same Brownian motion $W$:
+\[
+dX_t=\mu_t^X\,dt+\sigma_t^X\cdot dW_t,
+\qquad
+dY_t=\mu_t^Y\,dt+\sigma_t^Y\cdot dW_t.
+\]
+Derive the dynamics of $Z_t:=X_tY_t$ (identify the drift and diffusion terms).
+\end{definitionblock}\pause
+
+\end{frame}
+
+\begin{frame}{Workshop: Exercises 6 (products)}
+    
+\begin{definitionblock}{Exercises 6 : ratios}
+Assume now multiplicative dynamics:
+\[
+dX_t=X_t\big(\mu_t^X\,dt+\sigma_t^X\cdot dW_t\big),
+\qquad
+dY_t=Y_t\big(\mu_t^Y\,dt+\sigma_t^Y\cdot dW_t\big),
+\qquad (Y_t>0).
+\]
+\begin{enumerate}\setlength{\itemsep}{0.25em}
+  \item Derive the dynamics of $Z_t:=\dfrac{X_t}{Y_t}$, then obtain an explicit expression for $Z_t$
+  by applying It\^o's formula to $\ln(Z_t)$.
+  \item Solve similarly for $X_t$ and $Y_t$, and check that the induced expression of $Z_t$
+  agrees with your answer in (1).
+\end{enumerate}
+\end{definitionblock}\pause
+
+\end{frame}
+
+\begin{frame}{Workshop: Exercises 7 (IBP)}
+\begin{definitionblock}{Exercise 7 (integration by parts for It\^o integrals)}
+Let $W$ be a Brownian motion.
+\begin{enumerate}\setlength{\itemsep}{0.25em}
+  \item If $f:\R_+\to\R$ is $C^1$, show that
+  \[
+  \int_0^t f(s)\,dW_s \;=\; f(t)W_t-\int_0^t W_s f'(s)\,ds.
+  \]
+  \item Let $\phi_t=\int_0^t \varphi_s\,ds$ for some adapted process $\varphi$.
+  Show that
+  \[
+  \int_0^t \phi_s\,dW_s \;=\; \phi_tW_t-\int_0^t W_s\varphi_s\,ds.
+  \]
+  \item Deduce an expression for $\displaystyle \int_0^t e^{W_s}\,dW_s$
+  that does not involve a stochastic integral with respect to $dW_s$.
+\end{enumerate}
+\end{definitionblock}\pause
+
+\begin{block}{What to extract}
+\begin{itemize}\setlength{\itemsep}{0.2em}
+  \item Products/ratios $\Rightarrow$ quadratic covariation terms.
+  \item Log transform $\Rightarrow$ easiest way to solve multiplicative SDEs.
+  \item IBP identity $\Rightarrow$ can remove an It\^o integral when the integrand has a time primitive.
+\end{itemize}
+\end{block}
+
+\end{frame}
+
+
+
+% ======================================================
+\subsection{Common mistakes}
+
+% --------------------------------------
+\begin{frame}{Common mistakes: the 5 classic traps}
+
+\begin{alertblock}{Please avoid}
+\begin{enumerate}
+  \item Forgetting the It\^o correction term $\tfrac12 f_{xx}\,dt$.\pause
+  \item Writing $(dW_t)^2=0$ (wrong: $(dW_t)^2=dt$).\pause
+  \item Mixing variables: $x$ vs $X_t$ in $\partial_x f(t,x)$.\pause
+  \item Using the usual chain rule as if paths were differentiable.\pause
+  \item Using right-point sums (anticipating) when the model assumes no peeking.
+\end{enumerate}
+\end{alertblock}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Common mistakes: quick self-check before boxing}
+
+\begin{block}{Checklist}
+\begin{itemize}
+  \item Did I compute $f_x$ and $f_{xx}$ correctly?\pause
+  \item Did I replace $dW_t\,dW_t$ by $dt$?\pause
+  \item Did I separate drift ($dt$) and martingale ($dW_t$) parts?\pause
+  \item Does the final answer have the right “shape”: $(\cdots)\,dt+(\cdots)\,dW_t$?
+\end{itemize}
+\end{block}
+
+\end{frame}
+
+
+\end{document}

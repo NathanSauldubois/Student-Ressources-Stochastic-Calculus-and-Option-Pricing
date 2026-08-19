@@ -1,0 +1,176 @@
+% =====================================================
+% Merged header (Bootcamp palette + Metropolis look)
+% =====================================================
+\documentclass[10pt,aspectratio=169]{beamer}
+
+% -----------------------------
+% Language & encoding
+% -----------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english,french]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+
+% -----------------------------
+% Math / tables / layout
+% -----------------------------
+\usepackage{amsmath,amssymb,bm,mathtools}
+\usepackage{booktabs}
+\usepackage{multicol}
+\usepackage{changepage}
+
+% -----------------------------
+% Graphics
+% -----------------------------
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc,decorations.pathreplacing}
+
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+
+% -----------------------------
+% Theme (Metropolis)
+% -----------------------------
+\usetheme[numbering=fraction,progressbar=frametitle]{metropolis}
+\setbeamertemplate{frame numbering}[fraction]
+\setbeamertemplate{navigation symbols}{}
+
+% -----------------------------
+% Colors (unified palette)
+% -----------------------------
+\definecolor{BootcampBlueDark}{HTML}{1A3C68}
+\definecolor{BootcampBlue}{RGB}{31,110,178}
+\definecolor{AccentGold}{HTML}{DAA520}
+\definecolor{SoftGray}{RGB}{245,246,248}
+\definecolor{TextBlack}{HTML}{000000}
+\definecolor{Crimson}{HTML}{990000}
+\definecolor{MatrixGreen}{HTML}{228B22}
+\definecolor{MatrixRed}{HTML}{B22222}
+
+% -----------------------------
+% Global formatting
+% -----------------------------
+\setbeamercolor{normal text}{fg=TextBlack,bg=white}
+\setbeamercolor{title}{fg=TextBlack}
+\setbeamercolor{structure}{fg=BootcampBlueDark}
+\setbeamercolor{progress bar}{fg=BootcampBlueDark,bg=gray!30}
+
+% -----------------------------
+% Thick frametitle band (your “Bootcamp” look)
+% -----------------------------
+\setbeamercolor{frametitle}{bg=BootcampBlueDark,fg=white}
+\setbeamerfont{frametitle}{series=\bfseries,size=\large}
+\setbeamertemplate{frametitle}{
+  \nointerlineskip
+  \begin{beamercolorbox}[wd=\paperwidth,ht=3.2ex,dp=1.4ex,leftskip=1em,rightskip=1em]{frametitle}
+    \usebeamerfont{frametitle}\insertframetitle
+  \end{beamercolorbox}
+}
+
+% -----------------------------
+% Blocks (coherent with prior lectures)
+% -----------------------------
+\setbeamercolor{block title example}{bg=BootcampBlueDark!90!black,fg=white}
+\setbeamercolor{block body example}{bg=BootcampBlueDark!5!white,fg=black}
+\setbeamertemplate{blocks}[rounded][shadow=false]
+
+% Custom Definition Block (same API as before)
+\newenvironment{definitionblock}[1]{%
+  \par\vspace{0.4em}%
+  \begin{beamercolorbox}[
+      wd=\textwidth,
+      sep=0.4em,
+      leftskip=0.3em,
+      rightskip=0.6em,
+      rounded=false,
+      shadow=false
+    ]{block title example}%
+    \raisebox{0.15em}{\usebeamerfont{block title example}#1}%
+  \end{beamercolorbox}%
+  \vspace{-0.4em}%
+  \begin{beamercolorbox}[
+      wd=\textwidth,
+      sep=1em,
+      leftskip=0.6em,
+      rightskip=0.6em,
+      rounded=false,
+      shadow=false
+    ]{block body example}%
+    \usebeamerfont{block body example}%
+}{%
+  \end{beamercolorbox}%
+  \par\vspace{0.6em}%
+}
+
+% -----------------------------
+% Section / subsection transition pages
+% -----------------------------
+\metroset{
+  sectionpage=progressbar,
+  subsectionpage=progressbar
+}
+\AtBeginSection{
+  \frame[plain]{\sectionpage}
+}
+\AtBeginSubsection{
+  \frame[plain]{\subsectionpage}
+}
+
+% Graphics folder (extracted from the provided PDF)
+\graphicspath{{bm_figs/}}
+
+% =====================================================
+% Metadata
+% =====================================================
+\title{Option Pricing : Motivations and First Mathematical and Numerical tools}
+\author{}
+\date{}
+
+\AtBeginSection[]{
+  \begin{frame}{\insertsectionhead}
+    \tableofcontents[
+      currentsection,
+      hideothersubsections
+    ]
+  \end{frame}
+}
+
+\begin{document}
+
+
+% =====================================================
+\begin{frame}
+  \titlepage
+\end{frame}
+
+% =====================================================
+\begin{frame}{Roadmap}
+  \tableofcontents[hideallsubsections]
+\end{frame}
+
+\section{Introduction}
+
+% =====================================================
+% =====================================================
+% INTRODUCTION (completed)
+% =====================================================
+\subsection{Motivation}
+% -----------------------------------------------------
+\begin{frame}{Why do derivatives exist? (Motivation)}
+\begin{itemize}
+  \item In the real world, many businesses face \textbf{future uncertainty}:\pause
+  \begin{itemize}
+    \item energy costs for airlines / industrials,\pause
+    \item foreign exchange exposure for international sales,\pause
+    \item interest-rate risk for borrowing/lending,\pause
+    \item stock price risk for investors and companies.\pause
+  \end{itemize}
+  \item A derivative is a way to \textbf{transfer} or \textbf{reshape} that risk.\pause
+  \item \textbf{Pricing} is the question: what is a fair value \emph{today} for a payoff that depends on \emph{tomorrow}?
+\end{itemize}
+\end{frame}
+
+
+\end{document}

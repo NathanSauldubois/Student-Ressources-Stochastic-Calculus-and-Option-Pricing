@@ -1,0 +1,612 @@
+% !TEX program = pdflatex
+\documentclass[11pt]{article}
+
+% ==========================
+% Encoding / language (pdflatex)
+% ==========================
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+
+% ==========================
+% Layout
+% ==========================
+\usepackage[margin=1in]{geometry}
+
+% ==========================
+% Math
+% ==========================
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+
+% ==========================
+% Lists / links
+% ==========================
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+
+% ==========================
+% Macros
+% ==========================
+\newcommand{\Pbb}{\mathbb{P}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\F}{\mathcal{F}}
+\newcommand{\1}{\mathbf{1}}
+\newcommand{\dd}{\,\mathrm{d}}
+
+% ==========================
+% Theorem environments
+% ==========================
+\numberwithin{equation}{section}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+% ==========================
+% Board environment (robust)
+% ==========================
+\newenvironment{board}[1][On the board (plan + comments)]{%
+  \par\medskip
+  \noindent
+  \fbox{%
+    \begin{minipage}{0.98\linewidth}
+    \textbf{#1.}\par\medskip
+}{%
+    \end{minipage}%
+  }%
+  \par\medskip
+}
+
+% ==========================
+% Title
+% ==========================
+\title{Lecture Notes (Board Plan + Proofs) --- It\^o Calculus and It\^o's Formula}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-1em}
+
+\noindent\textbf{Goal of this lecture.}
+We explain why classical Riemann--Stieltjes integration fails for Brownian motion,
+introduce quadratic variation, and derive It\^o's formula (1D and multi-D).
+We then work through standard patterns (powers, exponentials, logarithms),
+solve GBM and OU/Vasicek, and connect to finance via discounting and self-financing gains.
+
+\textbf{To do on board}
+\begin{itemize}[leftmargin=2em]
+  \item Motivation: Brownian paths are too rough $\Rightarrow$ usual calculus breaks.
+  \item Key new object: quadratic variation $[W]_t = t$.
+  \item It\^o formula: Taylor expansion + the rule $(\Delta W)^2 \approx \Delta t$.
+  \item Finance: discounting to force martingales, and self-financing gains $\int \phi\,\dd S$.
+\end{itemize}
+
+
+% ==========================================================
+\section{Warm-up recap: It\^o integral as an $L^2$ limit}
+% ==========================================================
+
+\subsection{Construction on step processes}
+
+\begin{definition}[It\^o integral for step processes]
+Let $\phi$ be a step (simple adapted) process on $[0,T]$:
+\[
+\phi_t=\sum_{k=0}^{n-1}\phi_{t_k}\,\1_{(t_k,t_{k+1}]}(t),
+\qquad \phi_{t_k}\in\F_{t_k}.
+\]
+Define
+\[
+\int_0^T \phi_t\,\dd W_t
+:=\sum_{k=0}^{n-1}\phi_{t_k}\big(W_{t_{k+1}}-W_{t_k}\big).
+\]
+\end{definition}
+
+\textbf{To do on board}
+\begin{itemize}[leftmargin=2em]
+  \item Stress: this is a \emph{definition} on step processes.
+  \item Left point = non-anticipative: $\phi_{t_k}$ chosen before $\Delta W_k$ is seen.
+\end{itemize}
+
+
+\subsection{Two core computations}
+
+\begin{proposition}[Mean zero for step integrands]
+If $\phi$ is a step adapted process, then
+\[
+\E\!\left[\int_0^T \phi_t\,\dd W_t\right]=0.
+\]
+\end{proposition}
+
+\begin{proof}
+Write $I=\sum_{k}\phi_{t_k}\Delta W_k$ with $\Delta W_k:=W_{t_{k+1}}-W_{t_k}$.
+Then
+\[
+\E[\phi_{t_k}\Delta W_k]=\E\!\big[\E[\phi_{t_k}\Delta W_k\mid \F_{t_k}]\big].
+\]
+Since $\phi_{t_k}$ is $\F_{t_k}$-measurable and $\Delta W_k$ is independent of $\F_{t_k}$ with mean $0$,
+\[
+\E[\phi_{t_k}\Delta W_k\mid \F_{t_k}]
+=\phi_{t_k}\E[\Delta W_k]=0.
+\]
+Sum over $k$.
+\end{proof}
+
+\begin{theorem}[It\^o isometry for step integrands]
+If $\phi$ is a step adapted process, then
+\[
+\E\!\left[\left(\int_0^T \phi_t\,\dd W_t\right)^2\right]
+=\E\!\left[\int_0^T \phi_t^2\,\dd t\right].
+\]
+\end{theorem}
+
+\begin{proof}
+Let $I=\sum_k \phi_{t_k}\Delta W_k$.
+Expand:
+\[
+I^2=\sum_k \phi_{t_k}^2(\Delta W_k)^2 + 2\sum_{i<j}\phi_{t_i}\phi_{t_j}\Delta W_i\Delta W_j.
+\]
+For the diagonal terms, condition on $\F_{t_k}$:
+\[
+\E[\phi_{t_k}^2(\Delta W_k)^2]
+=\E\!\big[\phi_{t_k}^2\E[(\Delta W_k)^2]\big]
+=\E[\phi_{t_k}^2](t_{k+1}-t_k).
+\]
+For cross terms $i<j$, condition on $\F_{t_j}$: then
+$\phi_{t_i},\phi_{t_j},\Delta W_i$ are $\F_{t_j}$-measurable while
+$\Delta W_j$ is independent of $\F_{t_j}$ with mean $0$, so the conditional expectation is $0$.
+Hence cross terms vanish, giving
+\[
+\E[I^2]=\sum_k \E[\phi_{t_k}^2](t_{k+1}-t_k)=\E\!\left[\int_0^T \phi_t^2\,\dd t\right].
+\]
+\end{proof}
+
+\textbf{To do on board}[On the board (the “one big computation”)]
+\begin{itemize}[leftmargin=2em]
+  \item Expand the square, then show \emph{cross terms vanish}.
+  \item Key mechanism: independent increments + mean zero.
+\end{itemize}
+
+
+\subsection{Extension to general integrands}
+
+\begin{definition}[It\^o integral in $L^2$]
+Let $\phi$ be adapted and satisfy $\E\int_0^T \phi_t^2\,\dd t<\infty$.
+Choose step processes $\phi^n$ such that $\phi^n\to\phi$ in $L^2(\Omega\times[0,T])$.
+Define
+\[
+\int_0^T \phi_t\,\dd W_t := \lim_{n\to\infty}\int_0^T \phi_t^n\,\dd W_t
+\quad \text{in } L^2(\Omega).
+\]
+\end{definition}
+
+\begin{proposition}[Well-definedness]
+The limit does not depend on the choice of the approximating sequence $(\phi^n)$.
+\end{proposition}
+
+\begin{proof}
+If $\phi^n\to\phi$ and $\psi^n\to\phi$ in $L^2(\Omega\times[0,T])$, then $\phi^n-\psi^n\to 0$.
+By the isometry (applied to step processes),
+\[
+\E\!\left[\left(\int_0^T(\phi_t^n-\psi_t^n)\,\dd W_t\right)^2\right]
+=\E\!\left[\int_0^T(\phi_t^n-\psi_t^n)^2\,\dd t\right]\to 0.
+\]
+So the two limits in $L^2(\Omega)$ coincide.
+\end{proof}
+
+% ==========================================================
+\section{Quadratic variation and why Riemann--Stieltjes fails}
+% ==========================================================
+
+\subsection{Quadratic variation of Brownian motion}
+
+\begin{definition}[Quadratic variation along a partition]
+For a partition $\pi=\{0=t_0<\cdots<t_n=t\}$ define
+\[
+[W]_t^{\pi}:=\sum_{k=0}^{n-1}\big(W_{t_{k+1}}-W_{t_k}\big)^2.
+\]
+\end{definition}
+
+\begin{theorem}[Quadratic variation: uniform partitions]
+For the uniform grid $t_k=kt/n$,
+\[
+\sum_{k=0}^{n-1}(W_{t_{k+1}}-W_{t_k})^2 \xrightarrow[n\to\infty]{L^2} t.
+\]
+\end{theorem}
+
+\begin{proof}
+Let $\Delta W_k:=W_{t_{k+1}}-W_{t_k}$; then $\Delta W_k\sim\mathcal{N}(0,\Delta t)$ i.i.d.,
+with $\Delta t=t/n$.
+
+\smallskip\noindent
+\textbf{Step 1: expectation.}
+\[
+\E\!\left[\sum_k(\Delta W_k)^2\right]
+=\sum_k \E[(\Delta W_k)^2]
+=\sum_k \Delta t = n\Delta t=t.
+\]
+
+\smallskip\noindent
+\textbf{Step 2: variance.}
+Independence gives
+\[
+\mathrm{Var}\!\left(\sum_k(\Delta W_k)^2\right)=\sum_k \mathrm{Var}((\Delta W_k)^2).
+\]
+If $Z\sim\mathcal{N}(0,\sigma^2)$, then $\E[Z^4]=3\sigma^4$, so
+$\mathrm{Var}(Z^2)=3\sigma^4-\sigma^4=2\sigma^4$.
+Here $\sigma^2=\Delta t$, so $\mathrm{Var}((\Delta W_k)^2)=2(\Delta t)^2$.
+Hence
+\[
+\mathrm{Var}\!\left(\sum_k(\Delta W_k)^2\right)=n\cdot 2(\Delta t)^2
+=2n\left(\frac{t}{n}\right)^2=\frac{2t^2}{n}\to 0.
+\]
+Thus $L^2$ convergence holds.
+\end{proof}
+
+\textbf{To do on board}
+\begin{itemize}[leftmargin=2em]
+  \item Write the expectation and variance computation cleanly.
+  \item Message: for Brownian motion, the \emph{squares} accumulate $\Rightarrow [W]_t=t$.
+\end{itemize}
+
+
+\subsection{Why the sampling point matters}
+
+Let $0=t_0<\cdots<t_n=T$ be uniform and $\Delta W_k=W_{t_{k+1}}-W_{t_k}$.
+Define
+\[
+L_n:=\sum_{k=0}^{n-1}W_{t_k}\Delta W_k,
+\qquad
+R_n:=\sum_{k=0}^{n-1}W_{t_{k+1}}\Delta W_k.
+\]
+
+\begin{proposition}[Right minus left equals quadratic variation]
+\[
+R_n-L_n=\sum_{k=0}^{n-1}(\Delta W_k)^2.
+\]
+\end{proposition}
+
+\begin{proof}
+Simply expand:
+\[
+R_n-L_n=\sum_k (W_{t_{k+1}}-W_{t_k})\Delta W_k=\sum_k (\Delta W_k)^2.
+\]
+\end{proof}
+
+By quadratic variation, $\sum_k(\Delta W_k)^2\to T$ (in probability and even in $L^2$ for uniform grids).
+Hence \emph{if} $L_n$ converges, then $R_n$ must converge to a limit shifted by $T$.
+
+\textbf{To do on board}
+\begin{itemize}[leftmargin=2em]
+  \item “Changing the evaluation point changes the limit” when integrand is as rough as $W$.
+  \item This is the conceptual reason Riemann--Stieltjes is not robust here.
+\end{itemize}
+
+
+\subsection{Canonical identity: $\int_0^T W_t\,\dd W_t$}
+
+\begin{proposition}[Key identity]
+\[
+\int_0^T W_t\,\dd W_t=\frac12\big(W_T^2-T\big).
+\]
+\end{proposition}
+
+\begin{proof}
+Use the algebraic identity
+\[
+W_{t_{k+1}}^2-W_{t_k}^2 = 2W_{t_k}\Delta W_k + (\Delta W_k)^2.
+\]
+Sum over $k$:
+\[
+W_T^2-W_0^2=2\sum_k W_{t_k}\Delta W_k + \sum_k(\Delta W_k)^2.
+\]
+Thus
+\[
+\sum_k W_{t_k}\Delta W_k
+=\frac12\Big(W_T^2-\sum_k(\Delta W_k)^2\Big)\xrightarrow[n\to\infty]{}\frac12(W_T^2-T),
+\]
+since $\sum_k(\Delta W_k)^2\to T$.
+By definition, the limit of left sums is $\int_0^T W_t\,\dd W_t$.
+\end{proof}
+
+\textbf{To do on board}
+\begin{itemize}[leftmargin=2em]
+  \item Extremely accessible proof: algebra + $[W]_T=T$.
+  \item Highlight the appearance of the correction term $-\tfrac12T$.
+\end{itemize}
+
+
+% ==========================================================
+\section{It\^o processes and It\^o's formula (1D)}
+% ==========================================================
+
+\subsection{It\^o processes}
+
+\begin{definition}[It\^o process]
+A real-valued adapted process $X$ is an It\^o process if
+\[
+X_t=X_0+\int_0^t a_s\,\dd s+\int_0^t b_s\,\dd W_s,
+\]
+where $a$ is adapted with $\E\int_0^T|a_s|\,\dd s<\infty$ and
+$b$ is adapted with $\E\int_0^T b_s^2\,\dd s<\infty$.
+We write in differential form: $\dd X_t=a_t\,\dd t+b_t\,\dd W_t$.
+\end{definition}
+
+\textbf{To do on board}
+\begin{itemize}[leftmargin=2em]
+  \item Emphasize: drift ($\dd t$) + diffusion ($\dd W$).
+  \item Integrability conditions guarantee the integrals are well-defined.
+\end{itemize}
+
+
+\subsection{It\^o's formula (scalar case)}
+
+\begin{theorem}[It\^o's formula in 1D]
+Let $\dd X_t=a_t\,\dd t+b_t\,\dd W_t$ and $f\in C^{1,2}([0,T]\times\R)$.
+Then $Y_t=f(t,X_t)$ satisfies
+\[
+\dd f(t,X_t)
+=\Big(\partial_t f + a_t\,\partial_x f + \tfrac12 b_t^2\,\partial_{xx} f\Big)(t,X_t)\,\dd t
++\big(b_t\,\partial_x f\big)(t,X_t)\,\dd W_t.
+\]
+\end{theorem}
+
+\begin{proof}[Proof idea (what you can present on the board)]
+Fix a partition $0=t_0<\cdots<t_n=t$ with mesh $|\pi|\to 0$.
+Write the increment
+\[
+f(t_{k+1},X_{t_{k+1}})-f(t_k,X_{t_k})
+=
+\Big[f(t_{k+1},X_{t_{k+1}})-f(t_k,X_{t_{k+1}})\Big]
++
+\Big[f(t_k,X_{t_{k+1}})-f(t_k,X_{t_k})\Big].
+\]
+Apply Taylor:
+\[
+f(t_{k+1},x)-f(t_k,x)=\partial_t f(t_k,x)\Delta t_k + o(\Delta t_k),
+\]
+and
+\[
+f(t_k,X_{t_{k+1}})-f(t_k,X_{t_k})
+=\partial_x f(t_k,X_{t_k})\Delta X_k + \tfrac12 \partial_{xx} f(t_k,X_{t_k})(\Delta X_k)^2 + r_k,
+\]
+where the remainder $r_k$ is of higher order (controlled using smoothness of $f$ and moment bounds).
+
+Now use $\Delta X_k = a_{t_k}\Delta t_k + b_{t_k}\Delta W_k + \text{smaller terms}$.
+The key scaling is:
+\[
+\Delta W_k = O(\sqrt{\Delta t_k}),
+\qquad
+(\Delta W_k)^2 \approx \Delta t_k,
+\qquad
+\Delta t_k\Delta W_k \approx 0,
+\qquad
+(\Delta t_k)^2 \approx 0.
+\]
+Thus
+\[
+(\Delta X_k)^2 = b_{t_k}^2(\Delta W_k)^2 + \text{terms negligible after summation}.
+\]
+Summing over $k$ and letting $|\pi|\to 0$, the sums converge (in probability, and in $L^2$ under standard assumptions) to
+\[
+\int_0^t \partial_t f(s,X_s)\,\dd s
++\int_0^t \partial_x f(s,X_s)\,\dd X_s
++\frac12\int_0^t \partial_{xx} f(s,X_s)\,b_s^2\,\dd s,
+\]
+which yields the formula.
+\end{proof}
+
+\textbf{To do on board}[On the board (It\^o formula derivation)]
+\begin{itemize}[leftmargin=2em]
+  \item Start from Taylor expansion up to second order in space.
+  \item Insert $\Delta X \approx a\Delta t + b\Delta W$.
+  \item Use the “multiplication table”: $(\Delta W)^2\approx \Delta t$, $\Delta t\,\Delta W\approx 0$.
+  \item Conclude: extra drift term $\tfrac12 b^2 f_{xx}\,\dd t$.
+\end{itemize}
+
+
+\subsection{Quadratic variation reminder for It\^o processes}
+If $\dd X_t=a_t\,\dd t+b_t\,\dd W_t$, then
+\[
+[X]_t=\int_0^t b_s^2\,\dd s,
+\qquad\text{so}\qquad \dd[X]_t=b_t^2\,\dd t.
+\]
+This is consistent with the heuristic $(\dd W_t)^2=\dd t$.
+
+% ==========================================================
+\section{Multidimensional It\^o formula + product rule}
+% ==========================================================
+
+\subsection{Quadratic covariation}
+Let $X\in\R^m$ satisfy $\dd X_t=a_t\,\dd t + B_t\,\dd W_t$ where $W\in\R^d$.
+If $W$ has covariance matrix $\Sigma$ (i.e.\ $\langle W^i,W^j\rangle_t=\rho_{ij}t$),
+then
+\[
+\dd[X]_t = B_t\,\Sigma\,B_t^\top\,\dd t.
+\]
+
+\begin{theorem}[Multidimensional It\^o formula]
+Let $f\in C^{1,2}([0,T]\times\R^m)$ and $Y_t=f(t,X_t)$. Then
+\[
+\dd f(t,X_t)
+=
+\partial_t f(t,X_t)\,\dd t
++
+\nabla f(t,X_t)^\top \dd X_t
++
+\frac12 \mathrm{Tr}\!\big(\nabla^2 f(t,X_t)\,\dd[X]_t\big).
+\]
+Equivalently,
+\[
+\dd f(t,X_t)
+=
+\Big(\partial_t f+\nabla f^\top a_t+\tfrac12\mathrm{Tr}(\nabla^2 f\,B_t\Sigma B_t^\top)\Big)(t,X_t)\,\dd t
++
+\nabla f(t,X_t)^\top B_t\,\dd W_t.
+\]
+\end{theorem}
+
+\textbf{To do on board}
+\begin{itemize}[leftmargin=2em]
+  \item State clearly: gradient term + Hessian trace term.
+  \item Explain correlations appear through $\Sigma$ (cross terms in quadratic covariation).
+\end{itemize}
+
+
+\subsection{Product rule}
+Take $f(x,y)=xy$ and apply the 2D It\^o formula:
+\[
+\dd(X_tY_t)=X_t\,\dd Y_t + Y_t\,\dd X_t + \dd[X,Y]_t.
+\]
+For Brownian motion, $\dd[W,W]_t=\dd t$, giving $\dd(W_t^2)=2W_t\,\dd W_t+\dd t$.
+
+% ==========================================================
+\section{Standard patterns (powers, exponentials, logs)}
+% ==========================================================
+
+\subsection{Powers: $W_t^n$}
+For $f(x)=x^n$, $f'(x)=n x^{n-1}$, $f''(x)=n(n-1)x^{n-2}$, hence
+\[
+\dd(W_t^n)=nW_t^{n-1}\,\dd W_t + \frac12 n(n-1)W_t^{n-2}\,\dd t.
+\]
+Taking expectations:
+\[
+\frac{\dd}{\dd t}\E[W_t^n]=\frac12 n(n-1)\E[W_t^{n-2}].
+\]
+
+\subsection{Exponentials: exponential martingales}
+For $Y_t=e^{\lambda W_t}$,
+\[
+\dd(e^{\lambda W_t})=\lambda e^{\lambda W_t}\,\dd W_t + \frac12\lambda^2 e^{\lambda W_t}\,\dd t.
+\]
+Thus the corrected process
+\[
+M_t:=\exp\!\Big(\lambda W_t-\tfrac12\lambda^2 t\Big)
+\]
+satisfies $\dd M_t=\lambda M_t\,\dd W_t$, so $M$ is a (local) martingale (in fact a true martingale for fixed $t$).
+
+\subsection{Logarithms: $\ln S_t$ for $S_t>0$}
+If $\dd S_t=\mu_t\,\dd t+\sigma_t\,\dd W_t$ and $S_t>0$, then for $f(x)=\ln x$:
+\[
+\dd(\ln S_t)=\frac{1}{S_t}\,\dd S_t-\frac12\frac{1}{S_t^2}\,\dd[S]_t
+=
+\Big(\frac{\mu_t}{S_t}-\frac12\frac{\sigma_t^2}{S_t^2}\Big)\dd t+\frac{\sigma_t}{S_t}\dd W_t.
+\]
+If $\dd S_t=\mu_t S_t\,\dd t+\sigma_t S_t\,\dd W_t$ (GBM form), this simplifies to
+$\dd\ln S_t=(\mu_t-\tfrac12\sigma_t^2)\dd t+\sigma_t\dd W_t$.
+
+% ==========================================================
+\section{Solving canonical SDEs: GBM and OU/Vasicek}
+% ==========================================================
+
+\subsection{GBM solution}
+If $\dd S_t=\mu S_t\,\dd t+\sigma S_t\,\dd W_t$ with $S_0>0$, then
+\[
+\dd(\ln S_t)=\Big(\mu-\tfrac12\sigma^2\Big)\dd t+\sigma\,\dd W_t,
+\]
+so integrating:
+\[
+\ln S_t=\ln S_0+\Big(\mu-\tfrac12\sigma^2\Big)t+\sigma W_t,
+\qquad
+S_t=S_0\exp\!\Big(\big(\mu-\tfrac12\sigma^2\big)t+\sigma W_t\Big).
+\]
+Hence $\ln S_t$ is Gaussian and $S_t$ is lognormal.
+
+\textbf{To do on board}
+\begin{itemize}[leftmargin=2em]
+  \item Compute $\dd\ln S_t$ once carefully (students must master this).
+  \item Then integrate and conclude distribution immediately.
+\end{itemize}
+
+
+\subsection{OU/Vasicek}
+For $\dd r_t=k(m-r_t)\dd t+\sigma \dd W_t$ with $k>0$, set $Y_t=e^{kt}r_t$.
+Then product rule gives
+\[
+\dd(e^{kt}r_t)=ke^{kt}r_t\,\dd t+e^{kt}\dd r_t
+=km e^{kt}\,\dd t+\sigma e^{kt}\,\dd W_t.
+\]
+Integrate:
+\[
+r_t=m+(r_0-m)e^{-kt}+\sigma\int_0^t e^{-k(t-s)}\,\dd W_s.
+\]
+
+% ==========================================================
+\section{Finance: discounting and self-financing gains}
+% ==========================================================
+
+\subsection{Discounting trick}
+Assume $\dd S_t=\mu_t S_t\,\dd t+\sigma_t S_t\,\dd W_t$.
+Let
+\[
+A_t:=\exp\!\Big(-\int_0^t \gamma_s\,\dd s\Big),\qquad X_t:=A_t S_t.
+\]
+Since $A$ has finite variation, $\dd[A,S]_t=0$ and $\dd A_t=-\gamma_t A_t\,\dd t$.
+Thus
+\[
+\dd X_t = A_t\,\dd S_t + S_t\,\dd A_t
+= A_t S_t(\mu_t-\gamma_t)\dd t + A_t S_t\sigma_t\,\dd W_t.
+\]
+Choose $\gamma_t=\mu_t$ to kill the drift:
+\[
+\dd X_t = X_t\sigma_t\,\dd W_t,
+\]
+so $X$ is a (local) martingale.
+
+\textbf{To do on board}
+\begin{itemize}[leftmargin=2em]
+  \item Compute $\dd(A_tS_t)$ and emphasize: finite variation $\Rightarrow \dd[A,S]=0$.
+  \item Interpretation: discount by the “right drift” to get a martingale.
+\end{itemize}
+
+
+\subsection{Self-financing gains: discrete $\to$ continuous}
+On a trading grid $0=t_0<\cdots<t_n=T$, holding $\phi_{t_k}$ shares on $(t_k,t_{k+1}]$ yields gains
+\[
+G_T^\pi(\phi)=\sum_{k=0}^{n-1}\phi_{t_k}(S_{t_{k+1}}-S_{t_k}).
+\]
+As mesh $\to 0$, this converges to $\int_0^T \phi_t\,\dd S_t$ (It\^o integral),
+and we write heuristically $\dd V_t=\phi_t\,\dd S_t$ for a self-financing portfolio.
+
+\textbf{To do on board}
+\begin{itemize}[leftmargin=2em]
+  \item Stress predictability: $\phi_{t_k}$ is chosen using information at $t_k$.
+  \item This is the finance reason behind the left-point convention.
+\end{itemize}
+
+
+% ==========================================================
+\section{Common mistakes (quick checklist)}
+% ==========================================================
+
+\begin{remark}[The 5 classic traps]
+\begin{enumerate}[leftmargin=2em]
+  \item Forgetting the It\^o correction term $\tfrac12 f_{xx}\,b^2\,\dd t$.
+  \item Writing $(\dd W_t)^2=0$ (wrong: $(\dd W_t)^2=\dd t$).
+  \item Mixing variables: $x$ vs $X_t$ in $\partial_x f(t,x)$.
+  \item Using the usual chain rule as if paths were differentiable.
+  \item Using right-point sums (anticipating) when the model is non-anticipative.
+\end{enumerate}
+\end{remark}
+
+\textbf{To do on board}[Final message to leave on the board]
+\[
+(\dd W_t)^2=\dd t,\qquad \dd t\,\dd W_t=0,\qquad (\dd t)^2=0,
+\]
+\[
+\dd f(t,X_t)=f_t\,\dd t+f_x\,\dd X_t+\tfrac12 f_{xx}\,\dd[X]_t.
+\]
+
+
+\end{document}

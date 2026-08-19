@@ -1,0 +1,400 @@
+\documentclass[11pt]{article}
+
+% ============================================================
+% Packages
+% ============================================================
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,mathtools,amsthm}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{microtype}
+\usepackage{tikz}
+
+% ============================================================
+% Macros
+% ============================================================
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Pbb}{\mathbb{P}}
+\newcommand{\Qbb}{\mathbb{Q}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\dd}{\,\mathrm{d}}
+\newcommand{\F}{\mathcal{F}}
+
+% ============================================================
+% Environments
+% ============================================================
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{exercise}[theorem]{Exercise}
+
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+% ============================================================
+% Title
+% ============================================================
+\title{Option Pricing --- Lecture Notes}
+\author{Nathan Sauldubois}
+\date{MSFE6233 --- Refresher}
+
+\begin{document}
+
+\maketitle
+\vspace{-1em}
+
+\noindent\textbf{Lecture title.}
+\emph{Brownian Motion, Stochastic Calculus, Girsanov Theorem, Option Pricing and Delta Hedging}
+
+\vspace{0.5em}
+\hrule
+\vspace{1em}
+
+\noindent\textbf{Goals of the lecture.}
+\begin{itemize}[leftmargin=1.4em]
+    \item A few refreshers on key notions we have seen throughout the lectures.
+\end{itemize}
+
+\tableofcontents
+\bigskip
+
+% ============================================================
+\section{Brownian Motion}
+% ============================================================
+
+
+\begin{exercise}[Compute $\int_0^t e^{B_s}\,\mathrm{d} B_s$ without $\mathrm{d} B$]
+\begin{enumerate}
+\item Apply It\^o's formula to $e^{B_t}$ and isolate the term $\int_0^t e^{B_s}\,\mathrm{d} B_s$.
+\item Deduce an expression for $\int_0^t e^{B_s}\,\mathrm{d} B_s$ involving only $e^{B_t}$ and ordinary integrals.
+\end{enumerate}
+\end{exercise}
+
+\begin{exercise}[Compute $e^{\int_0^t f(s)\,\mathrm{d} B_s}$ without $\mathrm{d} B$]
+\begin{enumerate}
+\item Apply It\^o's formula to the exponential martingale associated with $\int_0^t f(s)\,\mathrm{d}B_s$.
+\item Deduce an expression involving only ordinary integrals.
+\end{enumerate}
+\end{exercise}
+
+\section{Girsanov}
+
+\begin{exercise}[Girsanov and the inverse Gaussian law]
+Let $(B_t)_{t\ge 0}$ be a standard Brownian motion under a probability measure $\mathbb{P}$.
+Fix $\mu>0$, $\sigma>0$, and $a>0$, and define the drifted Brownian motion
+\[
+X_t := \mu t + \sigma B_t.
+\]
+Let
+\[
+\tau_a := \inf\{t\ge 0 : X_t = a\}
+\]
+be the first hitting time of level $a$.
+
+\begin{enumerate}[leftmargin=1.5em, label=(\alph*)]
+
+\item Show that $\tau_a<\infty$ almost surely.
+
+\item Define
+\[
+\theta := \frac{\mu}{\sigma},
+\qquad
+Z_t := \exp\left(-\theta B_t - \frac12 \theta^2 t\right).
+\]
+Show that $(Z_t)_{t\ge 0}$ is a martingale, and define a new probability measure $\mathbb{Q}$ on $\mathcal{F}_t$ by
+\[
+\frac{\mathrm{d}\mathbb{Q}}{\mathrm{d}\mathbb{P}}\Big|_{\mathcal{F}_t}
+= Z_t.
+\]
+Use Girsanov's theorem to show that
+\[
+\widetilde B_t := B_t + \theta t
+\]
+is a Brownian motion under $\mathbb{Q}$.
+
+\item Rewrite $X_t$ under $\mathbb{Q}$ in terms of $\widetilde B_t$, and deduce that
+\[
+X_t = \sigma \widetilde B_t.
+\]
+Thus, under $\mathbb{Q}$, $\tau_a$ is the first hitting time of level $a/\sigma$ by a standard Brownian motion.
+
+\item Recall, or prove using the reflection principle, that if
+\[
+\tau_b^0 := \inf\{t\ge 0 : \widetilde B_t=b\},
+\qquad b>0,
+\]
+then $\tau_b^0$ has density
+\[
+f_{\tau_b^0}(t)
+=
+\frac{b}{\sqrt{2\pi t^3}}
+\exp\left(-\frac{b^2}{2t}\right),
+\qquad t>0.
+\]
+
+\item Use the change of measure to compute the density of $\tau_a$ under $\mathbb{P}$.
+
+\textit{Hint:} for events in $\mathcal{F}_t$,
+\[
+\mathbb{P}(A)=\mathbb{E}^{\mathbb{Q}}\left[Z_t^{-1}\mathbf 1_A\right].
+\]
+On the event $\{\tau_a=t\}$, use the identity
+\[
+B_t = \frac{a-\mu t}{\sigma}.
+\]
+
+\item Deduce that $\tau_a$ has density
+\[
+f_{\tau_a}(t)
+=
+\frac{a}{\sigma\sqrt{2\pi t^3}}
+\exp\left(
+-\frac{(a-\mu t)^2}{2\sigma^2 t}
+\right),
+\qquad t>0.
+\]
+This is the density of an inverse Gaussian distribution.
+
+\end{enumerate}
+\end{exercise}
+
+
+\section{Martingale Pricing}
+
+% ------------------------------------------------------------
+\begin{exercise}[Asian option (arithmetic average): martingale pricing, state augmentation, and PDE.]
+Assume constant $(r,\sigma)$ and under $\mathbb{Q}$:
+\[
+\frac{\mathrm{d}S_t}{S_t}=r\,\mathrm{d}t+\sigma\,\mathrm{d}B_t,
+\qquad S_0>0.
+\]
+Consider the arithmetic-average Asian call with payoff
+\[
+H=\left(\frac1T\int_0^T S_u\,\mathrm{d}u-K\right)^+.
+\]
+Define the running integral
+\[
+I_t:=\int_0^t S_u\,\mathrm{d}u.
+\]
+
+\begin{enumerate}[leftmargin=1.2em, label=(\alph*), itemsep=0.3em]
+\item Write the risk-neutral pricing formula for the option price
+\[
+V_t=\E^\mathbb{Q}\!\left[e^{-r(T-t)}\left(\frac1T\int_0^T S_u\,\mathrm{d}u-K\right)^+\Bigm|\F_t\right].
+\]
+
+\item Show that
+\[
+\int_0^T S_u\,\mathrm{d}u=I_t+\int_t^T S_u\,\mathrm{d}u,
+\]
+and deduce that the price can be written as a deterministic function of \emph{two} state variables:
+\[
+V_t=v(t,S_t,I_t).
+\]
+
+\item Derive the dynamics of $(S_t,I_t)$ under $\mathbb{Q}$:
+\[
+\mathrm{d}S_t=rS_t\,\mathrm{d}t+\sigma S_t\,\mathrm{d}B_t,
+\qquad
+\mathrm{d}I_t=S_t\,\mathrm{d}t.
+\]
+Explain why $(S_t,I_t)$ is Markov even though $S$ alone is not enough for pricing this payoff.
+
+\item Assume $v\in C^{1,2,1}$ is smooth enough. Apply It\^o's formula to $v(t,S_t,I_t)$ and derive the PDE satisfied by $v$:
+\[
+\partial_t v + rs\,\partial_s v + s\,\partial_i v + \frac12\sigma^2 s^2\,\partial_{ss}v - rv=0,
+\]
+with terminal condition
+\[
+v(T,s,i)=\left(\frac{i}{T}-K\right)^+.
+\]
+
+\item Define the discounted price $\bar V_t=e^{-rt}V_t$. Show directly from the risk-neutral pricing formula that $(\bar V_t)$ is a $\mathbb{Q}$-martingale.
+
+\item (Numerical / implementation-oriented) Propose a Monte Carlo estimator for $V_0$ based on an Euler discretization of
+\[
+\int_0^T S_u\,\mathrm{d}u
+\approx \sum_{k=0}^{n-1} S_{t_k}\Delta t.
+\]
+State clearly:
+\begin{itemize}[leftmargin=1.2em]
+\item what is simulated under $\mathbb{Q}$,
+\item what is averaged,
+\item where the discount factor appears.
+\end{itemize}
+
+\item (Bonus, medium-hard) Let
+\[
+G:=\exp\!\left(\frac1T\int_0^T \log S_u\,\mathrm{d}u\right)
+\]
+be the geometric average. Explain why the geometric-average Asian option is analytically tractable in Black--Scholes, and suggest using it as a \emph{control variate} for Monte Carlo pricing of the arithmetic Asian option.
+\end{enumerate}
+\end{exercise}
+
+\begin{exercise}[Continuous-time lookback digital (one-touch) in Black--Scholes]
+We work under the risk-neutral measure $\mathbb{Q}$ using the money-market numeraire.
+Assume the stock pays a continuous dividend yield $q\ge 0$ and follows
+\[
+\frac{\dd S_t}{S_t}=(r-q)\,\dd t+\sigma\,\dd B_t,
+\qquad S_0>0,\ \sigma>0.
+\]
+Fix a barrier level $H>S_0$ and a maturity $T>0$.
+
+Consider the \emph{lookback digital (one-touch)} payoff
+\[
+\Pi := \mathbf 1_{\left\{\sup_{0\le t\le T} S_t \ge H\right\}}.
+\]
+This contract pays \$1 at time $T$ if the stock \emph{ever} touches or exceeds $H$ before $T$.
+
+\medskip
+\noindent\textbf{Goal.} Compute the no-arbitrage price
+\[
+V_0 = \E^{\mathbb{Q}}\!\left[e^{-rT}\,\Pi\right]
+= e^{-rT}\,\mathbb{Q}\!\left(\sup_{0\le t\le T} S_t \ge H\right).
+\]
+
+\begin{enumerate}[leftmargin=1.6em, itemsep=0.35em]
+
+\item \textbf{Log-transform and reduction to a hitting event.}
+Define the log-return process
+\[
+X_t := \ln\!\Big(\frac{S_t}{S_0}\Big).
+\]
+\begin{enumerate}[leftmargin=1.6em, itemsep=0.25em]
+\item Show by It\^o's formula that
+\[
+X_t = \Big((r-q)-\tfrac12\sigma^2\Big)t + \sigma B_t
+=: \mu t + \sigma B_t,
+\qquad \mu:=(r-q)-\tfrac12\sigma^2.
+\]
+\item Show that the barrier event can be rewritten as
+\[
+\left\{\sup_{0\le t\le T} S_t \ge H\right\}
+=
+\left\{\sup_{0\le t\le T} X_t \ge a\right\},
+\qquad
+a:=\ln\!\Big(\frac{H}{S_0}\Big)>0.
+\]
+\end{enumerate}
+
+\item \textbf{A key lemma: hitting probability for a drifted Brownian motion.}
+Let $(B_t)_{t\ge0}$ be a standard Brownian motion and define
+\[
+Y_t := \mu t + \sigma B_t,
+\qquad \mu\in\R,\ \sigma>0.
+\]
+Prove the identity
+\begin{equation}\label{eq:hitting-drifted}
+\mathbb{Q}\!\left(\sup_{0\le t\le T} Y_t \ge a\right)
+=
+\Phi\!\left(\frac{\mu T-a}{\sigma\sqrt{T}}\right)
++
+\exp\!\left(\frac{2\mu a}{\sigma^2}\right)
+\Phi\!\left(\frac{-\mu T-a}{\sigma\sqrt{T}}\right),
+\qquad a>0,
+\end{equation}
+where $\Phi$ is the standard normal CDF.
+
+\medskip
+\noindent\textbf{Guided proof.}
+\begin{enumerate}[leftmargin=1.6em, itemsep=0.25em]
+\item First treat the driftless case $\mu=0$:
+show that
+\[
+\mathbb{Q}\!\left(\sup_{0\le t\le T} \sigma B_t\ge a\right)
+=
+2\,\mathbb{Q}(\sigma B_T \ge a)
+=
+2\left[1-\Phi\!\left(\frac{a}{\sigma\sqrt{T}}\right)\right].
+\]
+Hint: use the reflection principle for Brownian motion.
+
+\item Now handle $\mu\neq 0$ using a \emph{change of measure}.
+Define $\theta:=\mu/\sigma$ and the density
+\[
+Z_T:=\exp\!\left(-\theta B_T - \tfrac12\theta^2 T\right).
+\]
+Under the tilted measure $\widetilde{\mathbb{Q}}$ defined by
+$\dd\widetilde{\mathbb{Q}}=Z_T\,\dd\mathbb{Q}$ on $\F_T$,
+the process $\widetilde B_t:=B_t+\theta t$ is a Brownian motion.
+Rewrite $Y_t$ under $\widetilde{\mathbb{Q}}$ in terms of $\widetilde B$ and reduce the problem to
+a driftless maximum event under $\widetilde{\mathbb{Q}}$.
+
+\item Carefully transform back to $\mathbb{Q}$ using
+$\E^{\mathbb{Q}}[\cdot]=\E^{\widetilde{\mathbb{Q}}}[Z_T^{-1}\cdot]$
+and simplify to obtain \eqref{eq:hitting-drifted}.
+\end{enumerate}
+
+\item \textbf{Closed-form price of the one-touch lookback digital.}
+Use \eqref{eq:hitting-drifted} with $Y=X$, i.e.\
+$\mu=(r-q)-\tfrac12\sigma^2$ and $a=\ln(H/S_0)$, to deduce
+\[
+V_0
+=
+e^{-rT}\left[
+\Phi\!\left(\frac{\mu T-a}{\sigma\sqrt{T}}\right)
++
+\exp\!\left(\frac{2\mu a}{\sigma^2}\right)
+\Phi\!\left(\frac{-\mu T-a}{\sigma\sqrt{T}}\right)
+\right],
+\qquad
+\mu=(r-q)-\tfrac12\sigma^2,\quad a=\ln\!\Big(\frac{H}{S_0}\Big).
+\]
+
+\textbf{Sanity checks.}
+\begin{itemize}[leftmargin=1.6em, itemsep=0.2em]
+\item If $H\downarrow S_0$, so $a\downarrow0$, then $V_0\to e^{-rT}$.
+\item If $H\uparrow\infty$, so $a\to\infty$, then $V_0\to 0$.
+\end{itemize}
+
+\item \textbf{Optional Monte Carlo verification with discrete monitoring.}
+Simulate $S$ on a grid $0=t_0<\cdots<t_N=T$ and approximate
+\[
+\mathbf 1_{\{\sup_{0\le t\le T} S_t\ge H\}}
+\approx
+\mathbf 1_{\{\max_{0\le k\le N} S_{t_k}\ge H\}}.
+\]
+Compute the Monte Carlo estimator
+\[
+\widehat V_0^{(N)} := e^{-rT}\,\frac1M\sum_{m=1}^M
+\mathbf 1_{\{\max_k S_{t_k}^{(m)}\ge H\}},
+\]
+and compare it to the closed-form value from Question 3.
+Comment on the bias as $N$ increases.
+\end{enumerate}
+\end{exercise}
+
+\section{American Options}
+
+% ------------------------------------------------------------
+\begin{exercise}[American vs European put in a three-step tree]
+Consider a three-period binomial model with
+\[
+S_0=100,\qquad u=1.1,\qquad d=0.9,\qquad 1+r=1.02,
+\]
+and strike $K=100$.
+
+\begin{enumerate}[leftmargin=1.6em]
+\item Compute the price of the corresponding European put.
+
+\item Compute the price of the corresponding American put.
+
+\item Compare the two prices and compute the early exercise premium.
+
+\item Identify the nodes where immediate exercise is optimal for the American put.
+\end{enumerate}
+\end{exercise}
+
+
+
+
+\section{Numerics}
+
+Add a recap of the Euler scheme.
+
+\end{document}

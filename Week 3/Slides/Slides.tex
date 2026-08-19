@@ -1,0 +1,2200 @@
+% =====================================================
+% Merged header (Bootcamp palette + Metropolis look)
+% =====================================================
+\documentclass[10pt,aspectratio=169]{beamer}
+
+% -----------------------------
+% Language & encoding
+% -----------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english,french]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+
+% -----------------------------
+% Math / tables / layout
+% -----------------------------
+\usepackage{amsmath,amssymb,bm,mathtools}
+\usepackage{booktabs}
+\usepackage{multicol}
+\usepackage{changepage}
+
+% -----------------------------
+% Graphics
+% -----------------------------
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc,decorations.pathreplacing}
+
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+
+% -----------------------------
+% Theme (Metropolis)
+% -----------------------------
+\usetheme[numbering=fraction,progressbar=frametitle]{metropolis}
+\setbeamertemplate{frame numbering}[fraction]
+\setbeamertemplate{navigation symbols}{}
+
+% -----------------------------
+% Colors (unified palette)
+% -----------------------------
+\definecolor{BootcampBlueDark}{HTML}{1A3C68}
+\definecolor{BootcampBlue}{RGB}{31,110,178}
+\definecolor{AccentGold}{HTML}{DAA520}
+\definecolor{SoftGray}{RGB}{245,246,248}
+\definecolor{TextBlack}{HTML}{000000}
+\definecolor{Crimson}{HTML}{990000}
+\definecolor{MatrixGreen}{HTML}{228B22}
+\definecolor{MatrixRed}{HTML}{B22222}
+
+\newenvironment{theoremblock}[1]{%
+  \begin{theorem}[#1]%
+}{%
+  \end{theorem}%
+}
+% -----------------------------
+% Global formatting
+% -----------------------------
+\setbeamercolor{normal text}{fg=TextBlack,bg=white}
+\setbeamercolor{title}{fg=TextBlack}
+\setbeamercolor{structure}{fg=BootcampBlueDark}
+\setbeamercolor{progress bar}{fg=BootcampBlueDark,bg=gray!30}
+
+% -----------------------------
+% Proof block (Beamer)
+% Usage: \begin{proofblock}{Title} ... \end{proofblock}
+% -----------------------------
+\newenvironment{proofblock}[1]{%
+  \par\vspace{0.4em}%
+  \begin{beamercolorbox}[
+      wd=\textwidth,
+      sep=0.4em,
+      leftskip=0.3em,
+      rightskip=0.6em,
+      rounded=false,
+      shadow=false
+    ]{block title example}%
+    \raisebox{0.15em}{\usebeamerfont{block title example}#1}%
+  \end{beamercolorbox}%
+  \vspace{-0.4em}%
+  \begin{beamercolorbox}[
+      wd=\textwidth,
+      sep=0.9em,
+      leftskip=0.6em,
+      rightskip=0.6em,
+      rounded=false,
+      shadow=false
+    ]{block body example}%
+    \usebeamerfont{block body example}%
+}{%
+  \end{beamercolorbox}%
+  \par\vspace{0.6em}%
+}
+
+% -----------------------------
+% Thick frametitle band (your “Bootcamp” look)
+% -----------------------------
+\setbeamercolor{frametitle}{bg=BootcampBlueDark,fg=white}
+\setbeamerfont{frametitle}{series=\bfseries,size=\large}
+\setbeamertemplate{frametitle}{
+  \nointerlineskip
+  \begin{beamercolorbox}[wd=\paperwidth,ht=3.2ex,dp=1.4ex,leftskip=1em,rightskip=1em]{frametitle}
+    \usebeamerfont{frametitle}\insertframetitle
+  \end{beamercolorbox}
+}
+
+
+
+% -----------------------------
+% Blocks (coherent with prior lectures)
+% -----------------------------
+\setbeamercolor{block title example}{bg=BootcampBlueDark!90!black,fg=white}
+\setbeamercolor{block body example}{bg=BootcampBlueDark!5!white,fg=black}
+\setbeamertemplate{blocks}[rounded][shadow=false]
+
+% Custom Definition Block (same API as before)
+\newenvironment{definitionblock}[1]{%
+  \par\vspace{0.4em}%
+  \begin{beamercolorbox}[
+      wd=\textwidth,
+      sep=0.4em,
+      leftskip=0.3em,
+      rightskip=0.6em,
+      rounded=false,
+      shadow=false
+    ]{block title example}%
+    \raisebox{0.15em}{\usebeamerfont{block title example}#1}%
+  \end{beamercolorbox}%
+  \vspace{-0.4em}%
+  \begin{beamercolorbox}[
+      wd=\textwidth,
+      sep=1em,
+      leftskip=0.6em,
+      rightskip=0.6em,
+      rounded=false,
+      shadow=false
+    ]{block body example}%
+    \usebeamerfont{block body example}%
+}{%
+  \end{beamercolorbox}%
+  \par\vspace{0.6em}%
+}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\cF}{\mathcal{F}}
+\newcommand{\Var}{\text{Var}}
+\newcommand{\Cov}{\text{Cov}}
+% -----------------------------
+% Section / subsection transition pages
+% -----------------------------
+\metroset{
+  sectionpage=progressbar,
+  subsectionpage=progressbar
+}
+\AtBeginSection{
+  \frame[plain]{\sectionpage}
+}
+\AtBeginSubsection{
+  \frame[plain]{\subsectionpage}
+}
+
+% Graphics folder (extracted from the provided PDF)
+\graphicspath{{bm_figs/}}
+
+% =====================================================
+% Metadata
+% =====================================================
+\title{Option Pricing : Stochastic Integral}
+\author{}
+\date{}
+
+\AtBeginSection[]{
+  \begin{frame}{\insertsectionhead}
+    \tableofcontents[
+      currentsection,
+      hideothersubsections
+    ]
+  \end{frame}
+}
+
+\begin{document}
+
+
+% =====================================================
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\begin{frame}{References (chapters/pages)}
+
+\footnotesize
+\textbf{Main references.}
+\begin{itemize}\setlength{\itemsep}{0.35em}
+  \item \textit{Shreve}, \emph{Stochastic Calculus for Finance II}:
+  Ch.~4, pp.~125--132.
+  \item \textit{Karatzas \& Shreve}, \emph{Brownian Motion
+and Stochastic Calculus}:
+  Ch~2, pp.~128--167.
+  \item \textit{Tomas Bj\"ork}, \emph{Arbitrage Theory in Continuous Time}:
+  Ch.~4, pp.~40--65.
+\end{itemize}
+\end{frame}
+% =====================================================
+\begin{frame}{Roadmap}
+  \tableofcontents[hideallsubsections]
+\end{frame}
+% =====================================================
+% COURSE PLAN (2h30) — Construction of the stochastic integral (Itô)
+% Inspired by: Tourin Module 2 + Touzi Lecture 3/4 (Ito integral) 
+%   - construction via simple processes + L^2 limit
+%   - Ito isometry + martingale property + continuity
+%   - importance of left-point convention
+% =====================================================
+
+\section{Motivation: why we need a new integral}
+
+% ======================================================
+\subsection{Why Riemann--Stieltjes fails for Brownian motion}
+
+% --------------------------------------
+\begin{frame}{Why we need a new integral}
+
+In continuous time, a self-financing gain should look like a limit of sums
+\[
+\sum_{i=0}^{n-1} \phi_{t_i}\,\big(W_{t_{i+1}}-W_{t_i}\big),
+\qquad 0=t_0<\cdots<t_n=T.
+\]
+\pause
+
+\begin{itemize}
+  \item If $W$ were smooth, we would get the usual Riemann--Stieltjes integral $\int_0^T \phi_t\, dW_t$.
+  \item But Brownian paths are \textbf{too rough}: the usual pathwise theory breaks down.
+\end{itemize}
+
+\medskip
+\begin{alertblock}{Key message}
+Brownian motion is continuous but has \textbf{infinite variation} and is \textbf{nowhere differentiable}.
+So $\int \phi\, dW$ cannot be defined as an ordinary Riemann--Stieltjes integral (in general).
+\end{alertblock}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Total variation: smooth vs.\ Brownian paths}
+
+For a function $x:[0,T]\to\R$, define the total variation
+\[
+\mathrm{TV}_{[0,T]}(x)
+:=
+\sup_{\pi}\sum_{k}|x(t_{k+1})-x(t_k)|.
+\]
+\pause
+
+\begin{itemize}
+  \item If $x$ is $C^1$, then $\mathrm{TV}_{[0,T]}(x)=\int_0^T |x'(t)|\,dt <\infty$.
+  \item If $x$ has \textbf{finite variation}, then the Riemann--Stieltjes integral
+  $\int_0^T \phi\, dx$ is well-behaved for many $\phi$ (e.g.\ continuous).
+\end{itemize}
+\pause
+
+\begin{theoremblock}{Brownian motion has infinite variation}
+With probability $1$, for every $T>0$,
+\[
+\mathrm{TV}_{[0,T]}(W)=+\infty.
+\]
+\end{theoremblock}
+
+\textbf{Consequence:}\;
+the classical Riemann--Stieltjes theory (finite variation integrator) does not apply.
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Quadratic variation: the real ``accumulation'' for Brownian motion}
+
+For a partition $\pi=\{0=t_0<\cdots<t_n=T\}$ define the quadratic sum
+\[
+Q^\pi_T(W):=\sum_{k=0}^{n-1}\big(W_{t_{k+1}}-W_{t_k}\big)^2.
+\]
+\pause
+
+\begin{theoremblock}{Quadratic variation of Brownian motion}
+As the mesh $|\pi|:=\max_k(t_{k+1}-t_k)\to 0$,
+\[
+Q^\pi_T(W)\ \longrightarrow\ T
+\quad \text{(in probability, even in $L^2$)}.
+\]
+\end{theoremblock}
+\pause
+
+\begin{itemize}
+  \item Typical increments satisfy $|W_{t+h}-W_t|\sim \sqrt{h}$.
+  \item So $\sum |\Delta W| \approx \sum \sqrt{\Delta t}$ explodes,
+  while $\sum (\Delta W)^2 \approx \sum \Delta t$ stabilizes.
+\end{itemize}
+
+\medskip
+\begin{block}{Heuristic rules (the ones you will use later)}
+\[
+(\Delta W)^2 \approx \Delta t,
+\qquad
+\Delta W\cdot \Delta t \approx 0,
+\qquad
+(\Delta t)^2\approx 0.
+\]
+\end{block}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Nowhere differentiability (intuition + consequence)}
+
+\begin{theoremblock}{Nowhere differentiable}
+With probability $1$, the path $t\mapsto W_t(\omega)$ is nowhere differentiable.
+\end{theoremblock}
+\pause
+
+\begin{itemize}
+  \item On a small interval of length $h$, $|W_{t+h}-W_t|$ is typically of order $\sqrt{h}$.
+  \item If a derivative existed, we would expect $|W_{t+h}-W_t|\approx |W'_t|\,h$ (order $h$).
+  \item But $\sqrt{h} \gg h$ as $h\downarrow 0$.
+\end{itemize}
+\pause
+
+\begin{alertblock}{Consequence for integration}
+Pathwise constructions that rely on a classical derivative / finite variation
+fail for Brownian motion, so we need a \textbf{probabilistic} integral:
+the Ito integral.
+\end{alertblock}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{A concrete pathology: ``$\int W\,dW$'' depends on the convention}
+
+Take $\phi_t=W_t$ and consider Riemann sums:
+\[
+S^\pi_{\mathrm{left}}
+:=\sum_{k} W_{t_k}\,(W_{t_{k+1}}-W_{t_k}),
+\qquad
+S^\pi_{\mathrm{right}}
+:=\sum_{k} W_{t_{k+1}}\,(W_{t_{k+1}}-W_{t_k}).
+\]
+\pause
+
+\begin{itemize}
+  \item Algebraically,
+  \[
+  S^\pi_{\mathrm{right}}-S^\pi_{\mathrm{left}}
+  =\sum_k (W_{t_{k+1}}-W_{t_k})^2
+  =Q^\pi_T(W).
+  \]
+  \pause
+  \item Since $Q^\pi_T(W)\to T$, the two limits (if they exist) differ by $T$.
+\end{itemize}
+\pause
+
+\begin{block}{Takeaway}
+For Brownian motion, ``$\int W\,dW$'' is \textbf{not} a purely pathwise object:
+the limit depends on the discretization rule.
+The Ito integral corresponds to the \textbf{left-point} convention
+(trading with current information).
+\end{block}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Optional: why Hölder regularity is still not enough here}
+
+A classical pathwise criterion (Young integration) says:
+if $x$ is $\alpha$-H\"older and $\phi$ is $\beta$-H\"older with
+\[
+\alpha+\beta>1,
+\]
+then $\int \phi\,dx$ exists as a Riemann--Stieltjes limit.
+\pause
+
+\begin{itemize}
+  \item Brownian motion is $\alpha$-H\"older for every $\alpha<\tfrac12$,
+  but not for $\alpha=\tfrac12$.
+  \item So to use Young integration with $x=W$, one would need $\beta>1-\alpha>\tfrac12$,
+  i.e.\ an integrand much smoother than typical adapted strategies in finance.
+\end{itemize}
+\pause
+
+\begin{alertblock}{Conclusion}
+We need a different framework tailored to Brownian roughness:
+\textbf{Ito's stochastic integral}, built using $L^2$ limits and independence of increments.
+\end{alertblock}
+
+\end{frame}
+
+% ======================================================
+\subsection{Financial interpretation (self-financing gains)}
+
+% --------------------------------------
+\begin{frame}{Trading in discrete time: holdings and gains}
+
+Fix trading dates (a partition)
+\[
+0=t_0<t_1<\cdots<t_n=T.
+\]
+\begin{itemize}
+  \item Let $S_{t_i}$ be the (discounted) price of the risky asset at time $t_i$.
+  \item Let $\phi_{t_i}$ be the number of shares held \textbf{during} $(t_i,t_{i+1}]$.\pause
+  \item The gain from trading over $(t_i,t_{i+1}]$ is
+  \[
+  \phi_{t_i}\big(S_{t_{i+1}}-S_{t_i}\big).
+  \]
+\end{itemize}
+\pause
+
+\begin{definitionblock}{Cumulative trading gain (self-financing, discrete time)}
+\[
+G_T^{\pi}(\phi)
+:=\sum_{i=0}^{n-1}\phi_{t_i}\big(S_{t_{i+1}}-S_{t_i}\big).
+\]
+\end{definitionblock}
+
+\textbf{Key feature:}\; $\phi_{t_i}$ is chosen using information available at time $t_i$ (no look-ahead).
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Self-financing portfolios: value decomposition}
+
+Consider a portfolio with:
+\begin{itemize}
+  \item risky asset $S$,
+  \item risk-free (discounted) asset equal to $1$ (so cash does not grow).
+\end{itemize}
+\pause
+
+Let $V_{t_i}$ be the portfolio value and $\psi_{t_i}$ the cash position right after rebalancing at $t_i$.
+Then
+\[
+V_{t_i}=\phi_{t_i}S_{t_i}+\psi_{t_i}.
+\vspace{-4mm}
+\]
+\pause
+
+\begin{definitionblock}{Self-financing constraint (discrete time)}
+The change in value comes only from price moves:
+\[
+V_{t_{i+1}}-V_{t_i}=\phi_{t_i}\big(S_{t_{i+1}}-S_{t_i}\big).
+\vspace{-4mm}
+\]
+\end{definitionblock}
+\pause
+
+\begin{itemize}
+  \item Rebalancing $\phi$ is financed by adjusting cash $\psi$.\pause
+  \item No external deposits/withdrawals during $(t_i,t_{i+1}]$.
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Why the \textbf{left-point} convention is financial}
+
+In discrete time, $\phi_{t_i}$ is decided at time $t_i$ and held until $t_{i+1}$.\pause
+
+\begin{block}{No peeking / admissible strategies}
+A trading strategy must be \textbf{predictable}:
+\[
+\phi_{t_i}\ \text{is measurable w.r.t.}\ \cF_{t_i}.
+\]
+\end{block}
+\pause
+
+\begin{itemize}
+  \item Using $\phi_{t_{i+1}}$ in the gain would mean trading \emph{after} observing $S_{t_{i+1}}$.\pause
+  \item That would allow pathological “free lunch” constructions in continuous time.\pause
+\end{itemize}
+
+\medskip
+\begin{alertblock}{Takeaway}
+The financial meaning of self-financing forces the \textbf{left-point} Riemann sums:
+\[
+\sum_{i}\phi_{t_i}\big(S_{t_{i+1}}-S_{t_i}\big).
+\]
+This is exactly the discretization behind the Ito integral.
+\end{alertblock}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{From discrete trading to continuous time}
+
+As trading becomes more frequent, we refine the partition $|\pi|\to 0$.\pause
+
+\begin{itemize}
+  \item We want a limit
+  \[
+  \lim_{|\pi|\to 0}\sum_{i}\phi_{t_i}\big(S_{t_{i+1}}-S_{t_i}\big)
+  \quad \stackrel{?}{=}\quad \int_0^T \phi_t\, dS_t.
+  \]
+  \pause
+  \item For smooth $S$, this matches Riemann--Stieltjes.\pause
+  \item For $S=W$ (Brownian motion), the classical theory fails
+  $\Rightarrow$ we construct the integral in $L^2$ (Ito).
+\end{itemize}
+
+\medskip
+\begin{block}{Interpretation}
+$\displaystyle \int_0^T \phi_t\, dS_t$ is the continuous-time idealization of
+\textbf{self-financing trading gains} under the “no peeking” rule.
+\end{block}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{A first sanity check: gains have zero mean under a martingale model}
+
+Assume (toy model) that $S$ is a martingale under the pricing measure, and $\phi_{t_i}$ is $\cF_{t_i}$-measurable.\pause
+
+Then for each step:
+\[
+\E\!\left[\phi_{t_i}\big(S_{t_{i+1}}-S_{t_i}\big)\,\middle|\,\cF_{t_i}\right]
+=
+\phi_{t_i}\,\E\!\left[S_{t_{i+1}}-S_{t_i}\,\middle|\,\cF_{t_i}\right]
+=0.
+\]
+\pause
+
+\begin{block}{Discrete-time implication}
+\[
+\E\big[G_T^{\pi}(\phi)\big]=0.
+\]
+\end{block}
+\pause
+
+\begin{itemize}
+  \item This is consistent with “no free lunch on average” when trading predictable strategies on a martingale.\pause
+  \item In continuous time, the Ito integral keeps this property:
+  $\E\!\left[\int_0^T \phi_t\, dW_t\right]=0$ (under integrability).
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{(Optional) Including interest rates: discounted form}
+
+If the bank account is $B_t=\exp\!\left(\int_0^t r_s ds\right)$, a self-financing strategy in \emph{non-discounted} variables satisfies
+\[
+V_{t_{i+1}}-V_{t_i}
+=
+\phi_{t_i}(S_{t_{i+1}}-S_{t_i})
++\psi_{t_i}(B_{t_{i+1}}-B_{t_i}).
+\]
+\pause
+
+Define discounted quantities $\widetilde S_t:=S_t/B_t$, $\widetilde V_t:=V_t/B_t$.\pause
+
+\begin{block}{Discounted self-financing (discrete)}
+\[
+\widetilde V_{t_{i+1}}-\widetilde V_{t_i}
+=
+\phi_{t_i}\big(\widetilde S_{t_{i+1}}-\widetilde S_{t_i}\big).
+\]
+\end{block}
+
+\medskip
+So, for stochastic calculus, we often work directly with discounted prices where cash is constant.
+
+\end{frame}
+
+\section{Step 1: Define the Ito integral for simple (step) processes}
+
+% ======================================================
+\subsection{Setup: filtration, adaptedness, square-integrability}
+
+% --------------------------------------
+\begin{frame}{Setup: Brownian filtration}
+
+Let $(W_t)_{t\ge 0}$ be a Brownian motion.\pause
+
+\begin{definitionblock}{Natural filtration of $W$}
+\[
+\cF_t^W := \sigma\big(W_s:\ 0\le s\le t\big),
+\qquad t\ge 0.
+\]
+\end{definitionblock}\pause
+
+\begin{itemize}
+  \item $\cF_t$ represents \textbf{information available up to time $t$}.\pause
+  \item Trading rules: decisions at time $t$ must depend only on $\cF_t$ (no look-ahead).
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Adapted vs.\ predictable (financial meaning)}
+
+\begin{definitionblock}{Adapted process}
+A process $(\phi_t)_{t\in[0,T]}$ is \textbf{adapted} if $\phi_t$ is $\cF_t$-measurable for each $t$.
+\end{definitionblock}\pause
+
+\begin{definitionblock}{Predictable process (informal)}
+$\phi$ is \textbf{predictable} if it can be approximated by \emph{left-continuous step processes}:
+\[
+\phi_t=\sum_{k=0}^{n-1}\phi_{t_k}\,1_{(t_k,t_{k+1}]}(t),
+\qquad \phi_{t_k}\in \cF_{t_k}.
+\]
+\end{definitionblock}\pause
+
+\begin{itemize}
+  \item Predictable = “chosen just before trading happens”.\pause
+  \item This matches the \textbf{left-point} convention in self-financing gains.
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Square-integrability: the basic integrability condition}
+
+To define $\int_0^T \phi_t\, dW_t$ (Ito integral), we require $\phi$ to be square-integrable.\pause
+
+\begin{definitionblock}{Square-integrable integrand}
+\[
+\E\!\left[\int_0^T \phi_t^2\,dt\right] < \infty.
+\]
+\end{definitionblock}\pause
+
+\begin{itemize}
+  \item This ensures the stochastic integral exists in $L^2$.\pause
+  \item It is the analogue of “finite energy” for the integrand.
+\end{itemize}
+
+\medskip
+\begin{block}{Good to remember}
+If $\phi$ is bounded and adapted on $[0,T]$, then automatically
+$\E[\int_0^T \phi_t^2 dt] < \infty$.
+\end{block}
+
+\end{frame}
+
+% ======================================================
+\subsection{Definition on simple processes (left-point Riemann sums)}
+
+% --------------------------------------
+\begin{frame}{Simple (step) processes: the building blocks}
+
+Fix a partition $\pi: 0=t_0<t_1<\cdots<t_n=T$.\pause
+
+\begin{definitionblock}{Simple predictable process on $[0,T]$}
+A process $\phi$ is \textbf{simple} (or step/piecewise constant) if it has the form
+\[
+\phi_t \;=\;\sum_{i=0}^{n-1}\phi_{t_i}\,\mathbf{1}_{(t_i,t_{i+1}]}(t),
+\qquad t\in(0,T],
+\]
+with \(\phi_{t_i}\in\cF_{t_i}\) for each $i$.
+\end{definitionblock}\pause
+
+\begin{itemize}
+  \item $\phi_{t_i}$ is the \textbf{position chosen at time $t_i$}.\pause
+  \item It stays constant until the next trading time $t_{i+1}$.\pause
+  \item \textbf{Left-point rule:} we use $\phi_{t_i}$ (known at $t_i$), not $\phi_{t_{i+1}}$.
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Definition of the stochastic integral on simple processes}
+
+Let $\phi$ be a simple predictable process on the partition $\pi$.\pause
+
+\begin{definitionblock}{Ito integral for simple processes}
+Define
+\[
+I_0(\phi)
+\;:=\;
+\int_0^T \phi_t\,dW_t
+\;:=\;
+\sum_{i=0}^{n-1}\phi_{t_i}\,\big(W_{t_{i+1}}-W_{t_i}\big).
+\]
+\end{definitionblock}\pause
+
+\begin{itemize}
+  \item This is exactly a \textbf{left-point Riemann sum}, but with Brownian increments.\pause
+  \item The choice “left-point” enforces \textbf{no peeking into the future}.\pause
+  \item Later: we will extend this definition by \textbf{$L^2$-limits} to general $\phi$.
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Two immediate sanity checks (for later use)}
+
+Let $\phi$ be simple and predictable.\pause
+
+\begin{itemize}
+  \item If $\phi_t \equiv c$ is constant, then
+  \[
+  \int_0^T c\,dW_t = c\,(W_T-W_0)=c\,W_T.
+  \]\pause
+  \item If $\phi_t=\phi_{t_i}$ on $(t_i,t_{i+1}]$, then conditionally on $\cF_{t_i}$,
+  \[
+  \E\!\left[\phi_{t_i}(W_{t_{i+1}}-W_{t_i})\mid \cF_{t_i}\right]=0
+  \quad\text{(increment has mean $0$).}
+  \]\pause
+\end{itemize}
+
+\medskip
+\begin{block}{Takeaway}
+The integral is built to behave like a \textbf{gain from predictable trading}
+with \textbf{zero conditional mean increment}.
+\end{block}
+
+\end{frame}
+
+% ======================================================
+\subsection{First checks (linearity, measurability)}
+
+% --------------------------------------
+\begin{frame}{First checks: linearity}
+
+Let $\phi,\psi$ be simple predictable processes on $[0,T]$, and $a,b\in\R$.\pause
+
+\begin{block}{Claim (linearity)}
+\[
+\int_0^T (a\phi_t+b\psi_t)\,dW_t
+\;=\;
+a\int_0^T \phi_t\,dW_t
+\;+\;
+b\int_0^T \psi_t\,dW_t.
+\]
+\end{block}\pause
+
+\begin{proofblock}{Proof (one line)}
+Write both sides using the defining sum
+$\sum_i (\cdot)\,(W_{t_{i+1}}-W_{t_i})$ and distribute $a,b$ inside the sum.
+\end{proofblock}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{First checks: measurability and “no peeking”}
+
+Let $\phi_t=\sum_{i=0}^{n-1}\phi_{t_i}\mathbf{1}_{(t_i,t_{i+1}]}(t)$ be simple with $\phi_{t_i}\in\cF_{t_i}$.\pause
+
+\begin{itemize}
+  \item Each increment $W_{t_{i+1}}-W_{t_i}$ is $\cF_{t_{i+1}}$-measurable.\pause
+  \item The product $\phi_{t_i}(W_{t_{i+1}}-W_{t_i})$ is therefore $\cF_{t_{i+1}}$-measurable.\pause
+  \item Hence the partial sums
+  \[
+  G_{t_k}:=\sum_{i=0}^{k-1}\phi_{t_i}(W_{t_{i+1}}-W_{t_i})
+  \quad\text{are }\cF_{t_k}\text{-measurable.}
+  \]\pause
+\end{itemize}
+
+\begin{block}{Interpretation}
+The gain up to time $t_k$ depends only on information available up to $t_k$.
+The \textbf{left-point choice} $\phi_{t_i}\in\cF_{t_i}$ enforces predictability.
+\end{block}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{A key conditional-mean check (discrete martingale property)}
+
+Define the discrete-time gain process on the grid:
+\[
+G_{t_k}:=\sum_{i=0}^{k-1}\phi_{t_i}(W_{t_{i+1}}-W_{t_i}),
+\qquad k=0,\dots,n.
+\]\pause
+
+\begin{block}{Claim}
+For each $k\ge 0$,
+\[
+\E\!\left[G_{t_{k+1}}-G_{t_k}\mid \cF_{t_k}\right]=0
+\quad\Rightarrow\quad
+\E\!\left[G_{t_{k+1}}\mid \cF_{t_k}\right]=G_{t_k}.
+\]
+\end{block}\pause
+
+\begin{proofblock}{Proof (two lines)}
+$G_{t_{k+1}}-G_{t_k}=\phi_{t_k}(W_{t_{k+1}}-W_{t_k})$ with $\phi_{t_k}\in\cF_{t_k}$.
+The increment $W_{t_{k+1}}-W_{t_k}$ is independent of $\cF_{t_k}$ and centered, hence the conditional expectation is $0$.
+\end{proofblock}
+
+\end{frame}
+
+\section{Step 2: The key estimate — Ito isometry on simple processes}
+
+% ======================================================
+\subsection{Compute mean and second moment}
+
+% --------------------------------------
+\begin{frame}{Mean of the integral on simple processes}
+
+Let $\phi$ be a simple predictable process on $[0,T]$:
+\[
+\phi_t=\sum_{i=0}^{n-1}\phi_{t_i}\,\mathbf{1}_{(t_i,t_{i+1}]}(t),
+\qquad \phi_{t_i}\in\cF_{t_i}.
+\]
+Define
+\[
+I_0(\phi):=\int_0^T \phi_t\,dW_t
+\;:=\;
+\sum_{i=0}^{n-1}\phi_{t_i}\,(W_{t_{i+1}}-W_{t_i}).
+\]
+\pause
+
+\begin{block}{Claim}
+\[
+\E\big[I_0(\phi)\big]=0.
+\]
+\end{block}\pause
+
+\begin{proofblock}{Proof (one line)}
+For each $i$, $\E\!\left[\phi_{t_i}(W_{t_{i+1}}-W_{t_i})\right]
+=\E\!\left[\E\!\left[\phi_{t_i}(W_{t_{i+1}}-W_{t_i})\mid \cF_{t_i}\right]\right]=0$
+since $\phi_{t_i}\in\cF_{t_i}$ and $\E[W_{t_{i+1}}-W_{t_i}\mid \cF_{t_i}]=0$.
+\end{proofblock}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Orthogonality of disjoint Brownian increments}
+
+Let $0\le t_0<\cdots<t_n\le T$ and set $\Delta W_i:=W_{t_{i+1}}-W_{t_i}$.\pause
+
+\begin{block}{Key fact (orthogonality)}
+For $i\neq j$,
+\[
+\E[\Delta W_i\,\Delta W_j]=0.
+\]
+More generally, if $i<j$ and $X\in\cF_{t_{i+1}}$, then
+\[
+\E\big[X\,\Delta W_j\big]=0.
+\]
+\end{block}\pause
+
+\begin{proofblock}{Proof (quick)}
+If $i<j$, then $\Delta W_j$ is independent of $\cF_{t_j}$ and centered, hence independent of $X\in\cF_{t_{i+1}}\subset\cF_{t_j}$:
+\[
+\E[X\Delta W_j]=\E\!\left[X\,\E(\Delta W_j\mid \cF_{t_j})\right]=0.
+\]
+Taking $X=\Delta W_i$ gives $\E[\Delta W_i\Delta W_j]=0$.
+\end{proofblock}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Second moment: the core computation (Ito isometry on simples)}
+
+Let $\phi$ be simple predictable and $I_0(\phi)=\sum_{i=0}^{n-1}\phi_{t_i}\Delta W_i$.\pause
+\vspace{-2mm}
+
+\begin{block}{Claim (Ito isometry for simple processes)}
+\[
+\E\big[I_0(\phi)^2\big]
+=
+\E\!\left[\int_0^T \phi_t^2\,dt\right]
+=
+\sum_{i=0}^{n-1}\E\big[\phi_{t_i}^2\big]\,(t_{i+1}-t_i).
+\vspace{-2mm}
+\]
+\end{block}\pause
+
+\begin{proofblock}{Proof (expand + kill cross terms)}
+Expand:
+$
+I_0(\phi)^2=\sum_{i}\phi_{t_i}^2(\Delta W_i)^2
+\;+\;2\sum_{i<j}\phi_{t_i}\phi_{t_j}\Delta W_i\Delta W_j.
+$
+Take expectation. For $i<j$, note $\phi_{t_i}\Delta W_i\in\cF_{t_{i+1}}\subset\cF_{t_j}$ and $\Delta W_j$ is independent of $\cF_{t_j}$ with mean $0$, hence
+\vspace{-2mm}
+\[
+\E[\phi_{t_i}\phi_{t_j}\Delta W_i\Delta W_j]
+=
+\E\!\left[\E\!\left[(\phi_{t_i}\Delta W_i)\,\phi_{t_j}\Delta W_j\mid \cF_{t_j}\right]\right]
+=
+\E\!\left[(\phi_{t_i}\Delta W_i)\,\phi_{t_j}\,\E(\Delta W_j\mid \cF_{t_j})\right]=0.
+\vspace{-2mm}
+\]
+So only diagonal terms remain:
+$
+\E[I_0(\phi)^2]=\sum_i \E\!\left[\phi_{t_i}^2(\Delta W_i)^2\right].
+$
+Finally, condition on $\cF_{t_i}$: $\phi_{t_i}\in\cF_{t_i}$ and $(\Delta W_i)^2$ is independent of $\cF_{t_i}$ with
+$\E[(\Delta W_i)^2]=t_{i+1}-t_i$, so
+\[
+\E\!\left[\phi_{t_i}^2(\Delta W_i)^2\right]
+=
+\E\!\left[\phi_{t_i}^2\,\E\!\left[(\Delta W_i)^2\mid \cF_{t_i}\right]\right]
+=
+\E[\phi_{t_i}^2]\,(t_{i+1}-t_i).
+\]
+\end{proofblock}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Consequences: $L^2$-continuity and why $\int \phi\,dW$ needs $\phi\in L^2$}
+
+\begin{itemize}
+  \item From Ito isometry (for simples),
+  \[
+  \|I_0(\phi)\|_{L^2(\Omega)}
+  =
+  \left\|\phi\right\|_{L^2(\Omega\times[0,T])}
+  \quad\text{where}\quad
+  \|\phi\|_{L^2(\Omega\times[0,T])}^2:=\E\!\int_0^T \phi_t^2dt.
+  \]
+  \pause
+  \item In particular, if $\phi^n$ are simple and
+  $\E\!\int_0^T(\phi^n_t-\phi^m_t)^2dt\to 0$,
+  then
+  $\E\big[(I_0(\phi^n)-I_0(\phi^m))^2\big]\to 0$.\pause
+  \item This is the key to \textbf{extend the integral by completion}:
+  define $\int_0^T\phi\,dW$ for any predictable $\phi$ with
+  $\E\!\int_0^T\phi_t^2dt<\infty$ by approximating with simple processes.\pause
+\end{itemize}
+
+\begin{alertblock}{Takeaway}
+Square-integrability is not technical here: it is exactly what makes the stochastic integral well-defined in $L^2$.
+\end{alertblock}
+
+\end{frame}
+
+% ======================================================
+\subsection{Consequences: Cauchy property in $L^2$}
+
+% --------------------------------------
+\begin{frame}{Consequence of Ito isometry: Cauchy property in $L^2(\Omega)$}
+
+Let $(\phi^{n})_{n\ge1}$ be \textbf{simple predictable} processes on $[0,T]$ and define
+\[
+I_0(\phi^{n}) := \sum_{i=0}^{k_n-1} \phi^n_{t_i}\big(W_{t_{i+1}}-W_{t_i}\big).
+\vspace{-4mm}\]
+\pause
+
+Assume $(\phi^{n})$ is Cauchy in $L^2(\Omega\times[0,T])$, i.e.
+$
+\E\int_0^T \big(\phi^n_t-\phi^m_t\big)^2\,dt \xrightarrow[n,m\to\infty]{} 0.
+$
+\pause
+
+\begin{block}{Claim}
+Then $(I_0(\phi^{n}))_{n\ge1}$ is Cauchy in $L^2(\Omega)$:
+$
+\E\Big[\big(I_0(\phi^{n})-I_0(\phi^{m})\big)^2\Big]
+\xrightarrow[n,m\to\infty]{} 0.
+$
+\end{block}\pause
+
+\begin{proofblock}{Proof (one line)}
+By linearity, $I_0(\phi^{n})-I_0(\phi^{m}) = I_0(\phi^{n}-\phi^{m})$, and by Ito isometry (for simples),
+\[
+\E\Big[\big(I_0(\phi^{n})-I_0(\phi^{m})\big)^2\Big]
+=
+\E\int_0^T \big(\phi^n_t-\phi^m_t\big)^2\,dt
+\longrightarrow 0.
+\]
+\end{proofblock}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Interpretation: why this constructs $\int_0^T \phi\,dW$}
+
+\begin{itemize}
+  \item The previous slide says: the map
+  \[
+  I_0:\ \{\text{simple predictable}\}\ \to\ L^2(\Omega)
+  \]
+  is \textbf{continuous} w.r.t.the $L^2(\Omega\times[0,T])$ norm.\pause
+
+  \item Therefore, if $\phi^n\to \phi$ in $L^2(\Omega\times[0,T])$, then $I_0(\phi^n)$ converges in $L^2(\Omega)$
+  to a limit which depends only on $\phi$ (not on the approximating sequence).\pause
+
+  \item This motivates the definition for general predictable $\phi$ with
+  \[
+  \E\int_0^T \phi_t^2\,dt < \infty:
+  \qquad
+  \int_0^T \phi_t\,dW_t
+  := \lim_{n\to\infty} I_0(\phi^n)
+  \quad \text{in }L^2(\Omega).
+  \]
+\end{itemize}
+
+\begin{alertblock}{Key message}
+We define the stochastic integral by \textbf{completion}:
+simple integrands are dense, and Ito isometry makes the integral Cauchy.
+\end{alertblock}
+
+\end{frame}
+
+\section{Step 3: Extend the definition by completion (limit in $L^2$)}
+
+% ======================================================
+\subsection{Definition for general integrands}
+
+% --------------------------------------
+\begin{frame}{From simple processes to general integrands}
+
+\begin{itemize}
+  \item Start with \textbf{simple predictable} (left-point) processes
+  \[
+  \phi_t=\sum_{i=0}^{n-1}\phi_{t_i}\,\mathbf{1}_{(t_i,t_{i+1}]}(t),
+  \qquad \phi_{t_i}\in\mathcal{F}_{t_i},
+  \]
+  and define
+  \[
+  I_0(\phi):=\sum_{i=0}^{n-1}\phi_{t_i}\big(W_{t_{i+1}}-W_{t_i}\big).
+  \]
+  \pause
+
+  \item For such $\phi$, we proved the Ito isometry:
+  \[
+  \E\big[I_0(\phi)^2\big]=\E\int_0^T \phi_t^2\,dt.
+  \]
+\end{itemize}
+
+\medskip
+\begin{alertblock}{Goal}
+Extend $I_0(\phi)$ from simple predictable $\phi$ to a large class of integrands
+by using $L^2$-limits.
+\end{alertblock}
+
+\end{frame}
+
+
+\begin{frame}{Admissible integrands: square-integrable and predictable}
+
+Let $(\mathcal{F}_t)_{t\in[0,T]}$ be the (augmented) filtration generated by $W$.
+
+\begin{definitionblock}{Admissible integrand}
+A process $(\phi_t)_{t\in[0,T]}$ is \emph{Ito-integrable} on $[0,T]$ if
+\begin{itemize}
+  \item $\phi$ is \textbf{predictable} (in particular, no look-ahead),\pause
+  \item $\displaystyle \E\int_0^T \phi_t^2\,dt < \infty$.\pause
+\end{itemize}
+\end{definitionblock}
+
+\medskip
+\begin{block}{Notation}
+We write
+\[
+\phi\in L^2_{\mathrm{pred}}(\Omega\times[0,T])
+\quad \Longleftrightarrow \quad
+\E\int_0^T \phi_t^2\,dt < \infty \, \text{ and }\, \phi \text{ predictable.}
+\]
+\end{block}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Definition: Ito integral as an $L^2$-limit}
+
+\begin{definitionblock}{Ito integral $\int_0^T \phi\,dW$}
+Let $\phi\in L^2_{\mathrm{pred}}(\Omega\times[0,T])$.
+Choose any sequence of simple predictable processes $(\phi^n)_{n\ge1}$ such that
+\[
+\E\int_0^T (\phi^n_t-\phi_t)^2\,dt \xrightarrow[n\to\infty]{} 0.
+\]
+Define
+\[
+\int_0^T \phi_t\,dW_t
+\;:=\;
+\lim_{n\to\infty} I_0(\phi^n)
+\quad \text{in }L^2(\Omega).
+\]
+\end{definitionblock}
+\pause
+
+\begin{itemize}
+  \item Existence: $(I_0(\phi^n))$ is Cauchy in $L^2(\Omega)$ by Ito isometry.\pause
+  \item Well-definedness: the limit does \textbf{not} depend on the chosen approximating sequence.
+\end{itemize}
+
+\end{frame}
+
+--------------------------------------
+\begin{frame}{Why the definition is well-defined (independence of approximation)}
+
+Let $\phi^n\to\phi$ and $\psi^n\to\phi$ in $L^2(\Omega\times[0,T])$ with $\phi^n,\psi^n$ simple predictable.\pause
+
+\medskip
+By Ito isometry (applied to $\phi^n-\psi^n$),
+\[
+\E\Big[\big(I_0(\phi^n)-I_0(\psi^n)\big)^2\Big]
+=
+\E\int_0^T (\phi^n_t-\psi^n_t)^2\,dt.
+\]
+\pause
+But
+\[
+\E\int_0^T (\phi^n_t-\psi^n_t)^2\,dt
+\le
+2\E\int_0^T (\phi^n_t-\phi_t)^2\,dt
++
+2\E\int_0^T (\psi^n_t-\phi_t)^2\,dt
+\to 0.
+\]
+\pause
+
+\begin{block}{Conclusion}
+$I_0(\phi^n)$ and $I_0(\psi^n)$ have the \textbf{same} $L^2$ limit, hence
+$\int_0^T \phi\,dW$ is well-defined.
+\end{block}
+
+\end{frame}
+
+\begin{frame}{Immediate consequences (what we can state now)}
+
+For $\phi\in L^2_{\mathrm{pred}}(\Omega\times[0,T])$, the Ito integral satisfies:\pause
+\begin{itemize}
+  \item \textbf{Linearity:}\;
+  $\int_0^T (a\phi+b\psi)\,dW = a\int_0^T \phi\,dW + b\int_0^T \psi\,dW$.\pause
+  \item \textbf{Zero mean:}\;
+  $\displaystyle \E\Big[\int_0^T \phi_t\,dW_t\Big]=0$.\pause
+  \item \textbf{Ito isometry (extended):}\;
+  $\displaystyle \E\Big[\Big(\int_0^T \phi_t\,dW_t\Big)^2\Big]
+  =
+  \E\int_0^T \phi_t^2\,dt$.\pause
+\end{itemize}
+
+\medskip
+\begin{alertblock}{Next}
+These properties are enough to define the \emph{Ito process}
+\[
+X_t = X_0 + \int_0^t b_s\,ds + \int_0^t \sigma_s\,dW_s
+\]
+and to study martingales, quadratic variation, and basic computations (before Ito's formula).
+\end{alertblock}
+
+\end{frame}
+
+% ======================================================
+\subsection{Well-definedness (independence of the approximating sequence)}
+% Board: use isometry to show uniqueness of the L^2-limit
+
+% --------------------------------------
+\begin{frame}{Well-definedness: independence of the approximation}
+
+Let $\phi\in L^2_{\mathrm{pred}}(\Omega\times[0,T])$.
+Assume $(\phi^n)_{n\ge1}$ and $(\psi^n)_{n\ge1}$ are \textbf{simple predictable} processes such that
+\[
+\E\int_0^T (\phi^n_t-\phi_t)^2\,dt \to 0,
+\qquad
+\E\int_0^T (\psi^n_t-\phi_t)^2\,dt \to 0.
+\]
+\pause
+
+\begin{block}{Claim}
+The $L^2(\Omega)$-limits of $I_0(\phi^n)$ and $I_0(\psi^n)$ coincide.
+\end{block}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Proof idea (one line): compare the two approximations}
+
+Consider the difference of the two Riemann sums:
+\[
+I_0(\phi^n)-I_0(\psi^n)=I_0(\phi^n-\psi^n).
+\]
+\pause
+
+By Ito isometry for simple processes,
+\[
+\E\Big[\big(I_0(\phi^n)-I_0(\psi^n)\big)^2\Big]
+=
+\E\int_0^T (\phi^n_t-\psi^n_t)^2\,dt.
+\]
+\pause
+
+Now use the triangle inequality in $L^2(\Omega\times[0,T])$:
+\[
+\|\phi^n-\psi^n\|_{L^2(\Omega\times[0,T])}
+\le
+\|\phi^n-\phi\|_{L^2(\Omega\times[0,T])}
++
+\|\psi^n-\phi\|_{L^2(\Omega\times[0,T])}
+\to 0.
+\]
+\pause
+
+Therefore
+\[
+\E\Big[\big(I_0(\phi^n)-I_0(\psi^n)\big)^2\Big]\to 0,
+\]
+so $(I_0(\phi^n))$ and $(I_0(\psi^n))$ converge to the \textbf{same} limit in $L^2(\Omega)$.
+\qed
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Conclusion: the Ito integral is well-defined}
+
+\begin{definitionblock}{Well-defined Ito integral}
+For $\phi\in L^2_{\mathrm{pred}}(\Omega\times[0,T])$, define
+\[
+\int_0^T \phi_t\,dW_t
+\;:=\;
+\lim_{n\to\infty} I_0(\phi^n)
+\quad\text{in }L^2(\Omega),
+\]
+where $(\phi^n)$ is \emph{any} sequence of simple predictable processes with
+$\|\phi^n-\phi\|_{L^2(\Omega\times[0,T])}\to 0$.
+\end{definitionblock}
+\pause
+
+\begin{itemize}
+  \item Existence: $(I_0(\phi^n))$ is Cauchy in $L^2(\Omega)$ by Ito isometry.\pause
+  \item Uniqueness: any two approximations yield the same $L^2$ limit (previous slide).\pause
+\end{itemize}
+
+\medskip
+\begin{alertblock}{Key message}
+\textbf{The isometry is the whole reason the construction works.}
+\end{alertblock}
+
+\end{frame}
+
+\section{Main properties of the Ito integral (no Ito formula yet)}
+
+% ======================================================
+\subsection{Martingale property and conditional expectation}
+% Statement: M_t := \int_0^t \phi_s\, dW_s is an (\mathcal{F}_t)-martingale
+% Board: prove first for step processes, then extend by L^2 limit.
+
+% --------------------------------------
+\begin{frame}{Martingale property of the Ito integral}
+
+Let $\phi\in L^2_{\mathrm{pred}}(\Omega\times[0,T])$ and define
+\[
+M_t := \int_0^t \phi_s\,dW_s,\qquad 0\le t\le T.
+\]
+\pause
+
+\begin{theoremblock}{Martingale property}
+$(M_t)_{0\le t\le T}$ is an $(\cF_t)$-martingale:
+for all $0\le s\le t\le T$,
+\[
+\E[M_t\mid \cF_s]=M_s
+\qquad\text{a.s.}
+\]
+In particular, $\E[M_t]=0$ for all $t$.
+\end{theoremblock}
+
+\medskip
+\textbf{Strategy:}\pause
+prove it first for \emph{simple} (step) predictable processes, then pass to the $L^2$ limit.
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Step 1: proof for step processes}
+
+Assume $\phi$ is simple predictable:
+\[
+\phi_u=\sum_{k=0}^{n-1}\phi_{t_k}\,\mathbf{1}_{(t_k,t_{k+1}]}(u),
+\qquad \phi_{t_k}\in\cF_{t_k}.
+\]
+Fix $0\le s\le t\le T$ and choose the grid so that $s=t_j$ and $t=t_m$.\pause
+
+Then
+\[
+M_t
+=
+\sum_{k=0}^{m-1}\phi_{t_k}\big(W_{t_{k+1}}-W_{t_k}\big),
+\qquad
+M_s
+=
+\sum_{k=0}^{j-1}\phi_{t_k}\big(W_{t_{k+1}}-W_{t_k}\big).
+\]
+So
+\[
+M_t-M_s
+=
+\sum_{k=j}^{m-1}\phi_{t_k}\big(W_{t_{k+1}}-W_{t_k}\big).
+\]
+\pause
+
+\begin{block}{Key observation}
+For $k\ge j$, $\phi_{t_k}$ is $\cF_{t_k}$-measurable and $\cF_{t_k}\supset \cF_s$,
+while the increment $W_{t_{k+1}}-W_{t_k}$ is independent of $\cF_{t_k}$ and centered.
+\end{block}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Step 1 continued: take conditional expectation}
+
+Condition on $\cF_s$:
+\[
+\E[M_t-M_s\mid \cF_s]
+=
+\sum_{k=j}^{m-1}\E\!\left[\phi_{t_k}\big(W_{t_{k+1}}-W_{t_k}\big)\,\middle|\,\cF_s\right].
+\]
+\pause
+
+Use the tower property via $\cF_{t_k}$ (since $\cF_s\subset\cF_{t_k}$):
+\[
+\E\!\left[\phi_{t_k}\big(W_{t_{k+1}}-W_{t_k}\big)\,\middle|\,\cF_s\right]
+=
+\E\!\left[
+\E\!\left[\phi_{t_k}\big(W_{t_{k+1}}-W_{t_k}\big)\,\middle|\,\cF_{t_k}\right]
+\,\middle|\,\cF_s\right].
+\]
+\pause
+
+Now $\phi_{t_k}$ is $\cF_{t_k}$-measurable and the increment is independent of $\cF_{t_k}$ with mean $0$, hence
+\[
+\E\!\left[\phi_{t_k}\big(W_{t_{k+1}}-W_{t_k}\big)\,\middle|\,\cF_{t_k}\right]
+=
+\phi_{t_k}\,\E\!\left[W_{t_{k+1}}-W_{t_k}\right]
+=0.
+\vspace{-3mm}
+\]
+\pause
+
+Therefore $\E[M_t-M_s\mid \cF_s]=0$, i.e.
+\[
+\E[M_t\mid \cF_s]=M_s.
+\]
+\qed
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Step 2: extension to general $\phi$ by $L^2$ approximation}
+
+Let $\phi^n$ be simple predictable with
+\[
+\E\int_0^T (\phi^n_u-\phi_u)^2\,du \to 0,
+\qquad
+M_t^n:=\int_0^t \phi^n_u\,dW_u.
+\]
+\pause
+
+For each $n$, $(M_t^n)_{t\le T}$ is a martingale (Step 1).\pause
+
+Moreover, by Ito isometry (applied on $[0,t]$),
+\[
+\E\big[(M_t^n-M_t)^2\big]
+=
+\E\int_0^t (\phi^n_u-\phi_u)^2\,du
+\to 0,
+\quad\text{so }M_t^n\to M_t\text{ in }L^2(\Omega)\ \text{for each }t.
+\]
+\pause
+
+\begin{block}{Pass to the limit in the conditional expectation}
+For $0\le s\le t\le T$,
+\[
+\E[M_t\mid \cF_s]
+=
+\E\big[\lim_{n} M_t^n\mid \cF_s\big]
+=
+\lim_{n}\E[M_t^n\mid \cF_s]
+=
+\lim_{n} M_s^n
+=
+M_s,
+\]
+where we used $L^2$-continuity of conditional expectation:
+$\|\,\E[X_n|\cF_s]-\E[X|\cF_s]\,\|_2\le \|X_n-X\|_2$.
+\end{block}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{A useful corollary: conditional mean and orthogonality}
+
+Let $\phi\in L^2_{\mathrm{pred}}$ and $M_t=\int_0^t\phi_s\,dW_s$.\pause
+
+\begin{itemize}
+  \item \textbf{Conditional mean of increments:}\pause\;
+  for $0\le s\le t$,
+  \[
+  \E[M_t-M_s\mid \cF_s]=0.
+  \]
+  \item \textbf{Orthogonality to the past:}\pause\;
+  for any bounded $\cF_s$-measurable random variable $Z$,
+  \[
+  \E\big[(M_t-M_s)\,Z\big]=0.
+  \]
+\end{itemize}
+
+\medskip
+\begin{alertblock}{Finance interpretation}
+A self-financing \emph{gain process} driven by Brownian noise has \emph{zero drift}:
+no systematic expected profit from “pure randomness”.
+\end{alertblock}
+
+\end{frame}
+
+% ======================================================
+\subsection{Second moment, covariance, polarization}
+% Ito isometry for t:
+%   E[(\int_0^t \phi dW)^2] = E[\int_0^t \phi^2 ds]
+% Polarization:
+%   E[(\int \phi dW)(\int \psi dW)] = E[\int \phi\psi\, ds]
+
+% --------------------------------------
+\begin{frame}{Second moment: Ito isometry (step processes)}
+
+Let $\phi$ be a simple predictable process on $[0,t]$:
+\[
+\phi_u=\sum_{k=0}^{n-1}\phi_{t_k}\,\mathbf{1}_{(t_k,t_{k+1}]}(u),
+\qquad \phi_{t_k}\in\cF_{t_k},\quad 0=t_0<\cdots<t_n=t.
+\]
+Define
+\[
+I_t(\phi):=\int_0^t \phi_u\,dW_u
+:=\sum_{k=0}^{n-1}\phi_{t_k}\big(W_{t_{k+1}}-W_{t_k}\big).
+\]
+\pause
+
+\begin{theoremblock}{Ito isometry (for step integrands)}
+\[
+\E\big[I_t(\phi)^2\big]
+=
+\E\!\left[\int_0^t \phi_u^2\,du\right].
+\]
+\end{theoremblock}
+
+\medskip
+\textbf{Board idea:} expand the square, use independence/centering of disjoint increments.
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Proof sketch (the computation you want them to master)}
+
+Write $\Delta W_k:=W_{t_{k+1}}-W_{t_k}$.
+Then
+\[
+I_t(\phi)=\sum_{k=0}^{n-1}\phi_{t_k}\Delta W_k,
+\qquad
+I_t(\phi)^2=\sum_{k}\phi_{t_k}^2(\Delta W_k)^2
++2\sum_{i<j}\phi_{t_i}\phi_{t_j}\Delta W_i\Delta W_j.
+\]
+\pause
+
+Take expectation.\pause
+\begin{itemize}
+  \item For $i<j$, $\Delta W_j$ is independent of $\cF_{t_j}\supset \sigma(\phi_{t_i},\phi_{t_j},\Delta W_i)$ and $\E[\Delta W_j]=0$, hence
+  \[
+  \E\big[\phi_{t_i}\phi_{t_j}\Delta W_i\Delta W_j\big]=0.
+  \]
+  \item For the diagonal terms, $\E[(\Delta W_k)^2]=t_{k+1}-t_k$ and $\phi_{t_k}$ is $\cF_{t_k}$-measurable, so
+  \[
+  \E\big[\phi_{t_k}^2(\Delta W_k)^2\big]
+  =
+  \E\big[\phi_{t_k}^2\big]\,(t_{k+1}-t_k).
+  \]
+\end{itemize}
+\pause
+
+Therefore
+\[
+\E[I_t(\phi)^2]
+=
+\sum_{k=0}^{n-1}\E[\phi_{t_k}^2]\,(t_{k+1}-t_k)
+=
+\E\left[\sum_{k=0}^{n-1}\phi_{t_k}^2\,(t_{k+1}-t_k)\right]
+=
+\E\left[\int_0^t \phi_u^2\,du\right].
+\]
+\qed
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Extension: Ito isometry for general integrands}
+
+Let $\phi\in L^2_{\mathrm{pred}}(\Omega\times[0,T])$ and define
+\[
+I_t(\phi):=\int_0^t \phi_u\,dW_u
+\quad\text{as the $L^2(\Omega)$-limit of }I_t(\phi^n)
+\text{ for step }\phi^n\to\phi \text{ in }L^2.
+\]
+\pause
+
+\begin{theoremblock}{Ito isometry (general form)}
+For every $t\in[0,T]$,
+\[
+\E\Big[\Big(\int_0^t \phi_u\,dW_u\Big)^2\Big]
+=
+\E\Big[\int_0^t \phi_u^2\,du\Big].
+\]
+\end{theoremblock}
+
+\medskip
+\textbf{Board justification:} apply the step-case identity to $\phi^n$, then pass to the limit using
+\[
+\|I_t(\phi^n)-I_t(\phi)\|_{L^2}^2=\E\int_0^t (\phi^n-\phi)^2\,du\to 0.
+\]
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Covariance and polarization identity}
+
+Let $\phi,\psi\in L^2_{\mathrm{pred}}(\Omega\times[0,T])$ and define
+$
+I_t(\phi):=\int_0^t \phi_u\,dW_u,
+\,\,
+I_t(\psi):=\int_0^t \psi_u\,dW_u.
+$
+\pause
+
+\begin{theoremblock}{Polarization / covariance formula}
+For every $t\in[0,T]$,
+$
+\E\!\left[I_t(\phi)\,I_t(\psi)\right]
+=
+\E\!\left[\int_0^t \phi_u\,\psi_u\,du\right].
+$
+\end{theoremblock}
+\pause
+
+\begin{proofblock}{Proof (one line, using polarization)}
+Use the identity $2\langle X,Y\rangle = \|X+Y\|^2-\|X\|^2-\|Y\|^2$ in $L^2(\Omega)$:
+\[
+2\,\E[I_t(\phi)I_t(\psi)]
+=
+\E\big[(I_t(\phi)+I_t(\psi))^2\big]-\E[I_t(\phi)^2]-\E[I_t(\psi)^2].
+\]
+But $I_t(\phi)+I_t(\psi)=I_t(\phi+\psi)$ and apply Ito isometry to each term:
+\[
+\E[I_t(\phi+\psi)^2]-\E[I_t(\phi)^2]-\E[I_t(\psi)^2]
+=
+\E\int_0^t \big((\phi+\psi)^2-\phi^2-\psi^2\big)\,du
+=
+2\,\E\int_0^t \phi_u\psi_u\,du.
+\]
+Divide by $2$.
+\end{proofblock}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Useful corollaries (quick)}
+
+For $\phi\in L^2_{\mathrm{pred}}$ and $0\le s\le t$,
+\[
+\int_s^t \phi_u\,dW_u := \int_0^t \phi_u\,dW_u-\int_0^s \phi_u\,dW_u.
+\]
+\pause
+
+\begin{itemize}
+  \item \textbf{Second moment of increments:}\pause
+  \[
+  \E\Big[\Big(\int_s^t \phi_u\,dW_u\Big)^2\Big]
+  =
+  \E\int_s^t \phi_u^2\,du.
+  \]
+  \item \textbf{Orthogonality on disjoint intervals (step intuition):}\pause\;
+  if $\phi$ is supported on $[0,s]$ and $\psi$ on $[s,t]$, then
+  \[
+  \E\!\left[\Big(\int_0^s \phi\,dW\Big)\Big(\int_s^t \psi\,dW\Big)\right]=0.
+  \]
+\end{itemize}
+
+\medskip
+\begin{alertblock}{Takeaway}
+The Ito integral is an \textbf{isometry} from $(L^2_{\mathrm{pred}},\ \|\phi\|^2=\E\int_0^t\phi^2)$
+into $L^2(\Omega)$, and the covariance is exactly the $L^2$ inner product.
+\end{alertblock}
+
+\end{frame}
+
+% ======================================================
+\subsection{Continuity in time (brief)}
+% Statement: t \mapsto \int_0^t \phi_s dW_s has a continuous modification
+% Option A (light): state it, sketch via Doob inequality / standard theorem
+% Option B (if time): show L^2-continuity:
+%   E[(M_t-M_s)^2] = E[\int_s^t \phi^2 du] -> 0 as t->s
+
+% --------------------------------------
+\begin{frame}{Continuity in time (what we can prove now)}
+
+Let $\phi\in L^2_{\mathrm{pred}}(\Omega\times[0,T])$ and define
+\[
+M_t := \int_0^t \phi_s\,dW_s,\qquad t\in[0,T].
+\]
+\pause
+
+\begin{theoremblock}{Continuity (standard theorem)}
+There exists a \textbf{continuous modification} of $(M_t)_{t\in[0,T]}$.
+\end{theoremblock}
+\pause
+
+\begin{itemize}
+  \item In other words: you can choose a version such that $t\mapsto M_t(\omega)$ is continuous for a.e.\ $\omega$.\pause
+  \item This is one of the reasons Ito integrals fit the continuous-time trading paradigm.\pause
+\end{itemize}
+
+\medskip
+\textbf{We will not fully prove it today.} \pause
+But we can already show $L^2$-continuity (next slide), and later use standard inequalities to get pathwise continuity.
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Easy part: $L^2$-continuity (one-line computation)}
+
+For $0\le s\le t\le T$,
+\[
+M_t - M_s = \int_s^t \phi_u\,dW_u.
+\]
+\pause
+
+\begin{theoremblock}{$L^2$-continuity}
+\[
+\E\big[(M_t-M_s)^2\big] \;=\; \E\!\left[\int_s^t \phi_u^2\,du\right]
+\;\xrightarrow[t\to s]{}\;0.
+\]
+\end{theoremblock}
+\pause
+
+\begin{proofblock}{Proof (Ito isometry)}
+Apply the isometry on $[s,t]$:
+\[
+\E\Big[\Big(\int_s^t \phi_u\,dW_u\Big)^2\Big]
+=
+\E\int_s^t \phi_u^2\,du.
+\]
+Since $\phi\in L^2(\Omega\times[0,T])$, the RHS $\to 0$ as $t\downarrow s$ (absolute continuity of the Lebesgue integral).
+\end{proofblock}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{(Optional) How continuity is proved in full (very brief)}
+
+If you want a pathwise continuity result, a standard route is:\pause
+\begin{enumerate}
+  \item Show a maximal inequality for the martingale $(M_t)$.\pause
+  \item Combine it with $L^2$ bounds on increments to control oscillations.\pause
+  \item Conclude existence of a continuous modification.\pause
+\end{enumerate}
+
+\medskip
+A typical estimate (we will justify later) is:\pause
+\[
+\E\Big[\sup_{0\le u\le t} |M_u|^2\Big]
+\ \le\ 4\,\E[|M_t|^2]
+\ =\ 4\,\E\!\left[\int_0^t \phi_s^2\,ds\right].
+\]
+\pause
+
+\begin{alertblock}{Takeaway}
+Today: we build the integral in $L^2$ and prove isometry + martingale property.\\
+Later (with Doob/BDG): we upgrade to \textbf{continuous paths}.
+\end{alertblock}
+
+\end{frame}
+
+\section{Why "left-point" matters (Ito vs. other conventions)}
+
+% ======================================================
+\subsection{Right-point sums and the extra drift term}
+% Slides: "importance of left point"
+% Show (or state as exercise): 
+%   \sum W_{t_{i+1}}(W_{t_{i+1}}-W_{t_i})
+% differs from \int W dW by a +t correction
+% Key message: convention changes calculus rules.
+
+% --------------------------------------
+\begin{frame}{Right-point sums: why the convention matters}
+
+Fix a partition $\pi=\{0=t_0<\dots<t_n=t\}$ and consider the gain sum\pause
+\[
+G^{\mathrm{right}}_\pi(t)
+:=\sum_{i=0}^{n-1} W_{t_{i+1}}\,(W_{t_{i+1}}-W_{t_i}).
+\]
+\pause
+
+\begin{alertblock}{Key warning}
+Using the \textbf{right endpoint} is \emph{not} the Ito integral convention.
+It changes the limit by an extra deterministic term.
+\end{alertblock}
+\pause
+
+\begin{itemize}
+  \item In finance: right-point corresponds to using future information $W_{t_{i+1}}$ to decide the position.\pause
+  \item Mathematically: the quadratic variation shows up and creates a bias.\pause
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{A clean identity: right sums = left sums + quadratic variation}
+
+Write $W_{t_{i+1}}=W_{t_i}+(W_{t_{i+1}}-W_{t_i})$. Then\pause
+\[
+W_{t_{i+1}}(W_{t_{i+1}}-W_{t_i})
+=
+W_{t_i}(W_{t_{i+1}}-W_{t_i})
++\big(W_{t_{i+1}}-W_{t_i}\big)^2.
+\]
+\pause
+
+Summing over $i$ gives the exact decomposition\pause
+\[
+\sum_{i=0}^{n-1} W_{t_{i+1}}\Delta W_i
+=
+\sum_{i=0}^{n-1} W_{t_i}\Delta W_i
++\sum_{i=0}^{n-1} (\Delta W_i)^2,
+\qquad \Delta W_i:=W_{t_{i+1}}-W_{t_i}.
+\]
+\pause
+
+\begin{block}{Interpretation}
+\begin{itemize}
+  \item the first term is the \textbf{left-point} (predictable) sum,
+  \item the second term is the \textbf{quadratic variation} along $\pi$.
+\end{itemize}
+\end{block}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Limit as mesh $\to 0$: the extra drift term is $t$}
+
+As $|\pi|\to 0$, we know\pause
+\[
+\sum_{i=0}^{n-1} (\Delta W_i)^2 \longrightarrow [W]_t = t
+\quad \text{(in }L^2\text{, hence in probability).}
+\]
+\pause
+
+Also, by definition of the Ito integral,\pause
+\[
+\sum_{i=0}^{n-1} W_{t_i}\Delta W_i \longrightarrow \int_0^t W_s\,dW_s
+\quad\text{in }L^2.
+\]
+\pause
+
+\begin{theoremblock}{Right sums pick up a $+t$ correction}
+\[
+\sum_{i=0}^{n-1} W_{t_{i+1}}(W_{t_{i+1}}-W_{t_i})
+\;\longrightarrow\;
+\int_0^t W_s\,dW_s \;+\; t.
+\]
+\end{theoremblock}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{A famous special case: $\int_0^t W_s\,dW_s$}
+
+Using Ito's formula for $f(x)=x^2$ (or completing the square on sums), one gets\pause
+\[
+W_t^2 = 2\int_0^t W_s\,dW_s + t.
+\]
+\pause
+
+\begin{block}{Therefore}
+\[
+\int_0^t W_s\,dW_s
+=
+\frac12\big(W_t^2 - t\big).
+\]
+\end{block}
+\pause
+
+Combine with the previous slide to see the right-sum limit:\pause
+\[
+\lim_{|\pi|\to0}\sum_{i} W_{t_{i+1}}\Delta W_i
+=
+\frac12\big(W_t^2 - t\big) + t
+=
+\frac12\big(W_t^2 + t\big).
+\]
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Message: conventions change the calculus rules}
+
+\begin{itemize}
+  \item \textbf{Left-point} sums $\to$ Ito integral (predictable trading).\pause
+  \item \textbf{Mid-point} sums $\to$ Stratonovich integral (closer to classical chain rule).\pause
+  \item \textbf{Right-point} sums $\to$ Ito integral $+$ quadratic variation correction.\pause
+\end{itemize}
+
+\begin{alertblock}{Takeaway}
+Because $(\Delta W)^2$ accumulates to $dt$, changing the evaluation point changes the limit.
+Quadratic variation is exactly what makes stochastic calculus different.
+\end{alertblock}
+
+\end{frame}
+
+% ======================================================
+\subsection{Interpretation: predictability / no anticipation}
+% Explain: choosing \phi_{t_i} measurable w.r.t. \mathcal{F}_{t_i} models
+% trading decisions made with current information only.
+
+% --------------------------------------
+\begin{frame}{Predictability / No Anticipation (Financial meaning)}
+
+We trade on a discrete grid $0=t_0<t_1<\cdots<t_n=T$.\pause
+
+\begin{itemize}
+  \item At time $t_i$, the trader chooses the position $\phi_{t_i}$.\pause
+  \item The next price move $\Delta S_i := S_{t_{i+1}}-S_{t_i}$ is \emph{not} known at $t_i$.\pause
+\end{itemize}
+
+\medskip
+\begin{definitionblock}{No-anticipation (discrete time)}
+A trading strategy is admissible if, for every $i$,
+\[
+\phi_{t_i}\ \text{is } \mathcal{F}_{t_i}\text{-measurable}.
+\]
+\end{definitionblock}\pause
+
+\begin{block}{Interpretation}
+$\mathcal{F}_{t_i}$ represents \textbf{all information available up to time $t_i$}
+(prices, news, signals, \dots).
+So $\phi_{t_i}$ can depend on the past, but \textbf{cannot depend on the future}.
+\end{block}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Why ``left-point'' appears in the gain formula}
+
+For a self-financing strategy, the discrete-time gain is\pause
+\[
+G_T^\pi(\phi)
+=
+\sum_{i=0}^{n-1}\phi_{t_i}\,(S_{t_{i+1}}-S_{t_i}).
+\]
+\pause
+
+\begin{itemize}
+  \item We use the \textbf{left endpoint} $\phi_{t_i}$ because that is the position
+  chosen \emph{before} observing the increment $\Delta S_i$.\pause
+  \item If we used $\phi_{t_{i+1}}$ instead, we would be allowing the trader to
+  react to $\Delta S_i$ \emph{after seeing it} (anticipation).\pause
+\end{itemize}
+
+\medskip
+\begin{alertblock}{Core message}
+The Ito integral is the continuous-time limit of \textbf{left-point, non-anticipative} gains.
+\end{alertblock}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{From discrete-time ``predictable'' to continuous-time ``predictable''}
+
+In continuous time, we keep the same logic:\pause
+
+\begin{itemize}
+  \item information grows with time: $(\mathcal{F}_t)_{t\ge0}$,\pause
+  \item the trading strategy $(\phi_t)_{0\le t\le T}$ must not look into the future.\pause
+\end{itemize}
+
+\medskip
+\begin{definitionblock}{(Informal) predictability}
+$\phi$ is \textbf{predictable} if $\phi_t$ is determined by information available \emph{just before} time $t$.
+\end{definitionblock}\pause
+
+\begin{block}{Practical viewpoint}
+Think: approximate $\phi$ by step strategies
+\[
+\phi_t = \sum_{i=0}^{n-1}\phi_{t_i}\,\mathbf{1}_{(t_i,t_{i+1}]}(t),
+\qquad \phi_{t_i}\in\mathcal{F}_{t_i}.
+\]
+This is exactly the class we use to \textbf{construct} $\int_0^T \phi_t\,dW_t$.
+\end{block}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{A sanity check: why anticipation creates arbitrage (intuition)}
+
+Suppose (illegally) you could choose $\phi_{t_i}$ using $\Delta S_i$.\pause
+For instance take
+\[
+\phi_{t_i} := \mathrm{sign}(\Delta S_i).
+\]
+\pause
+Then the gain becomes\pause
+\[
+\sum_{i=0}^{n-1} \mathrm{sign}(\Delta S_i)\,\Delta S_i
+=
+\sum_{i=0}^{n-1}|\Delta S_i|\ \ge\ 0,
+\]
+and typically $>0$.\pause
+
+\begin{alertblock}{Conclusion}
+Allowing $\phi_{t_i}$ to depend on future increments turns trading into a ``free lunch''.
+This is why $\phi_{t_i}\in\mathcal{F}_{t_i}$ is non-negotiable.
+\end{alertblock}
+
+\end{frame}
+
+\section{First computations you can already do (without Ito formula)}
+
+% ======================================================
+\subsection{Deterministic integrands: Gaussianity + variance}
+% If f deterministic in L^2(0,T):
+%   \int_0^T f(t)\, dW_t \sim N(0, \int_0^T f(t)^2 dt)
+% Prove via step approximation + characteristic function.
+
+% --------------------------------------
+\begin{frame}{Deterministic Integrands: The Integral is Gaussian}
+
+Let $f\in L^2(0,T)$ be \textbf{deterministic}. Define
+\[
+I(f):=\int_0^T f(t)\,dW_t.
+\]
+\pause
+
+\begin{theoremblock}{Gaussianity + variance}
+If $f\in L^2(0,T)$ is deterministic, then $I(f)$ is Gaussian and
+\[
+I(f)\ \sim\ \mathcal{N}\!\left(0,\ \int_0^T f(t)^2\,dt\right).
+\]
+\end{theoremblock}
+
+\medskip
+\begin{itemize}
+  \item This is the continuous-time analogue of a Gaussian linear combination of independent increments.\pause
+  \item It is a key building block for Gaussian processes and for explicit computations.\pause
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Step 1: Proof for Step Functions}
+
+Assume first that $f$ is a step function:
+\[
+f(t)=\sum_{i=0}^{n-1} a_i\,\mathbf{1}_{(t_i,t_{i+1}]}(t),
+\qquad a_i\in\R.
+\]
+\pause
+Then by definition of the Ito integral on simple processes,
+\[
+I(f)=\sum_{i=0}^{n-1} a_i\,(W_{t_{i+1}}-W_{t_i}).
+\vspace{-3mm}
+\]
+\pause
+
+\begin{itemize}
+  \item The increments $(W_{t_{i+1}}-W_{t_i})$ are independent Gaussians.\pause
+  \item Therefore $I(f)$ is Gaussian (a linear combination of independent Gaussians).\pause
+\end{itemize}
+
+\medskip
+\begin{block}{Variance}
+Using independence and $\Var(W_{t_{i+1}}-W_{t_i})=t_{i+1}-t_i$,
+\vspace{-2mm}
+\[
+\Var(I(f))
+=
+\sum_{i=0}^{n-1} a_i^2\,(t_{i+1}-t_i)
+=
+\int_0^T f(t)^2\,dt.
+\]
+\end{block}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Step 2: Characteristic Function (Step Case)}
+
+Still for a step function $f$,
+\[
+I(f)=\sum_{i=0}^{n-1} a_i\,\Delta W_i,
+\qquad \Delta W_i:=W_{t_{i+1}}-W_{t_i}.
+\]
+\pause
+
+For $u\in\R$, by independence,
+$
+\E\!\left[e^{iu I(f)}\right]
+=
+\prod_{i=0}^{n-1}\E\!\left[e^{iu a_i \Delta W_i}\right].
+$
+Since $\Delta W_i\sim \mathcal{N}(0,\Delta t_i)$,
+\[
+\E\!\left[e^{iu a_i \Delta W_i}\right]
+=
+\exp\!\left(-\tfrac12 u^2 a_i^2\,\Delta t_i\right).
+\]
+\pause
+
+Multiplying,
+\[
+\E\!\left[e^{iu I(f)}\right]
+=
+\exp\!\left(-\tfrac12 u^2 \sum_{i=0}^{n-1} a_i^2\,\Delta t_i\right)
+=
+\exp\!\left(-\tfrac12 u^2 \int_0^T f(t)^2\,dt\right),
+\]
+which is exactly the characteristic function of
+$\mathcal{N}\!\left(0,\int_0^T f^2\right)$.
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Step 3: Extend to General $f\in L^2(0,T)$}
+
+Let $f\in L^2(0,T)$ be deterministic. Choose step functions $(f^n)$ such that
+\[
+\int_0^T (f^n(t)-f(t))^2\,dt \xrightarrow[n\to\infty]{} 0.
+\]
+\pause
+
+Define $I(f^n)=\int_0^T f^n\,dW$. By the isometry,
+\[
+\E\!\left[\big(I(f^n)-I(f^m)\big)^2\right]
+=
+\int_0^T (f^n-f^m)^2\,dt,
+\]
+so $(I(f^n))$ is Cauchy in $L^2(\Omega)$ and converges to $I(f)$.\pause
+
+\medskip
+\begin{block}{Variance}
+Taking the limit in $L^2$,
+\[
+\Var(I(f))=\E[I(f)^2]=\int_0^T f(t)^2\,dt.
+\]
+\end{block}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Why the Limit is Still Gaussian (One clean argument)}
+
+For each $n$, $I(f^n)$ is Gaussian with characteristic function
+\vspace{-1mm}
+\[
+\E\!\left[e^{iu I(f^n)}\right]
+=
+\exp\!\left(-\tfrac12 u^2 \int_0^T (f^n(t))^2\,dt\right).
+\vspace{-3mm}
+\]
+\pause
+
+Since $f^n\to f$ in $L^2(0,T)$, we have
+\[
+\int_0^T (f^n(t))^2\,dt \longrightarrow \int_0^T f(t)^2\,dt.
+\vspace{-3mm}\]
+\pause
+
+Also $I(f^n)\to I(f)$ in $L^2$, hence in probability.\pause
+
+\medskip
+\begin{block}{Conclusion (characteristic functions + convergence)}
+The characteristic functions converge pointwise to
+$
+\exp\!\left(-\tfrac12 u^2 \int_0^T f(t)^2\,dt\right),
+$
+so $I(f)$ is Gaussian with variance $\int_0^T f^2$.
+\end{block}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Two Quick Corollaries (useful later)}
+
+Let $f,g\in L^2(0,T)$ deterministic.\pause
+
+\begin{itemize}
+  \item \textbf{Covariance formula (polarization):}\pause
+  \[
+  \Cov\!\big(I(f),I(g)\big)=\E[I(f)I(g)] = \int_0^T f(t)g(t)\,dt.
+  \]
+  \item \textbf{Independence criterion:}\pause
+  if $\int_0^T f(t)g(t)\,dt=0$, then $I(f)$ and $I(g)$ are independent
+  (because they are jointly Gaussian with zero covariance).\pause
+\end{itemize}
+
+\medskip
+\begin{alertblock}{Takeaway}
+Deterministic Ito integrals are exactly ``Gaussian linear functionals'' of Brownian motion.
+\end{alertblock}
+
+\end{frame}
+
+% ======================================================
+\subsection{Quadratic variation link}
+% For M_t = \int_0^t \phi dW:
+%   [M]_t = \int_0^t \phi_s^2 ds
+% State + sketch; full proof later once covariation is formalized.
+
+% --------------------------------------
+\begin{frame}{Quadratic Variation Link (Key Identity)}
+
+Let $\phi$ be adapted with $\E\!\left[\int_0^T \phi_s^2\,ds\right]<\infty$, and define
+\[
+M_t := \int_0^t \phi_s\,dW_s,
+\qquad 0\le t\le T.
+\]
+\pause
+
+\begin{theoremblock}{Quadratic variation of an Ito integral (statement)}
+For all $t\in[0,T]$,
+\[
+[M]_t = \int_0^t \phi_s^2\,ds
+\qquad \text{a.s.}
+\]
+\end{theoremblock}
+
+\medskip
+\begin{itemize}
+  \item This is the rigorous version of the heuristic rule
+  \[
+  (dM_t)^2 = \phi_t^2\,(dW_t)^2 = \phi_t^2\,dt.
+  \]
+  \item It is the mechanism behind Ito's formula and stochastic calculus rules.
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Sketch on Simple Processes (What to write on the board)}
+
+Assume first that $\phi$ is a simple (step) process on $[0,t]$:
+\[
+\phi_s=\sum_{i=0}^{n-1}\phi_{t_i}\,\mathbf{1}_{(t_i,t_{i+1}]}(s),
+\qquad \phi_{t_i}\in\cF_{t_i}.
+\]
+\pause
+
+Then for $u\in[t_i,t_{i+1}]$,
+\[
+M_u - M_{t_i} = \phi_{t_i}\,(W_u-W_{t_i}),
+\]
+so in particular
+\[
+\Delta M_i := M_{t_{i+1}}-M_{t_i} = \phi_{t_i}\,\Delta W_i.
+\]
+\pause
+
+\begin{block}{Quadratic variation along the same partition}
+\[
+[M]^{\pi}_t
+:=
+\sum_{i=0}^{n-1}(\Delta M_i)^2
+=
+\sum_{i=0}^{n-1}\phi_{t_i}^2\,(\Delta W_i)^2.
+\]
+\end{block}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Sketch Continued: Use $(\Delta W_i)^2 \approx \Delta t_i$}
+
+Split:
+\[
+[M]^{\pi}_t - \int_0^t \phi_s^2\,ds
+=
+\sum_{i=0}^{n-1}\phi_{t_i}^2\Big((\Delta W_i)^2-\Delta t_i\Big)
+\;+\;
+\Big(\sum_{i=0}^{n-1}\phi_{t_i}^2\Delta t_i-\int_0^t \phi_s^2\,ds\Big).
+\]
+\pause
+
+\begin{itemize}
+  \item The second term is a Riemann-sum error and goes to $0$ as $|\pi|\to 0$.\pause
+  \item The first term is a martingale-type fluctuation:
+  since $\E[(\Delta W_i)^2-\Delta t_i]=0$ and increments are independent,
+  one can show it goes to $0$ in $L^2$ under mild conditions.\pause
+\end{itemize}
+
+\medskip
+\begin{alertblock}{Message}
+The only non-vanishing second-order accumulation comes from $(\Delta W_i)^2$.
+That is why the bracket of $M$ is $\int \phi^2$.
+\end{alertblock}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Extension to General $\phi$ (One-line roadmap)}
+
+For a general adapted $\phi\in L^2(\Omega\times[0,T])$:
+\pause
+\begin{itemize}
+  \item approximate $\phi$ by step processes $\phi^n$ in
+  $L^2(\Omega\times[0,T])$;\pause
+  \item define $M^n_t=\int_0^t \phi^n\,dW$;\pause
+  \item use Ito isometry to show $M^n\to M$ in $L^2$;\pause
+  \item prove $[M^n]_t=\int_0^t (\phi^n)^2\,ds$ (step case);\pause
+  \item pass to the limit (this uses the formalism of quadratic covariation / brackets).\pause
+\end{itemize}
+
+\medskip
+\textbf{We will do the fully rigorous argument later once we formalize covariation/brackets.}
+
+\end{frame}
+
+\end{document}

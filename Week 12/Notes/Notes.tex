@@ -1,0 +1,3257 @@
+\documentclass[11pt]{article}
+
+% ============================================================
+% Packages
+% ============================================================
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,mathtools,amsthm}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{microtype}
+\usepackage{tikz}
+
+% ============================================================
+% Macros
+% ============================================================
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Pbb}{\mathbb{P}}
+\newcommand{\Qbb}{\mathbb{Q}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\dd}{\,\mathrm{d}}
+
+% ============================================================
+% Environments
+% ============================================================
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+% ============================================================
+% Title
+% ============================================================
+\title{Option Pricing --- Lecture Notes}
+\author{Nathan Sauldubois}
+\date{MSFE6233 --- Local Volatility, Stochastic Volatility, and Stochastic Interest Rates}
+
+\begin{document}
+
+\maketitle
+\vspace{-1em}
+
+\noindent\textbf{Lecture title.}
+\emph{Beyond Black--Scholes: local volatility, stochastic volatility, and stochastic interest rates}
+
+\vspace{0.5em}
+\hrule
+\vspace{1em}
+
+\noindent\textbf{Goals of the lecture.}
+\begin{itemize}[leftmargin=1.4em]
+    \item understand why the Black--Scholes model is too rigid to fit market smiles and skews;
+    \item introduce local volatility models and their link with the implied volatility surface;
+    \item present the main ideas behind stochastic volatility models;
+    \item introduce stochastic interest-rate modeling and its implications for pricing fixed-income securities.
+\end{itemize}
+
+\tableofcontents
+\bigskip
+
+% ============================================================
+\section{Introduction and motivation}
+% ============================================================
+
+\subsection{Limitations of the Black--Scholes model}
+
+The Black--Scholes model is one of the cornerstones of modern option
+pricing.
+Its success comes from its mathematical tractability, the existence of
+closed-form pricing formulas for European options, and the fact that it
+provides a very clear benchmark for hedging and risk management.  
+
+However, the model relies on two strong assumptions:
+\begin{itemize}[leftmargin=1.4em]
+    \item the volatility of the underlying asset is constant,
+    \item the interest rate is deterministic, and often even constant.
+\end{itemize}
+
+These assumptions are convenient mathematically, but they are not
+consistent with real market data.
+In particular, if the stock price satisfies
+\[
+\frac{\dd S_t}{S_t}=\mu\,\dd t+\sigma\,\dd W_t,
+\]
+with constant \(\sigma\), then log-returns are Gaussian and their
+distribution is entirely characterized by a fixed variance parameter.  
+Empirically, this is not what one observes in financial markets.
+Historical returns exhibit important deviations from the Gaussian model:
+\begin{itemize}[leftmargin=1.4em]
+    \item volatility varies through time,
+    \item extreme events occur more often than predicted by a Gaussian law,
+    \item distributions of returns are often skewed and leptokurtic.
+\end{itemize}
+
+In particular, financial data are known to display \emph{fat tails},
+meaning that extreme movements are more likely than under the normal
+distribution.
+This is often measured through the kurtosis, which is strictly larger
+than the Gaussian benchmark value \(3\). 
+Thus, even though the Black--Scholes model remains extremely useful in
+practice, it is now well understood that it cannot be a fully realistic
+description of financial markets. 
+
+\subsection{Volatility smile, skew, and term structure}
+
+One of the clearest empirical failures of the Black--Scholes model comes
+from the behavior of implied volatility.
+
+Recall that, in the Black--Scholes framework, one can invert the pricing
+formula and define the implied volatility \(\sigma_{\mathrm{imp}}(K,T)\)
+as the volatility parameter that reproduces the observed market option
+price.
+If the Black--Scholes model were correct, implied volatility would be
+constant across strikes and maturities.  
+
+In real markets, this is not the case.
+Instead, implied volatility depends on both the strike and the maturity,
+leading to a full \emph{implied volatility surface}.  
+
+Two important patterns are observed:
+\begin{itemize}[leftmargin=1.4em]
+    \item the \emph{volatility smile}, where implied volatility is higher
+    for deep in-the-money and deep out-of-the-money options than near the
+    money,
+    \item the \emph{volatility skew}, especially visible in equity markets,
+    where implied volatility tends to increase as the strike decreases.  
+\end{itemize}
+
+The volatility skew reflects the fact that market participants attach
+significant value to downside protection.
+Out-of-the-money put options are in strong demand because they insure
+against large downward moves, and this increased demand pushes their
+prices upward.
+When translated into Black--Scholes implied volatilities, this appears
+as a higher implied volatility for low strikes. 
+
+In addition, implied volatility also varies with maturity.
+This \emph{term structure of volatility} shows that the market does not
+price short-dated and long-dated uncertainty in the same way.
+Hence a single constant volatility parameter cannot reproduce the whole
+cross-section of market option prices. 
+
+\subsection{Why go beyond constant volatility and constant rates?}
+
+These empirical observations naturally motivate richer models.
+
+A first direction is to replace the constant volatility \(\sigma\) by a
+deterministic function of time and spot,
+\[
+\sigma_{\mathrm{loc}}(t,S_t),
+\]
+leading to a \emph{local volatility model}.
+Such models are designed precisely to fit the observed implied volatility
+surface at a given date. 
+
+A second direction is to model volatility itself as a random process.
+This leads to \emph{stochastic volatility models}, which are able to
+capture richer smile dynamics and more realistic time-series behavior of
+returns.
+They are also closely related to the observed clustering of volatility
+in financial data. 
+
+Finally, the assumption of deterministic interest rates is often too
+simplistic, especially when pricing fixed-income products or derivatives
+with significant exposure to the term structure of rates.
+This motivates the study of \emph{stochastic interest-rate models},
+where bond prices, yields, and forward rates become the main state
+variables.
+
+From a practical point of view, all these extensions are driven by the
+same need:
+\begin{itemize}[leftmargin=1.4em]
+    \item reproduce market prices more accurately,
+    \item obtain models consistent with observed implied volatility surfaces,
+    \item improve hedging and risk management,
+    \item and build frameworks suitable for calibration to liquid market data.  
+\end{itemize}
+
+\subsection{Roadmap of the lecture}
+
+This lecture is organized around three main modeling extensions beyond
+Black--Scholes.
+
+We begin with \emph{local volatility models}.
+The starting point is the implied volatility surface observed in the
+market.
+We introduce local volatility as a deterministic function
+\(\sigma_{\mathrm{loc}}(t,s)\), derive the corresponding pricing PDE,
+and present Dupire's formula, which links local volatility to European
+call prices observed across strikes and maturities.  
+
+We then turn to \emph{stochastic volatility models}.
+The goal is to go one step further and allow volatility itself to be
+random.
+We present the general structure of such models, explain their economic
+motivation, and discuss the role of additional factors such as the
+correlation between the asset and its volatility.
+
+Finally, we introduce \emph{stochastic interest-rate models}.
+We recall the basic objects of fixed-income modeling, such as
+zero-coupon bonds, yields, and forward rates, and explain why the
+evolution of the whole term structure must often be modeled explicitly.
+This leads to factor models and, at a more advanced level, to the
+
+
+The general philosophy of the lecture is the following:
+\begin{itemize}[leftmargin=1.4em]
+    \item identify the empirical shortcomings of the Black--Scholes model,
+    \item introduce richer but still tractable alternatives,
+    \item and understand how these models connect market observables,
+    such as option prices or yield curves, to the dynamics of the
+    underlying sources of risk.
+\end{itemize}
+
+% ============================================================
+\section{Local volatility models}
+% ============================================================
+
+\subsection{Definition of the local volatility model}
+
+A first way to go beyond the Black--Scholes model is to keep the market
+complete and Markovian, but replace the constant volatility parameter by
+a deterministic function of time and spot. This leads to the
+\emph{local volatility model}. 
+
+\paragraph{Definition.}
+Under the risk-neutral measure, the asset price process \(S\) is assumed
+to satisfy
+\[
+\mathrm{d}S_t
+=
+rS_t\,\mathrm{d}t
++
+\sigma_{\mathrm{loc}}(t,S_t)\,S_t\,\mathrm{d}W_t,
+\]
+or, equivalently,
+\[
+\frac{\mathrm{d}S_t}{S_t}
+=
+r\,\mathrm{d}t
++
+\sigma_{\mathrm{loc}}(t,S_t)\,\mathrm{d}W_t.
+\]
+Here, the function
+\[
+\sigma_{\mathrm{loc}}:[0,T]\times \R_+ \to \R_+
+\]
+is called the \emph{local volatility function}. It is a deterministic
+function of the current time and the current asset price. 
+
+\paragraph{Interpretation.}
+The terminology ``local'' reflects the fact that the instantaneous
+volatility at time \(t\) depends only on the current state \(S_t\), and
+not on the past trajectory of the process or on any additional hidden
+factor. Thus the model remains one-factor and Markovian. 
+
+\paragraph{Comparison with Black--Scholes.}
+The Black--Scholes model is recovered as the special case
+\[
+\sigma_{\mathrm{loc}}(t,s)\equiv \sigma,
+\]
+where the volatility is constant.
+The local volatility model is therefore a natural extension of
+Black--Scholes obtained by allowing the volatility coefficient to vary
+with both time and spot. 
+
+\paragraph{Why this model is introduced.}
+The main motivation is calibration.
+A single constant volatility parameter cannot reproduce the full market
+surface of European option prices across strikes and maturities.
+By allowing \(\sigma_{\mathrm{loc}}(t,s)\) to vary with \(t\) and \(s\),
+one obtains a model with enough flexibility to fit the observed implied
+volatility surface at a given date. 
+
+\paragraph{Pricing under local volatility.}
+Since the dynamics remain Markovian under the risk-neutral measure, the
+price \(C(t,s)\) of a European claim with payoff \(g(S_T)\) is still
+given by a risk-neutral expectation
+\[
+C(t,s)
+=
+\E^\Qbb\!\left[
+e^{-r(T-t)}g(S_T)
+\;\middle|\;
+S_t=s
+\right],
+\]
+and it solves the valuation PDE
+\[
+\partial_t C
++
+rs\,\partial_s C
++
+\frac12 \sigma_{\mathrm{loc}}(t,s)^2 s^2\,\partial_{ss}C
+-
+rC
+=
+0,
+\qquad
+C(T,s)=g(s).
+\]
+Thus the local volatility model preserves much of the analytic structure
+of Black--Scholes while allowing much richer implied-volatility
+patterns. 
+
+\subsection{Risk-neutral dynamics under local volatility}
+
+We now describe more precisely the dynamics of the asset price under a
+local volatility model when we work under the risk-neutral measure.
+
+\paragraph{Risk-neutral specification.}
+As in the Black--Scholes model, we assume that under the risk-neutral
+measure \(\Qbb\), the drift of the asset price is the short rate.
+The difference is that the volatility is no longer constant, but depends
+on both time and the current level of the asset.
+
+Thus the dynamics are
+\[
+\mathrm{d}S_t
+=
+rS_t\,\mathrm{d}t
++
+\sigma_{\mathrm{loc}}(t,S_t)\,S_t\,\mathrm{d}W_t,
+\]
+or equivalently
+\[
+\frac{\mathrm{d}S_t}{S_t}
+=
+r\,\mathrm{d}t
++
+\sigma_{\mathrm{loc}}(t,S_t)\,\mathrm{d}W_t.
+\]
+
+\paragraph{Comparison with Black--Scholes.}
+In the Black--Scholes model, the volatility coefficient is constant, so
+the diffusion term is simply
+\[
+\sigma S_t\,\mathrm{d}W_t.
+\]
+In the local volatility model, this is replaced by
+\[
+\sigma_{\mathrm{loc}}(t,S_t)S_t\,\mathrm{d}W_t.
+\]
+Hence the instantaneous variance of the asset return is now
+\[
+\sigma_{\mathrm{loc}}(t,S_t)^2.
+\]
+
+\paragraph{Markovian structure.}
+A key feature of the model is that the dynamics remain one-dimensional
+and Markovian.
+Indeed, the future evolution of the process depends only on the current
+time \(t\) and the current value \(S_t\).
+No additional factor is introduced.
+
+This is one of the main differences with stochastic volatility models,
+where volatility itself is an extra random process.
+
+\paragraph{Log-price dynamics.}
+Applying It\^o's formula to \(\log S_t\), we obtain
+\[
+\mathrm{d}\log S_t
+=
+\Big(
+r-\frac12\sigma_{\mathrm{loc}}(t,S_t)^2
+\Big)\mathrm{d}t
++
+\sigma_{\mathrm{loc}}(t,S_t)\,\mathrm{d}W_t.
+\]
+
+Thus, unlike in the Black--Scholes model, the log-price is no longer
+Gaussian in general, since its diffusion coefficient depends on the
+current state of the process.
+
+\paragraph{Discounted dynamics.}
+If we define the discounted stock price by
+\[
+\widetilde S_t:=e^{-rt}S_t,
+\]
+then It\^o's product rule gives
+\[
+\mathrm{d}\widetilde S_t
+=
+e^{-rt}\sigma_{\mathrm{loc}}(t,S_t)S_t\,\mathrm{d}W_t.
+\]
+Hence
+\[
+\widetilde S_t
+\]
+is a local martingale under \(\Qbb\), and under suitable integrability
+assumptions it is a true martingale.
+This is the risk-neutral counterpart of the no-arbitrage condition.
+
+\paragraph{Instantaneous covariance structure.}
+Since the model is still driven by a single Brownian motion, the only
+source of randomness is the asset itself.
+The local volatility function changes the amplitude of the noise, but it
+does not introduce any additional independent factor.
+
+\paragraph{Economic interpretation.}
+The local volatility function
+\[
+\sigma_{\mathrm{loc}}(t,s)
+\]
+can be interpreted as the market-implied instantaneous volatility of the
+asset when the time is \(t\) and the spot level is \(s\).
+In particular:
+\begin{itemize}[leftmargin=1.4em]
+    \item dependence on \(t\) captures the term structure of volatility,
+    \item dependence on \(s\) captures the smile or skew effect across strikes.
+\end{itemize}
+
+\paragraph{Main lesson.}
+The risk-neutral dynamics under local volatility keep the same general
+structure as Black--Scholes,
+\[
+\text{drift }=rS_t,
+\qquad
+\text{diffusion }=\sigma_{\mathrm{loc}}(t,S_t)S_t,
+\]
+but the state-dependent volatility coefficient allows the model to fit a
+much richer cross-section of option prices.
+
+\subsection{Pricing PDE under a local volatility model}
+
+We now derive the valuation equation satisfied by a European option in a
+local volatility model.
+
+\paragraph{Set-up.}
+Assume that under the risk-neutral measure \(\Qbb\), the stock price
+satisfies
+\[
+\mathrm{d}S_t
+=
+rS_t\,\mathrm{d}t
++
+\sigma_{\mathrm{loc}}(t,S_t)S_t\,\mathrm{d}W_t,
+\]
+where \(r\) is constant and \(\sigma_{\mathrm{loc}}(t,s)\) is a
+deterministic function of time and spot. 
+
+Let \(g:\R_+\to\R\) be the payoff function of a European claim maturing
+at time \(T\), and define its time-\(t\) price by
+\[
+C(t,s)
+=
+\E^\Qbb\!\left[
+e^{-r(T-t)}g(S_T)
+\;\middle|\;
+S_t=s
+\right].
+\]
+As in the Black--Scholes framework, the option price is characterized by
+a backward parabolic PDE. 
+
+\paragraph{Valuation equation.}
+The pricing PDE takes the form
+\[
+\boxed{
+\partial_t C(t,s)
++
+rs\,\partial_s C(t,s)
++
+\frac12 \sigma_{\mathrm{loc}}(t,s)^2 s^2\,\partial_{ss}C(t,s)
+-
+rC(t,s)
+=
+0,
+}
+\]
+for \(0\le t<T\), together with the terminal condition
+\[
+\boxed{
+C(T,s)=g(s).
+}
+\]
+This is exactly the Black--Scholes PDE with the constant volatility
+\(\sigma\) replaced by the local volatility function
+\(\sigma_{\mathrm{loc}}(t,s)\). 
+
+\paragraph{Derivation.}
+There are two standard ways to obtain this equation.
+
+The first one is to apply the Feynman--Kac formula to the risk-neutral
+expectation above.
+Since \(S\) is a Markov diffusion with generator
+\[
+\mathcal L_t \varphi(s)
+=
+rs\,\varphi'(s)
++
+\frac12 \sigma_{\mathrm{loc}}(t,s)^2 s^2\,\varphi''(s),
+\]
+the discounted price function must satisfy
+\[
+\partial_t C+\mathcal L_t C-rC=0.
+\]
+
+The second one is the usual replication argument:
+apply It\^o's formula to \(C(t,S_t)\), choose the delta hedge
+\[
+\Delta_t=\partial_s C(t,S_t),
+\]
+and impose that the hedged portfolio earns the risk-free rate.
+This gives the same PDE. The local volatility case is therefore a direct
+extension of the standard Black--Scholes hedging argument. 
+
+\paragraph{Interpretation.}
+The valuation equation shows that, under local volatility, the option
+price still depends only on time and spot,
+\[
+C_t=C(t,S_t),
+\]
+so the model remains one-factor and Markovian.
+In particular, European option pricing remains analytically tractable at
+the PDE level, even though the model can fit a much richer cross-section
+of market prices than Black--Scholes. 
+
+\paragraph{Why this is not enough for calibration.}
+A first naive idea would be to recover the local volatility function by
+solving the pricing PDE for \(\sigma_{\mathrm{loc}}\), namely
+\[
+\sigma_{\mathrm{loc}}(t,s)^2
+=
+\frac{
+rC(t,s)-\partial_t C(t,s)-rs\,\partial_s C(t,s)
+}{
+\frac12 s^2\,\partial_{ss}C(t,s)
+}.
+\]
+However, this is not directly implementable in practice, because the
+derivatives with respect to the spot variable \(s\) are not observed on
+the market: market quotes are given across strikes and maturities, not
+as a function of the current spot state variable. This is precisely why
+Dupire's forward formulation in \((T,K)\) variables is needed.  
+
+\subsection{Forward Kolmogorov equation and transition densities}
+
+To connect local volatility models with market option prices, it is
+useful to complement the backward pricing PDE with the corresponding
+\emph{forward} equation satisfied by the law of the stock price.
+
+\paragraph{Transition density.}
+Assume that, under the risk-neutral measure, the stock price satisfies
+\[
+\mathrm{d}S_t
+=
+rS_t\,\mathrm{d}t
++
+\sigma_{\mathrm{loc}}(t,S_t)S_t\,\mathrm{d}W_t.
+\]
+For \(0\le t<T\), we denote by
+\[
+p(t,s;T,y)
+\]
+the transition density of \(S_T\) conditional on \(S_t=s\), so that
+\[
+\Pbb(S_T\in \mathrm{d}y\mid S_t=s)=p(t,s;T,y)\,\mathrm{d}y.
+\]
+
+Equivalently, for any bounded measurable function \(g\),
+\[
+\E^\Qbb[g(S_T)\mid S_t=s]
+=
+\int_0^\infty g(y)\,p(t,s;T,y)\,\mathrm{d}y.
+\]
+
+\paragraph{Pricing formula in terms of the density.}
+If \(C(t,s)\) denotes the price at time \(t\) of a European claim with
+payoff \(g(S_T)\), then
+\[
+C(t,s)
+=
+e^{-r(T-t)}
+\int_0^\infty g(y)\,p(t,s;T,y)\,\mathrm{d}y.
+\]
+
+In particular, for a European call option with strike \(K\),
+\[
+C(t,s;T,K)
+=
+e^{-r(T-t)}
+\int_0^\infty (y-K)^+\,p(t,s;T,y)\,\mathrm{d}y.
+\]
+
+Thus the full cross-section of European option prices is determined by
+the transition density of the stock under the risk-neutral measure.
+
+\paragraph{Forward Kolmogorov equation.}
+The transition density satisfies the forward Kolmogorov equation, also
+called the \emph{Fokker--Planck equation}.
+For fixed initial condition \((t,s)\), the function
+\[
+(T,y)\longmapsto p(t,s;T,y)
+\]
+solves
+\[
+\boxed{
+\partial_T p(t,s;T,y)
+=
+-\partial_y\big(ry\,p(t,s;T,y)\big)
++
+\frac12\,\partial_{yy}\!\Big(\sigma_{\mathrm{loc}}(T,y)^2y^2\,p(t,s;T,y)\Big).
+}
+\]
+
+The initial condition is
+\[
+p(t,s;t,y)=\delta_s(y),
+\]
+in the sense of distributions.
+
+\paragraph{Interpretation.}
+This equation describes the time evolution of the probability density of
+the stock price.
+The first term corresponds to the transport generated by the drift
+\(ry\), while the second term describes the diffusion induced by the
+local volatility coefficient.
+
+\paragraph{Backward PDE vs forward PDE.}
+It is useful to distinguish clearly the two PDE viewpoints:
+\begin{itemize}[leftmargin=1.4em]
+    \item the \emph{backward} pricing PDE is satisfied by the option
+    price \(C(t,s)\) as a function of current time and current spot;
+    \item the \emph{forward} Kolmogorov equation is satisfied by the
+    transition density \(p(t,s;T,y)\) as a function of maturity and
+    future state variable.
+\end{itemize}
+
+Both equations encode the same diffusion model, but from two different
+perspectives.
+
+\paragraph{Why the forward equation matters.}
+The forward formulation is particularly important for calibration,
+because market option prices are quoted as functions of maturity \(T\)
+and strike \(K\), not as functions of the current spot variable \(s\).
+This makes the forward density approach better adapted to extracting the
+local volatility surface from market data.
+
+Indeed, Dupire's formula is obtained precisely by combining:
+\begin{itemize}[leftmargin=1.4em]
+    \item the representation of call prices in terms of the transition
+    density,
+    \item and the forward Kolmogorov equation satisfied by that density.
+\end{itemize}
+
+\paragraph{Key message.}
+The local volatility model can be studied either through:
+\begin{itemize}[leftmargin=1.4em]
+    \item the backward pricing PDE for option prices,
+    \item or the forward Kolmogorov equation for transition densities.
+\end{itemize}
+The forward point of view is the natural one when one wants to link the
+model directly to the observed surface of European option prices.
+
+\subsection{Dupire's formula}
+
+\subsubsection{Statement of Dupire's formula}
+
+We now state one of the central results of the local volatility
+approach.
+
+Suppose that, for each maturity \(T\) and strike \(K\), the market
+provides the price
+\[
+C(T,K)
+\]
+of a European call option written on the underlying asset.
+Assume that these call prices are sufficiently smooth in \((T,K)\), and
+that the underlying asset follows a local volatility model under the
+risk-neutral measure:
+\[
+\mathrm{d}S_t
+=
+rS_t\,\mathrm{d}t
++
+\sigma_{\mathrm{loc}}(t,S_t)S_t\,\mathrm{d}W_t.
+\]
+
+Then the local volatility function is given by Dupire's formula
+\[
+\boxed{
+\sigma_{\mathrm{loc}}(T,K)^2
+=
+\frac{
+\partial_T C(T,K)+rK\,\partial_K C(T,K)
+}{
+\frac12 K^2\,\partial_{KK}C(T,K)
+}.
+}
+\]
+
+Equivalently,
+\[
+\boxed{
+\partial_T C(T,K)
+=
+\frac12 \sigma_{\mathrm{loc}}(T,K)^2 K^2\,\partial_{KK}C(T,K)
+-rK\,\partial_K C(T,K).
+}
+\]
+
+This is the \emph{forward Dupire PDE} satisfied by call prices as a
+function of maturity \(T\) and strike \(K\).
+
+\paragraph{Remark.}
+If interest rates or dividends are time-dependent, the formula must be
+modified accordingly, but the essential idea remains the same:
+local volatility is recovered from derivatives of call prices with
+respect to maturity and strike.
+
+\subsubsection{Interpretation}
+
+Dupire's formula is remarkable because it expresses the local volatility
+surface directly in terms of observable market quantities, namely the
+prices of European call options across strikes and maturities.
+
+\paragraph{What the formula says.}
+The quantity
+\[
+\partial_T C(T,K)
+\]
+measures how the call price changes with maturity, while
+\[
+\partial_{KK}C(T,K)
+\]
+measures the curvature of the call price with respect to the strike.
+
+Thus the local variance
+\[
+\sigma_{\mathrm{loc}}(T,K)^2
+\]
+is obtained by comparing:
+\begin{itemize}[leftmargin=1.4em]
+    \item the sensitivity of the option price to maturity,
+    \item and the curvature of the option price with respect to strike.
+\end{itemize}
+
+\paragraph{Why this is important.}
+The Black--Scholes model uses a single constant volatility parameter, so
+it cannot reproduce a non-flat implied-volatility surface.
+By contrast, Dupire's formula shows that, at least formally, one can
+construct a deterministic function
+\[
+(T,K)\longmapsto \sigma_{\mathrm{loc}}(T,K)
+\]
+that reproduces exactly the observed market prices of European vanilla
+options.
+
+In this sense, the local volatility model is a model calibrated
+\emph{directly} to the entire market surface of call prices.
+
+\paragraph{What is local about it?}
+The quantity \(\sigma_{\mathrm{loc}}(T,K)\) should be interpreted as the
+instantaneous volatility assigned by the model when time is \(T\) and
+the spot level is \(K\).
+Thus the local volatility surface is read off from option prices, but it
+is then reinserted into the diffusion dynamics of the underlying asset.
+
+\paragraph{Key message.}
+Dupire's formula provides a bridge between:
+\begin{itemize}[leftmargin=1.4em]
+    \item a \emph{cross-section of market option prices},
+    \item and a \emph{state-dependent diffusion coefficient} for the
+    underlying asset.
+\end{itemize}
+
+This is one of the main reasons why local volatility models are so
+important in practice.
+
+\subsubsection{Heuristic derivation from call prices}
+
+We now explain heuristically where Dupire's formula comes from.
+
+\paragraph{Step 1: write the call price in terms of the density.}
+For simplicity, fix time \(0\), and denote by \(p(T,y)\) the density of
+\(S_T\) under the risk-neutral measure.
+Then the price of a European call with strike \(K\) and maturity \(T\)
+is
+\[
+C(T,K)
+=
+e^{-rT}\int_0^\infty (y-K)^+\,p(T,y)\,\mathrm{d}y.
+\]
+
+\paragraph{Step 2: differentiate with respect to the strike.}
+Differentiating once with respect to \(K\), we obtain
+\[
+\partial_K C(T,K)
+=
+-e^{-rT}\int_K^\infty p(T,y)\,\mathrm{d}y.
+\]
+Differentiating a second time gives
+\[
+\partial_{KK} C(T,K)
+=
+e^{-rT}p(T,K).
+\]
+
+Thus the second derivative of the call price with respect to the strike
+recovers the risk-neutral density of the stock price.
+
+\paragraph{Step 3: differentiate with respect to maturity.}
+On the other hand,
+\[
+\partial_T C(T,K)
+=
+-rC(T,K)
++
+e^{-rT}\int_0^\infty (y-K)^+\,\partial_T p(T,y)\,\mathrm{d}y.
+\]
+
+The density \(p(T,y)\) satisfies the forward Kolmogorov equation
+\[
+\partial_T p(T,y)
+=
+-\partial_y\big(ry\,p(T,y)\big)
++
+\frac12\partial_{yy}\Big(\sigma_{\mathrm{loc}}(T,y)^2y^2p(T,y)\Big).
+\]
+
+Substituting this into the formula for \(\partial_T C(T,K)\), and then
+integrating by parts, one obtains after simplification
+\[
+\partial_T C(T,K)
+=
+\frac12 \sigma_{\mathrm{loc}}(T,K)^2K^2\,\partial_{KK}C(T,K)
+-rK\,\partial_K C(T,K).
+\]
+
+Rearranging yields Dupire's formula
+\[
+\sigma_{\mathrm{loc}}(T,K)^2
+=
+\frac{
+\partial_T C(T,K)+rK\,\partial_K C(T,K)
+}{
+\frac12 K^2\,\partial_{KK}C(T,K)
+}.
+\]
+
+\paragraph{Why this derivation is only heuristic.}
+To make the argument fully rigorous, one must justify:
+\begin{itemize}[leftmargin=1.4em]
+    \item differentiation under the integral sign,
+    \item the existence and smoothness of the density,
+    \item and the integrations by parts.
+\end{itemize}
+
+For the purposes of this course, the key point is the structure of the
+argument:
+\begin{quote}
+call prices determine the density through strike derivatives, and the
+forward Kolmogorov equation then links this density to the local
+volatility function.
+\end{quote}
+
+\subsection{Calibration to market option prices}
+
+The main practical motivation for local volatility models is calibration
+to the observed market surface of European option prices.
+
+\paragraph{Calibration problem.}
+Suppose that, for each maturity \(T\) and strike \(K\), the market
+provides the call price
+\[
+C^{\mathrm{mkt}}(T,K),
+\]
+or equivalently the implied volatility surface
+\[
+\sigma_{\mathrm{imp}}(T,K).
+\]
+Since the Black--Scholes formula establishes a one-to-one relation
+between option prices and implied volatilities, calibrating to market
+option prices is equivalent to calibrating to the implied volatility
+surface.  
+
+The objective is therefore to choose a local volatility function
+\[
+\sigma_{\mathrm{loc}}(t,s)
+\]
+such that the model reproduces the observed market prices:
+\[
+C(0,S_0;T,K)=C^{\mathrm{mkt}}(T,K)
+\qquad\text{for all quoted }(T,K).
+\]
+
+\paragraph{Why Black--Scholes cannot do this.}
+The Black--Scholes model has only one volatility parameter \(\sigma\).
+Hence it cannot fit an entire surface of option prices indexed by both
+maturity and strike.
+This mismatch is exactly what motivates the introduction of local
+volatility: one replaces a single parameter by a full deterministic
+function of time and spot.  
+
+\paragraph{First naive idea.}
+Starting from the backward pricing PDE,
+\[
+\partial_t C
++
+rs\,\partial_s C
++
+\frac12 \sigma_{\mathrm{loc}}(t,s)^2 s^2\,\partial_{ss}C
+-rC=0,
+\]
+one might be tempted to solve for the local volatility as
+\[
+\sigma_{\mathrm{loc}}(t,s)^2
+=
+\frac{
+rC-\partial_t C-rs\,\partial_s C
+}{
+\frac12 s^2\,\partial_{ss}C
+}.
+\]
+However, this is not directly useful in practice, because these
+derivatives are with respect to the current spot variable \(s\), while
+market quotes are observed as functions of strike and maturity. This is
+precisely why Dupire's forward formulation is needed.  
+
+\paragraph{Calibration through Dupire's formula.}
+Dupire's formula solves this problem by expressing the local volatility
+directly in terms of derivatives of market call prices with respect to
+maturity and strike:
+\[
+\sigma_{\mathrm{loc}}(T,K)^2
+=
+\frac{
+\partial_T C(T,K)+rK\,\partial_K C(T,K)
+}{
+\frac12 K^2\,\partial_{KK}C(T,K)
+}.
+\]
+Thus, at least formally, once the full call-price surface is known, the
+local volatility surface can be recovered pointwise.
+
+\paragraph{Interpolation issue.}
+In practice, market quotes are only available on a finite and often
+rather sparse grid of maturities and strikes.
+Hence one cannot differentiate the market surface directly.
+A first step is therefore to interpolate the observed data.
+
+A common approach is the following:
+\begin{itemize}[leftmargin=1.4em]
+    \item for a fixed maturity, interpolate option prices across strikes,
+    for instance with cubic splines;
+    \item for a fixed strike, interpolate along the maturity direction,
+    often in implied-volatility or total-variance space.  
+\end{itemize}
+
+In particular, if
+\[
+w(T,K):=\sigma_{\mathrm{BS}}(T,K)^2\,T
+\]
+denotes the total implied variance, then interpolating linearly in
+\(w\) is a common and practical choice. 
+
+\paragraph{Numerical differentiation and stability.}
+Once an interpolated surface is available, one can compute numerical
+derivatives in \(T\) and \(K\), and then apply Dupire's formula.
+
+However, this step is numerically delicate:
+\begin{itemize}[leftmargin=1.4em]
+    \item the market surface may be noisy,
+    \item numerical differentiation amplifies interpolation errors,
+    \item for deep ITM or OTM options, the second derivative
+    \(\partial_{KK}C(T,K)\) may become very small, which can cause
+    instability in the Dupire formula. 
+\end{itemize}
+
+For this reason, practitioners often work in log-moneyness coordinates
+and rewrite Dupire's formula in terms of total implied variance
+\(w(T,K)\), which tends to be numerically more stable. 
+
+\paragraph{Alternative calibration approach.}
+Another possibility is to calibrate the local volatility surface by
+optimization rather than pointwise inversion.
+For a fixed maturity \(T\), one may search for a function
+\[
+\sigma_T(\cdot)=\sigma_{\mathrm{loc}}(T,\cdot)
+\]
+that minimizes the discrepancy between model prices and observed market
+prices, for example in a least-squares sense:
+\[
+\min_{\sigma_T}
+\sum_{j=1}^N
+\big(
+C_j^{\mathrm{obs}}-C(T,K_j;\sigma_T)
+\big)^2.
+\]
+To avoid unstable or irregular surfaces, one often adds a regularization
+term penalizing excessive curvature:
+\[
+\min_{\sigma_T}
+\sum_{j=1}^N
+\big(
+C_j^{\mathrm{obs}}-C(T,K_j;\sigma_T)
+\big)^2
++
+\lambda\int_0^\infty
+\big(\partial_{KK}\sigma_T(K)\big)^2\,\mathrm{d}K.
+\]
+This leads to a trade-off between exact fit and smoothness of the local
+volatility surface.
+
+\paragraph{Main lesson.}
+Calibration is the central practical use of the local volatility model:
+the whole purpose of introducing \(\sigma_{\mathrm{loc}}(t,s)\) is to
+replace the single Black--Scholes volatility parameter by a function
+flexible enough to fit the market cross-section of European option
+prices.
+
+\subsection{Strengths and limitations of local volatility}
+
+The local volatility model is one of the most important extensions of
+Black--Scholes, because it preserves much of its tractability while
+allowing a much richer fit to market option prices.
+
+\paragraph{Strengths.}
+
+The first major strength of the model is that it can reproduce, at least
+formally, the full market surface of European vanilla option prices at a
+given date.
+This is precisely the content of Dupire's formula.
+
+The second advantage is that the model remains one-factor and Markovian.
+The asset dynamics still have the form
+\[
+\mathrm{d}S_t
+=
+rS_t\,\mathrm{d}t
++
+\sigma_{\mathrm{loc}}(t,S_t)S_t\,\mathrm{d}W_t,
+\]
+so pricing continues to rely on a single diffusion and a PDE very
+similar to the Black--Scholes equation.
+
+The third advantage is conceptual simplicity.
+The model keeps the idea that all randomness comes from one Brownian
+motion, and only modifies the local amplitude of the noise.
+This makes it relatively easy to implement numerically once the local
+volatility surface has been calibrated.
+
+\paragraph{Practical appeal.}
+Because of these features, local volatility models are widely used in
+practice as arbitrage-free interpolation devices for the implied
+volatility surface.
+They provide a consistent way to price vanilla claims across a large set
+of strikes and maturities.
+
+\paragraph{Limitations.}
+
+Despite these strengths, the local volatility model has important
+limitations.
+
+First, the model is entirely driven by a deterministic volatility
+surface.
+Once the current time and current spot are known, the instantaneous
+volatility is fixed.
+Hence the model does not introduce an independent volatility factor.
+It therefore cannot capture the genuine randomness of volatility itself,
+which is one of the main stylized facts of financial markets.  
+Second, although the model fits the cross-section of vanilla option
+prices at one date, it does not necessarily reproduce realistic
+\emph{dynamics} of the implied volatility surface over time.
+In particular, smile dynamics generated by local volatility models are
+often considered less realistic than those produced by stochastic
+volatility models.
+
+Third, calibration is numerically fragile.
+As already discussed, Dupire's formula requires differentiating market
+option prices with respect to strike and maturity, and these numerical
+derivatives can be unstable, especially in sparse or noisy markets.  
+
+Fourth, the model may generate local volatility values that are
+sensitive to interpolation choices and to small inconsistencies in the
+market data.
+In practice, extra smoothing and regularization are often needed.
+
+\paragraph{Conceptual limitation.}
+A useful way to summarize the situation is the following:
+\begin{quote}
+local volatility models are designed to fit today's smile, but not
+necessarily tomorrow's smile dynamics.
+\end{quote}
+
+In other words, they are excellent \emph{static} calibration tools for
+vanilla options, but they are less satisfactory when one wants a model
+with realistic time-series behavior of volatility.
+
+\paragraph{Comparison with stochastic volatility.}
+This is precisely why stochastic volatility models are introduced.
+Whereas local volatility explains the smile by making volatility a
+deterministic function of \((t,S_t)\), stochastic volatility models
+introduce a separate random factor for volatility itself.
+They typically provide a better dynamic description of market smiles and
+skews, at the cost of a more complex model.
+
+\paragraph{Main lesson.}
+The local volatility model should therefore be viewed as a very useful
+intermediate model:
+\begin{itemize}[leftmargin=1.4em]
+    \item richer and more realistic than Black--Scholes,
+    \item still tractable and calibratable to vanilla options,
+    \item but less realistic than stochastic volatility models when it
+    comes to volatility dynamics.
+\end{itemize}
+
+% ============================================================
+\section{Stochastic volatility models}
+% ============================================================
+
+\subsection{Why local volatility is not enough}
+
+The local volatility model is a major improvement over Black--Scholes,
+because it allows one to fit the whole cross-section of European vanilla
+option prices observed at a given date.
+However, despite this important success, it is still not a fully
+satisfactory model of market dynamics.
+
+\paragraph{A first limitation: volatility is not genuinely random.}
+In a local volatility model, the asset price satisfies
+\[
+\mathrm{d}S_t
+=
+rS_t\,\mathrm{d}t
++
+\sigma_{\mathrm{loc}}(t,S_t)S_t\,\mathrm{d}W_t.
+\]
+Thus, once the current time \(t\) and the current spot level \(S_t\) are
+known, the instantaneous volatility is completely determined.
+The model remains one-factor and Markovian, and there is no additional
+source of randomness driving volatility itself.
+
+This is at odds with market evidence.
+In practice, volatility behaves like a random state variable:
+it clusters through time, varies in persistent ways, and reacts
+strongly to market movements.
+A deterministic function \(\sigma_{\mathrm{loc}}(t,s)\) cannot reproduce
+this feature.
+
+\paragraph{A second limitation: unrealistic smile dynamics.}
+The local volatility model is calibrated so as to match the implied
+volatility surface at the current date.
+In this sense, it is a very good \emph{static} model.
+
+However, once the model is evolved forward in time, the future
+dynamics of the smile are entirely determined by the deterministic
+function \(\sigma_{\mathrm{loc}}(t,s)\).
+As a consequence, the way the implied volatility surface moves when the
+spot moves is often unrealistic.
+
+In particular, local volatility models typically produce smile dynamics
+that are too strongly tied to the spot level.
+Practitioners often summarize this by saying that local volatility
+models fit today's smile, but do not generate realistic future smile
+movements.
+
+\paragraph{A third limitation: poor description of volatility time series.}
+Because the model has only one Brownian driver, all randomness is carried
+by the asset price itself.
+There is no separate process representing the volatility level.
+
+As a consequence, the model does not capture important empirical
+features such as:
+\begin{itemize}[leftmargin=1.4em]
+    \item volatility clustering,
+    \item persistence of high- and low-volatility regimes,
+    \item a separate source of uncertainty attached to future volatility.
+\end{itemize}
+
+This is a serious limitation for products whose value depends not only
+on the terminal distribution of the asset, but also on the future
+evolution of volatility.
+
+\paragraph{A fourth limitation: sensitivity to calibration.}
+The local volatility surface is recovered from market option prices
+through Dupire-type formulas or related calibration procedures.
+In practice, this is numerically delicate:
+\begin{itemize}[leftmargin=1.4em]
+    \item market quotes are observed only on a finite grid,
+    \item interpolation is required,
+    \item numerical differentiation may amplify noise,
+    \item the resulting local volatility surface may be unstable.
+\end{itemize}
+
+Thus, although the model is elegant in theory, its practical
+implementation can be fragile.
+
+\paragraph{A useful summary.}
+The local volatility model should be viewed as a model that reproduces
+the \emph{marginal law} of the asset well enough to fit vanilla option
+prices at one date, but not as a model that reproduces correctly the
+joint dynamics of spot and volatility through time.
+
+\paragraph{Why this motivates stochastic volatility.}
+These limitations naturally lead to the introduction of stochastic
+volatility models.
+
+Instead of imposing that volatility is a deterministic function of
+\((t,S_t)\), one introduces a new random factor \(V_t\), and writes a
+system of the form
+\[
+\mathrm{d}S_t
+=
+rS_t\,\mathrm{d}t
++
+\sqrt{V_t}\,S_t\,\mathrm{d}W_t^{(1)},
+\]
+together with a second equation describing the dynamics of \(V_t\).
+
+This allows volatility itself to fluctuate randomly, and leads to richer
+and more realistic smile dynamics.
+
+\paragraph{Main lesson.}
+Local volatility is an excellent model for static calibration to vanilla
+options, but it is not sufficient when one wants:
+\begin{itemize}[leftmargin=1.4em]
+    \item a realistic dynamic model of the implied volatility surface,
+    \item a separate source of volatility risk,
+    \item or a better description of the time-series behavior of
+    financial markets.
+\end{itemize}
+
+This is the main reason why stochastic volatility models are introduced.
+
+\subsection{General structure of a stochastic volatility model}
+
+We now move from local volatility models to a broader class of models in
+which volatility itself is random.
+
+\paragraph{Basic idea.}
+In the Black--Scholes model, volatility is constant.
+In a local volatility model, volatility is a deterministic function of
+time and spot,
+\[
+\sigma_{\mathrm{loc}}(t,S_t).
+\]
+In both cases, once the current state of the stock is known, the
+instantaneous volatility is fully determined.
+
+A stochastic volatility model goes one step further:
+it introduces an additional random factor, usually denoted by \(V_t\) or
+\(\nu_t\), which drives the volatility of the asset.
+
+\paragraph{Generic form of the model.}
+Under the risk-neutral measure, a stochastic volatility model typically
+takes the form
+\[
+\mathrm{d}S_t
+=
+rS_t\,\mathrm{d}t
++
+\sigma(t,S_t,V_t)\,S_t\,\mathrm{d}W_t^{(1)},
+\]
+together with a second equation describing the volatility factor:
+\[
+\mathrm{d}V_t
+=
+b(t,V_t)\,\mathrm{d}t
++
+a(t,V_t)\,\mathrm{d}W_t^{(2)}.
+\]
+
+The two Brownian motions are generally allowed to be correlated:
+\[
+\mathrm{d}\langle W^{(1)},W^{(2)}\rangle_t=\rho\,\mathrm{d}t,
+\qquad -1\le \rho \le 1.
+\]
+
+Thus the model is usually a two-factor diffusion:
+\begin{itemize}[leftmargin=1.4em]
+    \item one factor for the asset price,
+    \item one factor for the volatility level.
+\end{itemize}
+
+\paragraph{Interpretation of the volatility factor.}
+The process \(V_t\) may represent:
+\begin{itemize}[leftmargin=1.4em]
+    \item the instantaneous variance,
+    \item the instantaneous volatility,
+    \item or a latent factor driving volatility.
+\end{itemize}
+
+A very common convention is to interpret \(V_t\) as the instantaneous
+variance and to write
+\[
+\mathrm{d}S_t
+=
+rS_t\,\mathrm{d}t
++
+\sqrt{V_t}\,S_t\,\mathrm{d}W_t^{(1)}.
+\]
+
+In that case, \(V_t\) must remain non-negative.
+
+\paragraph{Why correlation matters.}
+The correlation parameter \(\rho\) plays an important role in practice.
+It couples the shocks on the asset price and on volatility.
+In particular, negative values of \(\rho\) are often used to reproduce
+the equity volatility skew:
+when the asset price drops, volatility tends to increase.
+
+Thus stochastic volatility models can naturally generate asymmetric
+smiles and skews.
+
+\paragraph{Comparison with local volatility.}
+The key difference with local volatility is that the instantaneous
+volatility is no longer determined solely by \((t,S_t)\).
+Even if the current stock price \(S_t\) is known, the future evolution
+of volatility still depends on the additional random factor \(V_t\).
+
+Therefore, stochastic volatility models are no longer one-factor models:
+they introduce an additional source of risk.
+
+\paragraph{Markovian structure.}
+Although the stock price process alone is no longer Markovian in
+general, the pair
+\[
+(S_t,V_t)
+\]
+is typically Markovian.
+As a consequence, derivative prices are naturally represented as
+functions of two state variables:
+\[
+u(t,s,v).
+\]
+
+This leads to pricing PDEs in higher dimension than in Black--Scholes or
+local volatility models.
+
+\paragraph{Pricing point of view.}
+For a European payoff \(g(S_T)\), the risk-neutral pricing formula
+becomes
+\[
+u(t,s,v)
+=
+\E^\Qbb\!\left[
+e^{-r(T-t)}g(S_T)
+\;\middle|\;
+S_t=s,\ V_t=v
+\right].
+\]
+
+Thus the price depends not only on the current level of the asset, but
+also on the current level of volatility.
+
+\paragraph{Main advantage.}
+The main benefit of stochastic volatility models is that they provide a
+more realistic description of market dynamics:
+\begin{itemize}[leftmargin=1.4em]
+    \item volatility is genuinely random,
+    \item the model can capture volatility clustering,
+    \item smile and skew dynamics are richer,
+    \item the model is better suited to products sensitive to future
+    volatility.
+\end{itemize}
+
+\paragraph{Main drawback.}
+The price to pay is increased complexity:
+\begin{itemize}[leftmargin=1.4em]
+    \item the model is higher-dimensional,
+    \item calibration is more delicate,
+    \item pricing and hedging are more involved,
+    \item closed-form formulas are rare, except in a few special models.
+\end{itemize}
+
+\paragraph{Examples.}
+Several well-known models belong to this class:
+\begin{itemize}[leftmargin=1.4em]
+    \item the Heston model,
+    \item the Hull--White stochastic volatility model,
+    \item SABR-type models in interest-rate and FX markets.
+\end{itemize}
+
+In the next subsection, we focus on the Heston model, which is one of
+the most important and widely used stochastic volatility models.
+
+
+\subsection{Example: a two-factor stochastic volatility model}
+
+We now present a simple example of a stochastic volatility model with
+two state variables: the asset price and the volatility factor.
+
+\paragraph{Model specification.}
+Under the risk-neutral measure, consider the system
+\[
+\mathrm{d}S_t
+=
+rS_t\,\mathrm{d}t
++
+\sqrt{V_t}\,S_t\,\mathrm{d}W_t^{(1)},
+\]
+\[
+\mathrm{d}V_t
+=
+\kappa(\theta-V_t)\,\mathrm{d}t
++
+\eta\sqrt{V_t}\,\mathrm{d}W_t^{(2)},
+\]
+where
+\[
+\mathrm{d}\langle W^{(1)},W^{(2)}\rangle_t=\rho\,\mathrm{d}t,
+\qquad -1\le \rho\le 1.
+\]
+
+Here:
+\begin{itemize}[leftmargin=1.4em]
+    \item \(S_t\) is the asset price,
+    \item \(V_t\) is the instantaneous variance,
+    \item \(r\) is the risk-free rate,
+    \item \(\kappa>0\) is the mean-reversion speed of the variance,
+    \item \(\theta>0\) is the long-run variance level,
+    \item \(\eta>0\) is the volatility of volatility,
+    \item \(\rho\) is the correlation between the shocks on the asset and on the variance.
+\end{itemize}
+
+\paragraph{Why this is a two-factor model.}
+The model is driven by two sources of randomness:
+\begin{itemize}[leftmargin=1.4em]
+    \item one Brownian motion \(W^{(1)}\) acting directly on the stock price,
+    \item one Brownian motion \(W^{(2)}\) acting on the variance process.
+\end{itemize}
+Thus the state variable is the pair
+\[
+(S_t,V_t),
+\]
+and the model is genuinely two-dimensional.
+
+\paragraph{Interpretation of the variance dynamics.}
+The variance process \(V_t\) is mean reverting.
+Indeed, its drift is
+\[
+\kappa(\theta-V_t).
+\]
+Hence:
+\begin{itemize}[leftmargin=1.4em]
+    \item if \(V_t>\theta\), the drift is negative and tends to bring the variance down,
+    \item if \(V_t<\theta\), the drift is positive and tends to push the variance up.
+\end{itemize}
+
+This is consistent with the empirical observation that volatility tends
+to fluctuate around a long-run level rather than drift away indefinitely.
+
+\paragraph{Role of the volatility of volatility.}
+The coefficient \(\eta\) measures the amplitude of the random
+fluctuations of the variance process.
+A larger value of \(\eta\) means that volatility itself is more random.
+
+This parameter has a strong impact on option prices, especially on the
+shape of the implied volatility smile.
+
+\paragraph{Role of the correlation.}
+The correlation \(\rho\) is one of the most important parameters of the
+model.
+It controls the interaction between the stock and the variance.
+
+In equity markets, one often uses \(\rho<0\).
+This reflects the fact that downward moves in the stock are frequently
+associated with increases in volatility.
+Such a negative correlation naturally generates a downward volatility
+skew.
+
+\paragraph{Log-price dynamics.}
+Applying It\^o's formula to \(\log S_t\), we obtain
+\[
+\mathrm{d}\log S_t
+=
+\Big(r-\frac12 V_t\Big)\mathrm{d}t
++
+\sqrt{V_t}\,\mathrm{d}W_t^{(1)}.
+\]
+
+Compared with Black--Scholes, the key difference is that the
+instantaneous variance is no longer constant, but equal to the random
+process \(V_t\).
+
+\paragraph{Pricing point of view.}
+If \(g(S_T)\) is the payoff of a European derivative, then its price is
+naturally written as
+\[
+u(t,s,v)
+=
+\E^\Qbb\!\left[
+e^{-r(T-t)}g(S_T)
+\;\middle|\;
+S_t=s,\ V_t=v
+\right].
+\]
+
+Thus the option price depends on two state variables:
+\begin{itemize}[leftmargin=1.4em]
+    \item the current stock price \(s\),
+    \item the current variance level \(v\).
+\end{itemize}
+
+\paragraph{Associated PDE.}
+The infinitesimal generator of the two-dimensional diffusion
+\((S_t,V_t)\) is
+\[
+\mathcal L u
+=
+rs\,\partial_s u
++
+\kappa(\theta-v)\,\partial_v u
++
+\frac12 vs^2\,\partial_{ss}u
++
+\rho\eta vs\,\partial_{sv}u
++
+\frac12\eta^2 v\,\partial_{vv}u.
+\]
+
+Therefore the option price satisfies the PDE
+\[
+\partial_t u+\mathcal L u-r u=0,
+\qquad
+u(T,s,v)=g(s).
+\]
+
+This illustrates one of the main differences with local volatility
+models: the pricing equation is now two-dimensional.
+
+\paragraph{What this model captures.}
+This type of model is able to reproduce several important features of
+financial markets:
+\begin{itemize}[leftmargin=1.4em]
+    \item stochastic fluctuations of volatility,
+    \item volatility clustering,
+    \item skewed implied volatility surfaces,
+    \item richer smile dynamics than local volatility models.
+\end{itemize}
+
+\paragraph{Connection with the Heston model.}
+The model above is in fact the classical Heston-type specification.
+It is one of the most important stochastic volatility models in
+practice, because it is rich enough to produce realistic smile effects
+while remaining analytically tractable in some cases.
+
+In the next subsection, we discuss this model in more detail and explain
+why it plays such a central role in option pricing.
+
+\subsection{The Heston model}
+
+Among stochastic volatility models, the Heston model is one of the most
+important and widely used in practice.
+It combines a relatively rich volatility dynamics with a level of
+tractability that makes it especially attractive for pricing and
+calibration.
+
+\subsubsection{Dynamics}
+
+Under the risk-neutral measure, the Heston model is given by
+\[
+\mathrm{d}S_t
+=
+rS_t\,\mathrm{d}t
++
+\sqrt{V_t}\,S_t\,\mathrm{d}W_t^{(1)},
+\]
+\[
+\mathrm{d}V_t
+=
+\kappa(\theta-V_t)\,\mathrm{d}t
++
+\eta\sqrt{V_t}\,\mathrm{d}W_t^{(2)},
+\]
+with
+\[
+\mathrm{d}\langle W^{(1)},W^{(2)}\rangle_t=\rho\,\mathrm{d}t,
+\qquad -1\le \rho\le 1.
+\]
+
+Here:
+\begin{itemize}[leftmargin=1.4em]
+    \item \(S_t\) is the stock price,
+    \item \(V_t\) is the instantaneous variance,
+    \item \(r\) is the risk-free rate,
+    \item \(\kappa>0\) is the mean-reversion speed,
+    \item \(\theta>0\) is the long-run variance level,
+    \item \(\eta>0\) is the volatility of volatility,
+    \item \(\rho\) is the correlation between the stock and variance shocks.
+\end{itemize}
+
+\paragraph{Interpretation of the parameters.}
+
+The parameter \(\kappa\) controls how quickly the variance tends to
+return to its long-run level \(\theta\).
+If \(\kappa\) is large, the variance reverts rapidly; if \(\kappa\) is
+small, the variance remains persistent for longer periods.
+
+The parameter \(\eta\) controls the randomness of volatility itself.
+Larger values of \(\eta\) produce stronger fluctuations in the variance
+process and therefore more pronounced smile effects.
+
+The parameter \(\theta\) determines the average variance level around
+which the process fluctuates.
+
+\paragraph{Positivity of the variance.}
+
+Since \(V_t\) represents an instantaneous variance, it should remain
+non-negative.
+The square-root diffusion structure is designed precisely for this
+purpose.
+A sufficient condition ensuring strict positivity is the Feller
+condition
+\[
+2\kappa\theta \ge \eta^2.
+\]
+Even when this condition is not imposed, the model is still widely used
+in practice, although the behavior of the variance process near zero
+must then be treated with care.
+
+\paragraph{Log-price dynamics.}
+
+Applying It\^o's formula to \(\log S_t\), we obtain
+\[
+\mathrm{d}\log S_t
+=
+\Big(r-\frac12V_t\Big)\mathrm{d}t
++
+\sqrt{V_t}\,\mathrm{d}W_t^{(1)}.
+\]
+
+Thus the instantaneous variance of log-returns is exactly \(V_t\), which
+is now random and time-varying.
+
+\paragraph{Pricing point of view.}
+
+If \(g(S_T)\) is the payoff of a European derivative, its price is
+written as
+\[
+u(t,s,v)
+=
+\E^\Qbb\!\left[
+e^{-r(T-t)}g(S_T)
+\;\middle|\;
+S_t=s,\ V_t=v
+\right].
+\]
+
+As in the previous subsection, the price depends on two state variables,
+and the associated pricing PDE is two-dimensional.
+
+\subsubsection{Role of correlation}
+
+The correlation parameter \(\rho\) plays a crucial role in the Heston
+model.
+
+\paragraph{Why correlation matters.}
+
+The Brownian motion \(W^{(1)}\) drives the stock price, while
+\(W^{(2)}\) drives the variance process.
+If these two Brownian motions were independent, then shocks on the stock
+and shocks on volatility would be unrelated.
+In practice, this is not realistic, especially in equity markets.
+
+Indeed, empirical evidence suggests that large downward moves in stock
+prices are often associated with increases in volatility.
+This phenomenon is sometimes referred to as the \emph{leverage effect}.
+
+\paragraph{Negative correlation.}
+
+When \(\rho<0\), a negative shock on the stock tends to be accompanied by
+a positive shock on variance.
+Thus falling prices are associated with rising volatility.
+
+This is exactly the mechanism needed to generate the downward skew
+observed in equity implied volatility surfaces.
+
+\paragraph{Positive correlation.}
+
+If \(\rho>0\), upward moves in the stock tend to be accompanied by
+increases in volatility.
+This is less typical in equity markets, but may be relevant in other
+asset classes.
+
+\paragraph{Special case \(\rho=0\).}
+
+If \(\rho=0\), stock and variance shocks are uncorrelated.
+The model can still generate a volatility smile because volatility is
+random, but it loses the strong asymmetry needed to reproduce a
+pronounced skew.
+
+\paragraph{Economic interpretation.}
+
+The correlation parameter is therefore not just a technical feature of
+the model.
+It is one of the main mechanisms through which the Heston model produces
+asymmetric option prices and realistic implied-volatility patterns.
+
+\subsubsection{Qualitative effect on the smile/skew}
+
+The Heston model is particularly valued because it can generate implied
+volatility smiles and skews in a natural way.
+
+\paragraph{Effect of stochastic volatility itself.}
+
+Even if \(\rho=0\), the randomness of the variance process already makes
+the distribution of returns richer than in Black--Scholes.
+In particular, the model can generate heavier tails and more curvature
+in implied volatility across strikes.
+
+Thus stochastic volatility alone already tends to produce a smile.
+
+\paragraph{Effect of negative correlation.}
+
+When \(\rho<0\), the model produces a downward skew in implied
+volatility:
+low strikes tend to have higher implied volatilities than high strikes.
+
+This is the pattern typically observed in equity markets.
+The reason is that large downward stock moves are associated with higher
+future volatility, which increases the value of out-of-the-money puts.
+
+\paragraph{Effect of \(\eta\).}
+
+The parameter \(\eta\), often called the volatility of volatility, has a
+strong impact on the curvature of the smile.
+A larger \(\eta\) produces more randomness in volatility and therefore a
+more pronounced smile or skew.
+
+\paragraph{Effect of \(\kappa\) and \(\theta\).}
+
+The long-run variance level \(\theta\) influences the overall level of
+implied volatility, while the mean-reversion speed \(\kappa\) affects
+how persistent volatility shocks are.
+Together, these parameters influence both the level and the term
+structure of implied volatility.
+
+\paragraph{Comparison with local volatility.}
+
+Unlike local volatility models, the Heston model does not merely fit a
+static implied volatility surface through a deterministic function of
+time and spot.
+Instead, it introduces a genuine random volatility factor, which leads
+to more realistic smile dynamics over time.
+
+This is one of the main reasons why stochastic volatility models are
+preferred when one wants not only a fit to today's market prices, but
+also a plausible evolution of future implied volatility surfaces.
+
+\paragraph{Main lesson.}
+
+The Heston model combines three important features:
+\begin{itemize}[leftmargin=1.4em]
+    \item random volatility,
+    \item mean reversion of variance,
+    \item and correlation between spot and volatility shocks.
+\end{itemize}
+
+Together, these ingredients allow the model to generate realistic
+smiles and skews while remaining sufficiently tractable for pricing and
+calibration.
+
+\subsection{Pricing and hedging issues under stochastic volatility}
+
+Stochastic volatility models are appealing because they provide a much
+richer description of market dynamics than Black--Scholes or local
+volatility models.
+However, this additional realism comes at a price: both pricing and
+hedging become more difficult.
+
+\paragraph{Pricing is no longer one-dimensional.}
+
+In the Black--Scholes model, the option price depends only on time and
+the current stock price:
+\[
+u=u(t,s).
+\]
+In a stochastic volatility model, the relevant state variable is
+typically the pair
+\[
+(S_t,V_t),
+\]
+so the option price becomes a function
+\[
+u=u(t,s,v).
+\]
+
+As a result, the pricing PDE is no longer one-dimensional, but
+two-dimensional.
+For example, in a Heston-type model, the pricing equation takes the form
+\[
+\partial_t u+\mathcal L u-r u=0,
+\qquad
+u(T,s,v)=g(s),
+\]
+where \(\mathcal L\) is the generator of the two-factor diffusion.
+This already makes numerical pricing more expensive than in the
+Black--Scholes or local volatility settings.
+
+\paragraph{Closed-form formulas are rare.}
+
+In Black--Scholes, European call and put prices are given by explicit
+closed-form formulas.
+In stochastic volatility models, such explicit expressions are usually
+not available.
+
+Some models, such as the Heston model, remain partially tractable and
+allow semi-explicit pricing formulas based on Fourier methods or
+characteristic functions.
+But in general, one often has to rely on:
+\begin{itemize}[leftmargin=1.4em]
+    \item finite-difference methods,
+    \item Monte Carlo simulation,
+    \item Fourier techniques,
+    \item or approximation formulas.
+\end{itemize}
+
+Thus stochastic volatility models are significantly more demanding from
+a numerical point of view.
+
+\paragraph{A new source of risk appears.}
+
+A major conceptual difference with Black--Scholes is that volatility is
+now random.
+Therefore, in addition to the uncertainty coming from the stock price,
+there is an extra source of randomness coming from the volatility factor.
+
+In a model of the form
+\[
+\mathrm{d}S_t
+=
+rS_t\,\mathrm{d}t
++
+\sqrt{V_t}\,S_t\,\mathrm{d}W_t^{(1)},
+\qquad
+\mathrm{d}V_t
+=
+b(t,V_t)\,\mathrm{d}t
++
+a(t,V_t)\,\mathrm{d}W_t^{(2)},
+\]
+there are typically two Brownian drivers.
+Hence the market is no longer complete if one trades only in the stock
+and the money market account.
+
+This means that one cannot, in general, perfectly replicate every
+derivative written on the stock.
+
+\paragraph{Consequence for hedging.}
+
+In the Black--Scholes model, delta hedging is enough to eliminate all
+risk, because the model has only one source of randomness and one risky
+asset.
+Under stochastic volatility, delta hedging is no longer sufficient.
+
+Indeed, a portfolio hedged only with respect to movements in the stock
+still remains exposed to changes in the volatility factor.
+This is often called \emph{volatility risk}.
+
+As a consequence, hedging requires additional instruments, typically
+other liquid options, in order to control sensitivity not only to the
+spot, but also to the volatility factor.
+
+\paragraph{Greeks and volatility exposure.}
+
+In stochastic volatility models, the usual delta and gamma remain
+important, but other sensitivities become central.
+In particular:
+\begin{itemize}[leftmargin=1.4em]
+    \item \emph{vega} measures sensitivity to changes in volatility,
+    \item the sensitivity to the variance factor \(V_t\) itself becomes
+    a key object,
+    \item correlation risk may also matter through the parameter \(\rho\).
+\end{itemize}
+
+Thus risk management becomes multidimensional:
+one no longer hedges only the spot risk, but also part of the volatility
+risk.
+
+\paragraph{Model incompleteness.}
+
+Because stochastic volatility introduces an additional non-traded source
+of risk, the model is usually incomplete.
+This has several consequences:
+\begin{itemize}[leftmargin=1.4em]
+    \item perfect replication is generally impossible,
+    \item option prices depend on the choice of risk-neutral dynamics for
+    volatility,
+    \item hedging becomes approximate rather than exact.
+\end{itemize}
+
+In practice, one therefore works with calibrated models and hedging
+strategies that are designed to perform well empirically, rather than
+with exact replication arguments as in Black--Scholes.
+
+\paragraph{Numerical challenges.}
+
+Stochastic volatility models also raise several numerical issues.
+
+First, the pricing PDE is higher-dimensional, which makes finite
+difference methods more expensive.
+
+Second, Monte Carlo methods remain available, but they require the
+simulation of both the stock and the volatility process.
+
+Third, particular care is needed when the variance process must remain
+non-negative, as in the Heston model.
+
+Fourth, calibration itself is more involved, since several parameters
+must be estimated simultaneously:
+\[
+\kappa,\qquad \theta,\qquad \eta,\qquad \rho,\qquad V_0.
+\]
+
+\paragraph{Practical trade-off.}
+
+The advantage of stochastic volatility models is that they reproduce
+market smiles and skews much more realistically than Black--Scholes or
+local volatility.
+The drawback is that they are harder to analyze, harder to calibrate,
+and harder to hedge.
+
+Thus they represent a trade-off:
+\begin{itemize}[leftmargin=1.4em]
+    \item more realism,
+    \item but less tractability.
+\end{itemize}
+
+\paragraph{Main lesson.}
+
+Under stochastic volatility, pricing and hedging become intrinsically
+more complex because volatility itself is random.
+This enriches the model considerably, but it also destroys the exact
+replication paradigm of Black--Scholes and replaces it with a more
+realistic, but more difficult, framework.
+
+\subsection{Calibration and practical interpretation}
+
+One of the main reasons stochastic volatility models are so important in
+practice is that they provide a flexible framework for fitting market
+option prices while retaining a realistic interpretation of volatility
+risk.
+
+\paragraph{Why calibration is needed.}
+
+A stochastic volatility model contains several parameters, for instance
+in the Heston model
+\[
+\kappa,\qquad \theta,\qquad \eta,\qquad \rho,\qquad V_0.
+\]
+These parameters are not directly observable in the market.
+They must therefore be chosen so that the model reproduces, as closely
+as possible, the prices of liquidly traded options.
+
+In practice, the calibration target is not usually the raw option-price
+surface itself, but rather the implied volatility surface, since this is
+how market option prices are commonly quoted.
+
+\paragraph{Calibration objective.}
+
+Suppose that the market provides option prices or implied volatilities
+for a set of strikes and maturities
+\[
+(K_i,T_j).
+\]
+The goal is to choose the model parameters so that the model prices
+\[
+C^{\mathrm{model}}(K_i,T_j)
+\]
+match the observed market prices
+\[
+C^{\mathrm{mkt}}(K_i,T_j),
+\]
+or equivalently that the model implied volatilities match the market
+implied volatilities.
+
+A typical calibration problem therefore takes the form
+\[
+\min_{\Theta}
+\sum_{i,j}
+w_{ij}
+\Big(
+C^{\mathrm{model}}(K_i,T_j;\Theta)
+-
+C^{\mathrm{mkt}}(K_i,T_j)
+\Big)^2,
+\]
+or, more commonly in practice,
+\[
+\min_{\Theta}
+\sum_{i,j}
+w_{ij}
+\Big(
+\sigma_{\mathrm{imp}}^{\mathrm{model}}(K_i,T_j;\Theta)
+-
+\sigma_{\mathrm{imp}}^{\mathrm{mkt}}(K_i,T_j)
+\Big)^2,
+\]
+where \(\Theta\) denotes the vector of model parameters and
+\(w_{ij}\) are chosen weights.
+
+\paragraph{Why implied volatilities are often used.}
+
+There are several practical reasons for calibrating to implied
+volatility rather than directly to prices:
+\begin{itemize}[leftmargin=1.4em]
+    \item implied volatility normalizes prices across strikes and maturities,
+    \item market practitioners naturally think in terms of volatility
+    surfaces,
+    \item errors measured in implied volatility are often easier to
+    interpret than raw price errors.
+\end{itemize}
+
+\paragraph{Typical role of the parameters.}
+
+A useful feature of stochastic volatility models is that the parameters
+have an economic and geometric interpretation.
+
+In a Heston-type model:
+\begin{itemize}[leftmargin=1.4em]
+    \item \(V_0\) controls the short-maturity level of volatility,
+    \item \(\theta\) controls the long-run level of variance,
+    \item \(\kappa\) controls how quickly the variance reverts toward
+    \(\theta\),
+    \item \(\eta\) controls the amount of randomness in volatility and
+    therefore the curvature of the smile,
+    \item \(\rho\) controls the asymmetry of the smile, in particular the
+    slope of the skew.
+\end{itemize}
+
+Thus calibration is not only a numerical procedure: it also gives an
+economic interpretation of the observed implied volatility surface.
+
+\paragraph{Practical difficulties.}
+
+Calibration under stochastic volatility is significantly more delicate
+than under local volatility.
+
+First, model prices are usually more expensive to compute, since one
+must solve a two-dimensional PDE, use Fourier methods, or rely on Monte
+Carlo simulation.
+
+Second, the objective function may have several local minima, so the
+quality of calibration may depend on the initial guess and on the chosen
+optimization routine.
+
+Third, different parameter combinations may lead to similar implied
+volatility surfaces, so calibration can be unstable or poorly
+identified.
+
+Fourth, one often wants not only a good fit at one date, but also
+parameters that remain economically reasonable and stable through time.
+
+\paragraph{Static fit versus dynamic interpretation.}
+
+A key point is that calibration should not be judged only by how well
+the model fits today's smile.
+
+A model is also intended to describe how the volatility surface will
+move in the future.
+This is one of the main differences with local volatility models:
+stochastic volatility models are typically less exact in their static
+fit, but more realistic in their dynamics.
+
+Hence, in practice, one often accepts a slightly less perfect fit at one
+given date in exchange for a more plausible evolution of the smile over
+time.
+
+\paragraph{Practical interpretation.}
+
+From a market perspective, stochastic volatility models provide a bridge
+between two viewpoints:
+\begin{itemize}[leftmargin=1.4em]
+    \item a \emph{cross-sectional} viewpoint, through calibration to
+    today's option surface,
+    \item a \emph{dynamic} viewpoint, through the random evolution of the
+    volatility factor.
+\end{itemize}
+
+This makes them particularly attractive for:
+\begin{itemize}[leftmargin=1.4em]
+    \item pricing exotic derivatives,
+    \item managing vega and smile risk,
+    \item stress testing volatility scenarios,
+    \item and designing hedging strategies that remain meaningful over
+    time.
+\end{itemize}
+
+\paragraph{Comparison with local volatility.}
+
+It is useful to summarize the contrast as follows:
+\begin{itemize}[leftmargin=1.4em]
+    \item local volatility is designed to fit exactly the current
+    vanilla surface,
+    \item stochastic volatility is designed to provide a more realistic
+    dynamic description of volatility risk.
+\end{itemize}
+
+Thus stochastic volatility models are often preferred when the
+derivative being priced is sensitive not only to today's smile, but also
+to its future evolution.
+
+\paragraph{Main lesson.}
+
+Calibration gives numerical values to the parameters of a stochastic
+volatility model, but these parameters should not be viewed as purely
+technical constants.
+They describe:
+\begin{itemize}[leftmargin=1.4em]
+    \item the level of volatility,
+    \item its persistence,
+    \item its randomness,
+    \item and its interaction with the underlying asset.
+\end{itemize}
+
+In this sense, calibration is both a pricing tool and a way of
+translating market option prices into a model-based description of
+volatility risk.
+
+\subsection{Comparison with local volatility}
+
+We now compare local volatility and stochastic volatility models.
+
+Both approaches were introduced to go beyond the Black--Scholes model
+and to account for the fact that market option prices exhibit smiles,
+skews, and maturity effects.
+However, they do so in very different ways.
+
+\paragraph{Local volatility: deterministic volatility surface.}
+
+In a local volatility model, the stock price satisfies
+\[
+\mathrm{d}S_t
+=
+rS_t\,\mathrm{d}t
++
+\sigma_{\mathrm{loc}}(t,S_t)S_t\,\mathrm{d}W_t,
+\]
+where the volatility coefficient is a deterministic function of time and
+spot.
+
+Thus, once \(t\) and \(S_t\) are known, the instantaneous volatility is
+completely determined.
+The model remains one-factor and Markovian.
+
+Its main strength is that it can be calibrated, at least formally, so as
+to reproduce exactly the observed surface of European vanilla option
+prices at a given date.
+
+\paragraph{Stochastic volatility: random volatility factor.}
+
+In a stochastic volatility model, the stock price depends on an
+additional random factor \(V_t\), for example through
+\[
+\mathrm{d}S_t
+=
+rS_t\,\mathrm{d}t
++
+\sqrt{V_t}\,S_t\,\mathrm{d}W_t^{(1)}.
+\]
+The volatility is therefore no longer a deterministic function of
+\((t,S_t)\), but a genuinely random process.
+
+As a consequence, the model is typically two-factor, with state variable
+\[
+(S_t,V_t),
+\]
+and the future behavior of volatility is itself uncertain.
+
+\paragraph{Static fit versus dynamic realism.}
+
+This is the main contrast between the two approaches.
+
+Local volatility models are designed primarily for \emph{static}
+calibration.
+They fit today's implied volatility surface very well, but their future
+smile dynamics are often considered unrealistic.
+
+By contrast, stochastic volatility models are typically less exact in
+their static fit, but they provide a more realistic \emph{dynamic}
+description of market volatility.
+They allow the implied volatility surface itself to evolve in a random
+and economically meaningful way.
+
+\paragraph{Number of risk factors.}
+
+Another major difference lies in the number of sources of randomness.
+
+In local volatility, the only source of randomness is the Brownian
+motion driving the stock price.
+The model is therefore one-factor.
+
+In stochastic volatility, there is usually an additional Brownian motion
+driving the volatility factor.
+The model becomes multi-factor, and this creates additional sources of
+risk, especially volatility risk.
+
+\paragraph{Consequences for hedging.}
+
+Because local volatility models remain one-factor, they preserve many of
+the structural features of Black--Scholes.
+In particular, they are still complete in the idealized setting, and
+delta hedging remains the central replication tool.
+
+By contrast, stochastic volatility models are generally incomplete.
+Delta hedging is no longer sufficient, because the derivative is exposed
+not only to spot risk, but also to volatility risk.
+In practice, hedging often requires additional liquid options.
+
+\paragraph{Consequences for computation.}
+
+Local volatility models remain relatively tractable.
+The pricing PDE is still one-dimensional:
+\[
+u=u(t,s),
+\]
+and the numerical methods are close in spirit to the Black--Scholes
+case.
+
+Stochastic volatility models are more demanding computationally.
+The price now depends on two state variables,
+\[
+u=u(t,s,v),
+\]
+so the associated PDE is higher-dimensional, and numerical pricing
+becomes more expensive.
+
+\paragraph{Calibration point of view.}
+
+Local volatility calibration is usually based directly on the market
+surface of vanilla option prices, for instance through Dupire's formula.
+
+Stochastic volatility calibration is typically formulated as an inverse
+problem in a finite-dimensional parameter space.
+This is often more stable conceptually, but the fit is usually less
+exact than in local volatility.
+
+\paragraph{A useful summary.}
+
+A simple way to summarize the difference is the following:
+\begin{quote}
+local volatility is excellent for fitting today's smile, while
+stochastic volatility is better for modeling tomorrow's smile.
+\end{quote}
+
+\paragraph{Which model should one prefer?}
+
+The answer depends on the objective.
+
+If the main goal is to match the current cross-section of vanilla option
+prices as accurately as possible, then a local volatility model is very
+attractive.
+
+If the goal is to model volatility risk dynamically, to price exotic
+products, or to obtain more realistic smile dynamics over time, then
+stochastic volatility models are usually preferred.
+
+\paragraph{Main lesson.}
+
+The two approaches should not be viewed as competitors in a purely
+absolute sense.
+Rather, they answer different modeling needs:
+\begin{itemize}[leftmargin=1.4em]
+    \item local volatility emphasizes exact static calibration,
+    \item stochastic volatility emphasizes realistic dynamic behavior.
+\end{itemize}
+
+In practice, both families of models are fundamental, and the choice
+between them depends on the balance one wants between tractability,
+calibration quality, and realism.
+
+% ============================================================
+\section{Stochastic interest-rate modeling}
+% ============================================================
+
+\subsection{Why constant interest rates are unrealistic}
+
+In the Black--Scholes model, the interest rate is usually assumed to be
+constant.
+This assumption is very convenient mathematically, since it leads to a
+simple discount factor
+\[
+e^{-r(T-t)},
+\]
+and allows one to price derivatives by discounting expected future
+payoffs at a fixed rate.
+
+However, this assumption is often too restrictive in practice.
+
+\paragraph{Interest rates vary across time.}
+
+In real markets, interest rates are not constant.
+They fluctuate over time in response to monetary policy, inflation,
+macroeconomic conditions, and market expectations.
+As a consequence, the value of one unit of cash invested in the money
+market account is itself uncertain over long horizons.
+
+Thus the short rate should more realistically be modeled as a process
+\[
+r_t,
+\]
+rather than as a constant number \(r\).
+
+\paragraph{The term structure is not flat.}
+
+If the interest rate were constant, then the prices of zero-coupon bonds
+would satisfy
+\[
+P(t,T)=e^{-r(T-t)},
+\]
+so the entire yield curve would be flat.
+
+In reality, this is not what one observes.
+For different maturities \(T\), zero-coupon bonds have different yields,
+and the resulting curve may be:
+\begin{itemize}[leftmargin=1.4em]
+    \item upward sloping,
+    \item downward sloping,
+    \item or hump-shaped.
+\end{itemize}
+
+Hence one cannot describe the whole term structure of interest rates
+with a single constant parameter.
+
+\paragraph{Bond prices carry their own source of risk.}
+
+Under constant rates, bond prices are deterministic functions of time.
+In particular, the discount factor is known in advance.
+
+But in fixed-income markets, bond prices fluctuate randomly.
+This means that discounting itself is risky.
+Therefore, when pricing fixed-income products or long-dated derivatives,
+it is not sufficient to model only the stock or underlying asset: one
+must also model the dynamics of interest rates or bond prices.
+
+\paragraph{Why this matters for derivative pricing.}
+
+For short-dated equity options, assuming constant rates is often a
+reasonable approximation.
+But for products whose value depends strongly on the yield curve, such
+as:
+\begin{itemize}[leftmargin=1.4em]
+    \item bonds,
+    \item bond options,
+    \item caplets and swaptions,
+    \item long-dated structured products,
+\end{itemize}
+the dynamics of interest rates become essential.
+
+In such cases, the discount factor is no longer deterministic, and the
+pricing problem must explicitly incorporate the evolution of the term
+structure.
+
+\paragraph{Need for richer models.}
+
+These observations motivate stochastic interest-rate models, in which
+one models objects such as:
+\begin{itemize}[leftmargin=1.4em]
+    \item the short rate \(r_t\),
+    \item bond prices \(P(t,T)\),
+    \item yields,
+    \item forward rates.
+\end{itemize}
+
+The goal is to build models that are flexible enough to describe the
+observed yield curve and its random evolution through time.
+
+\paragraph{Main lesson.}
+
+The assumption of constant interest rates is useful as a first
+approximation, but it is not realistic enough for many applications.
+Once interest-rate risk matters, the whole term structure must be
+treated as a genuine source of randomness, and this leads naturally to
+stochastic models for fixed-income markets.
+\subsection{Discount factors and zero-coupon bonds}
+
+We begin with the most basic objects of fixed-income modeling.
+
+\paragraph{Discount factors.}
+If the short rate is denoted by \(r_t\), the value at time \(t\) of one
+unit of cash received at time \(T\) is represented by the discount
+factor
+\[
+D(t,T):=\exp\!\Big(-\int_t^T r_s\,\mathrm{d}s\Big).
+\]
+
+When the short rate is deterministic, this quantity is known at time
+\(t\).
+When interest rates are stochastic, the discount factor itself becomes
+random, which is one of the main reasons why fixed-income pricing is
+more subtle than in the constant-rate Black--Scholes setting.
+
+\paragraph{Zero-coupon bonds.}
+A zero-coupon bond maturing at time \(T\) is a contract that pays one
+unit of currency at time \(T\) and nothing before.
+Its price at time \(t\le T\) is denoted by
+\[
+P(t,T).
+\]
+
+Thus \(P(t,T)\) is the market price at time \(t\) of one unit of cash
+delivered at time \(T\).
+
+\paragraph{Basic properties.}
+By definition,
+\[
+P(T,T)=1.
+\]
+Moreover, for fixed \(t\), the function
+\[
+T\longmapsto P(t,T)
+\]
+typically decreases with maturity: one unit of currency delivered far in
+the future is worth less than one unit delivered soon.
+
+\paragraph{Interpretation.}
+Zero-coupon bonds are the elementary building blocks of fixed-income
+markets.
+Once the full family
+\[
+\{P(t,T):T\ge t\}
+\]
+is known, many other quantities of interest can be derived from it, such
+as yields, forward rates, and the prices of coupon-bearing bonds.
+
+\paragraph{Special case of constant rates.}
+If the short rate is constant and equal to \(r\), then
+\[
+P(t,T)=e^{-r(T-t)}.
+\]
+Thus the Black--Scholes discount factor is nothing but the price of a
+zero-coupon bond in the constant-rate case.
+
+\subsection{Spot rates, zero rates, and simply compounded rates}
+
+Once zero-coupon bond prices are known, one can define several
+equivalent ways of describing the term structure of interest rates.
+
+\paragraph{Spot rate / short rate.}
+The \emph{spot rate}, or \emph{short rate}, at time \(t\) is the
+instantaneous interest rate prevailing at that date.
+It is usually denoted by
+\[
+r_t.
+\]
+
+In continuous-time models, the money market account satisfies
+\[
+\mathrm{d}B_t=r_tB_t\,\mathrm{d}t.
+\]
+
+\paragraph{Zero rate.}
+For a given maturity \(T>t\), the continuously compounded zero rate
+between \(t\) and \(T\) is defined by the relation
+\[
+P(t,T)=e^{-R(t,T)(T-t)}.
+\]
+Equivalently,
+\[
+\boxed{
+R(t,T)=-\frac{1}{T-t}\log P(t,T).
+}
+\]
+
+Thus \(R(t,T)\) is the constant continuously compounded rate that would
+produce exactly the same discount factor over the interval \([t,T]\).
+
+\paragraph{Simply compounded rate.}
+Another common market convention is the simply compounded rate
+\(L(t,T)\), defined by
+\[
+P(t,T)=\frac{1}{1+L(t,T)(T-t)}.
+\]
+Equivalently,
+\[
+\boxed{
+L(t,T)=\frac{1}{T-t}\Big(\frac{1}{P(t,T)}-1\Big).
+}
+\]
+
+This convention is often used for money-market instruments and short
+maturities.
+
+\paragraph{Relation between conventions.}
+The continuously compounded zero rate and the simply compounded rate
+carry the same information, since both are determined by the bond price
+\(P(t,T)\).
+They are just different parametrizations of the same discount factor.
+
+\paragraph{Interpretation.}
+The key point is that the bond price \(P(t,T)\) is the primitive object,
+while rates such as \(R(t,T)\) or \(L(t,T)\) are derived quantities.
+Different markets prefer different conventions, but they all encode the
+same underlying term structure.
+
+\subsection{Yield curve and term structure of interest rates}
+
+The \emph{term structure of interest rates} describes how interest rates
+depend on the maturity.
+
+\paragraph{Yield curve.}
+At a given time \(t\), the yield curve is the function
+\[
+T\longmapsto R(t,T),
+\qquad T\ge t,
+\]
+where \(R(t,T)\) is the zero rate associated with maturity \(T\).
+
+Equivalently, one may describe the term structure through the bond price
+curve
+\[
+T\longmapsto P(t,T).
+\]
+
+\paragraph{Why the yield curve matters.}
+The yield curve summarizes how the market prices the time value of money
+across maturities.
+It is one of the most important objects in fixed-income markets.
+
+In practice, the yield curve is used to:
+\begin{itemize}[leftmargin=1.4em]
+    \item discount future cash flows,
+    \item value bonds and interest-rate derivatives,
+    \item infer market expectations about future rates,
+    \item compare borrowing and lending conditions across maturities.
+\end{itemize}
+
+\paragraph{Typical shapes.}
+Empirically, the yield curve is not flat.
+Depending on market conditions, it may be:
+\begin{itemize}[leftmargin=1.4em]
+    \item upward sloping,
+    \item downward sloping,
+    \item or hump-shaped.
+\end{itemize}
+
+This immediately shows why a single constant rate cannot be sufficient
+to describe fixed-income markets.
+
+\paragraph{Term structure as a family of prices.}
+Mathematically, the term structure may be viewed as the family of bond
+prices
+\[
+\{P(t,T):T\ge t\}.
+\]
+At each time \(t\), this is an entire curve in the maturity variable
+\(T\), not just a single number.
+
+This is one of the main conceptual differences between fixed-income
+modeling and Black--Scholes-type equity modeling:
+the state of the market is no longer described by one asset price only,
+but by a whole curve.
+
+\paragraph{Dynamic point of view.}
+As time evolves, the term structure itself moves randomly.
+Thus fixed-income modeling is concerned not only with the shape of the
+curve at one date, but also with its stochastic evolution through time.
+
+This motivates the introduction of short-rate models, factor models, and
+forward-rate models.
+
+\subsection{Forward rates}
+
+A third useful way to describe the term structure is through
+\emph{forward rates}.
+
+\paragraph{Definition.}
+The instantaneous forward rate \(f(t,T)\) is defined by
+\[
+\boxed{
+f(t,T):=-\partial_T \log P(t,T).
+}
+\]
+
+Equivalently, bond prices can be reconstructed from forward rates via
+\[
+\boxed{
+P(t,T)=\exp\!\Big(-\int_t^T f(t,u)\,\mathrm{d}u\Big).
+}
+\]
+
+Thus the forward-rate curve
+\[
+T\longmapsto f(t,T)
+\]
+contains exactly the same information as the bond-price curve or the
+yield curve.
+
+\paragraph{Interpretation.}
+Roughly speaking, \(f(t,T)\) represents the instantaneous rate agreed at
+time \(t\) for borrowing or lending over an infinitesimal future period
+around maturity \(T\).
+
+It should therefore be viewed as a market-implied future rate.
+
+\paragraph{Connection with zero rates.}
+Since
+\[
+P(t,T)=e^{-R(t,T)(T-t)},
+\]
+one has the relation
+\[
+R(t,T)
+=
+\frac{1}{T-t}\int_t^T f(t,u)\,\mathrm{d}u.
+\]
+Thus the zero rate is the average of the forward rates over the interval
+\([t,T]\).
+
+\paragraph{Why forward rates are important.}
+Forward rates play a central role in modern fixed-income theory because:
+\begin{itemize}[leftmargin=1.4em]
+    \item they provide a local description of the yield curve,
+    \item they are often more convenient to model than bond prices
+    directly,
+    \item they are the basic state variables in the
+    Heath--Jarrow--Morton framework.
+\end{itemize}
+
+\paragraph{Simply compounded forward rates.}
+In practice, one also uses forward rates over a finite accrual period
+\([T_1,T_2]\), defined by
+\[
+\boxed{
+L(t;T_1,T_2)
+=
+\frac{1}{T_2-T_1}
+\Big(
+\frac{P(t,T_1)}{P(t,T_2)}-1
+\Big).
+}
+\]
+
+This quantity is especially important in money-market and LIBOR-style
+models.
+
+\paragraph{Main lesson.}
+Bond prices, zero rates, and forward rates are three equivalent ways of
+describing the same term structure.
+The choice between them depends mostly on convenience and on the type of
+model or derivative one wants to study.
+\subsection{Fixed-income securities}
+
+We now introduce the main securities traded in fixed-income markets.
+These instruments are built from future cash flows occurring at
+different dates, and their valuation relies on the term structure of
+interest rates.
+
+\subsubsection{Zero-coupon bonds}
+
+The most basic fixed-income security is the zero-coupon bond.
+
+\paragraph{Definition.}
+A zero-coupon bond maturing at time \(T\) is a contract that pays one
+unit of currency at time \(T\) and nothing before.
+Its price at time \(t\le T\) is denoted by
+\[
+P(t,T).
+\]
+
+Thus, at maturity,
+\[
+P(T,T)=1.
+\]
+
+\paragraph{Interpretation.}
+The price \(P(t,T)\) represents the present value at time \(t\) of one
+unit of currency delivered at time \(T\).
+In this sense, zero-coupon bonds are the elementary building blocks of
+fixed-income markets.
+
+\paragraph{Special case of deterministic rates.}
+If the short rate is deterministic, then
+\[
+P(t,T)=\exp\!\Big(-\int_t^T r_s\,\mathrm{d}s\Big).
+\]
+In the constant-rate case, this reduces to
+\[
+P(t,T)=e^{-r(T-t)}.
+\]
+
+\paragraph{Why zero-coupon bonds are fundamental.}
+Once the whole family
+\[
+\{P(t,T):T\ge t\}
+\]
+is known, many other fixed-income securities can be priced by
+decomposing their cash flows into combinations of zero-coupon bonds.
+
+\subsubsection{Coupon-bearing bonds}
+
+A coupon-bearing bond is a bond that pays intermediate coupons before
+maturity, in addition to a final redemption payment.
+
+\paragraph{Cash-flow structure.}
+Suppose a bond pays coupons \(c_1,\dots,c_n\) at dates
+\[
+T_1<\cdots<T_n,
+\]
+and repays a final principal \(F\) at time \(T_n\).
+Then the bond price at time \(t\le T_1\) is
+\[
+B_t
+=
+\sum_{i=1}^n c_i\,P(t,T_i)+F\,P(t,T_n).
+\]
+
+Thus a coupon-bearing bond can be viewed simply as a portfolio of
+zero-coupon bonds.
+
+\paragraph{Interpretation.}
+This decomposition is extremely important:
+the whole fixed-income market can be built from elementary discount
+factors \(P(t,T)\).
+In particular, once zero-coupon prices are known, pricing coupon bonds
+is straightforward.
+
+\paragraph{Yield to maturity.}
+In practice, coupon bonds are often quoted by their
+\emph{yield to maturity}, i.e.\ the constant rate that discounts all
+future coupons and principal back to the current market price.
+However, from a modeling point of view, the bond price itself is more
+fundamental than its yield.
+
+\subsubsection{Bootstrapping intuition}
+
+In practice, the full zero-coupon curve is not directly observed.
+Instead, market quotes are available for a collection of liquid
+fixed-income instruments, such as deposits, futures, swaps, or coupon
+bonds.
+
+\paragraph{Basic idea.}
+\emph{Bootstrapping} is the procedure used to recover the zero-coupon
+bond prices
+\[
+P(0,T_1),\ P(0,T_2),\ \dots
+\]
+from these market instruments.
+
+The principle is recursive:
+\begin{itemize}[leftmargin=1.4em]
+    \item use the shortest maturity instruments to determine the first
+    discount factors;
+    \item then use longer maturity instruments, subtracting the value of
+    already known early cash flows;
+    \item continue step by step to reconstruct the whole curve.
+\end{itemize}
+
+\paragraph{Simple example.}
+Suppose a coupon bond with maturity \(T_2\) pays coupon \(c\) at
+\(T_1\), and coupon plus principal \(c+1\) at \(T_2\).
+If its market price is \(B_0\), then
+\[
+B_0=c\,P(0,T_1)+(c+1)P(0,T_2).
+\]
+If \(P(0,T_1)\) is already known from a shorter maturity instrument,
+then \(P(0,T_2)\) can be deduced.
+
+\paragraph{Why bootstrapping matters.}
+Bootstrapping is the practical link between raw market quotes and the
+term structure used in pricing models.
+Before one can model rates dynamically, one must first construct the
+initial yield curve consistently from market data.
+
+\subsection{Factor models for the term structure}
+
+The term structure of interest rates is an entire curve
+\[
+T\longmapsto P(t,T)
+\qquad\text{or}\qquad
+T\longmapsto f(t,T),
+\]
+so in principle it is infinite-dimensional.
+
+\paragraph{Motivation.}
+To obtain tractable models, one often assumes that the whole yield curve
+is driven by a finite number of underlying random factors.
+This leads to \emph{factor models} for the term structure.
+
+\paragraph{General idea.}
+A factor model assumes that bond prices, yields, or forward rates can be
+expressed in terms of a finite-dimensional state process
+\[
+X_t=(X_t^{(1)},\dots,X_t^{(n)}).
+\]
+For example,
+\[
+P(t,T)=F(t,T,X_t)
+\]
+for some deterministic function \(F\).
+
+\paragraph{Interpretation.}
+The factors \(X_t\) may represent:
+\begin{itemize}[leftmargin=1.4em]
+    \item the overall level of rates,
+    \item the slope of the curve,
+    \item the curvature of the curve,
+    \item or more abstract latent variables.
+\end{itemize}
+
+\paragraph{Why factor models are useful.}
+They reduce the complexity of the full term structure to a finite number
+of state variables, which makes:
+\begin{itemize}[leftmargin=1.4em]
+    \item simulation easier,
+    \item calibration more tractable,
+    \item and derivative pricing more manageable.
+\end{itemize}
+
+\paragraph{Examples.}
+Short-rate models are the simplest examples of factor models, where the
+entire term structure is driven by the short rate alone or by a small
+number of state variables.
+More general frameworks, such as affine term-structure models, also fit
+into this factor-model viewpoint.
+
+\subsection{Short-rate models}
+
+One of the most classical approaches to interest-rate modeling is to
+model directly the short rate
+\[
+r_t.
+\]
+
+\paragraph{General principle.}
+Once the short rate is specified as a stochastic process, one defines
+bond prices by discounting future cash flows:
+\[
+P(t,T)
+=
+\E^\Qbb\!\left[
+\exp\!\Big(-\int_t^T r_s\,\mathrm{d}s\Big)
+\;\middle|\;
+\mathcal{F}_t
+\right].
+\]
+
+Thus the entire term structure is derived from the dynamics of the short
+rate.
+
+\paragraph{Examples.}
+Typical short-rate models include:
+\begin{itemize}[leftmargin=1.4em]
+    \item the Vasicek model,
+    \[
+    \mathrm{d}r_t = a(b-r_t)\,\mathrm{d}t+\sigma\,\mathrm{d}W_t,
+    \]
+    \item the Cox--Ingersoll--Ross (CIR) model,
+    \[
+    \mathrm{d}r_t = a(b-r_t)\,\mathrm{d}t+\sigma\sqrt{r_t}\,\mathrm{d}W_t.
+    \]
+\end{itemize}
+
+\paragraph{Interpretation.}
+These models aim to capture key qualitative features of interest rates,
+such as:
+\begin{itemize}[leftmargin=1.4em]
+    \item mean reversion,
+    \item randomness in the short rate,
+    \item and, in some cases, positivity.
+\end{itemize}
+
+\paragraph{Advantages.}
+Short-rate models are conceptually simple and often analytically
+tractable.
+In many cases, one can derive explicit or semi-explicit formulas for
+bond prices.
+
+\paragraph{Limitations.}
+However, they also have important drawbacks:
+\begin{itemize}[leftmargin=1.4em]
+    \item they model only the short rate directly,
+    \item the whole yield curve is generated indirectly,
+    \item and fitting the observed initial term structure may require
+    additional adjustments.
+\end{itemize}
+
+\subsection{The Heath--Jarrow--Morton framework}
+
+A more general approach is to model directly the evolution of the
+forward-rate curve.
+
+\paragraph{Basic idea.}
+Instead of specifying the short rate \(r_t\), the
+Heath--Jarrow--Morton (HJM) framework models the instantaneous forward
+rates
+\[
+f(t,T)
+\]
+for all maturities \(T\ge t\).
+
+Thus the primitive object is the family
+\[
+\{f(t,T):T\ge t\},
+\]
+rather than the short rate alone.
+
+\paragraph{Why this is natural.}
+Since the term structure is fundamentally a curve, it is natural to
+model its evolution directly.
+This makes HJM a very flexible and conceptually appealing framework.
+
+\paragraph{Generic dynamics.}
+One typically writes
+\[
+\mathrm{d}f(t,T)=\alpha(t,T)\,\mathrm{d}t+\sigma(t,T)\,\mathrm{d}W_t.
+\]
+
+The key point is that the drift \(\alpha(t,T)\) cannot be chosen
+arbitrarily.
+Under no-arbitrage, it is completely determined by the volatility
+structure \(\sigma(t,T)\).
+
+\paragraph{HJM drift restriction.}
+This is the central feature of the HJM framework:
+\begin{quote}
+under the risk-neutral measure, once the volatility of the forward-rate
+curve is specified, the drift is fixed by no-arbitrage.
+\end{quote}
+
+Thus the HJM framework provides a direct and general description of the
+stochastic evolution of the entire term structure.
+
+\paragraph{Advantages.}
+The HJM approach is very flexible and naturally adapted to the
+modeling of bond markets and interest-rate derivatives.
+
+\paragraph{Drawbacks.}
+Its main drawback is that it is infinite-dimensional in general, since
+the whole forward-rate curve must be modeled.
+To obtain tractable models, one often imposes additional structure,
+for example finite-dimensional volatility specifications.
+
+\subsection{Calibration issues in interest-rate models}
+
+As in local volatility or stochastic volatility modeling, the practical
+success of an interest-rate model depends crucially on calibration to
+market data.
+
+\paragraph{What must be fitted?}
+An interest-rate model should typically reproduce:
+\begin{itemize}[leftmargin=1.4em]
+    \item the initial yield curve,
+    \item the prices of liquid interest-rate derivatives,
+    \item and, ideally, realistic future dynamics of the term structure.
+\end{itemize}
+
+\paragraph{Initial curve fit.}
+A first requirement is exact fit to the observed initial term structure.
+This is often achieved through bootstrapping and, in many models, by
+adding a deterministic time-dependent shift.
+
+\paragraph{Derivative calibration.}
+A second requirement is consistency with market prices of liquid
+fixed-income derivatives, such as:
+\begin{itemize}[leftmargin=1.4em]
+    \item caplets,
+    \item swaptions,
+    \item bond options.
+\end{itemize}
+
+These instruments provide information about the market's view of future
+rate volatility.
+
+\paragraph{Trade-off between realism and tractability.}
+As always, there is a balance to strike:
+\begin{itemize}[leftmargin=1.4em]
+    \item simple models are easier to calibrate and use,
+    \item richer models fit the market better, but may become
+    numerically expensive or unstable.
+\end{itemize}
+
+\paragraph{Short-rate vs HJM calibration.}
+Short-rate models are often easier to simulate and interpret, but may be
+less flexible in fitting the whole curve and the derivative market.
+HJM-type models are more flexible, but calibration is more demanding
+because one must specify and estimate a whole volatility structure.
+
+\paragraph{Main lesson.}
+In interest-rate modeling, calibration is not only about finding
+parameters.
+It is also about choosing the right level of model complexity:
+rich enough to fit the market, but simple enough to remain tractable and
+stable in practice.
+% ============================================================
+\section{Practical comparison of the three approaches}
+% ============================================================
+
+We now step back and compare the three modeling directions introduced in
+this lecture:
+\begin{itemize}[leftmargin=1.4em]
+    \item local volatility,
+    \item stochastic volatility,
+    \item stochastic interest-rate models.
+\end{itemize}
+
+Each of these frameworks is designed to improve on the Black--Scholes
+model, but they do so in different ways and for different purposes.
+
+\subsection{Local volatility vs stochastic volatility}
+
+Local volatility and stochastic volatility models are both motivated by
+the empirical failure of Black--Scholes to reproduce market smiles and
+skews.
+
+\paragraph{Local volatility.}
+The local volatility model replaces the constant parameter \(\sigma\) by
+a deterministic function
+\[
+\sigma_{\mathrm{loc}}(t,S_t).
+\]
+Its main strength is static calibration:
+it can be constructed so as to reproduce the full cross-section of
+European vanilla option prices observed at a given date.
+
+Thus local volatility is very effective when the goal is to fit today's
+market smile.
+
+\paragraph{Stochastic volatility.}
+By contrast, stochastic volatility models introduce an additional random
+factor \(V_t\), so that volatility itself becomes random.
+This gives a richer model, capable of producing more realistic
+time-series behavior of volatility and more plausible future dynamics of
+the implied volatility surface.
+
+Thus stochastic volatility is more dynamic in nature:
+it is not only a static fitting device, but also a model for how
+volatility evolves through time.
+
+\paragraph{Main difference.}
+A useful summary is:
+\begin{itemize}[leftmargin=1.4em]
+    \item local volatility is mainly designed to fit the current
+    volatility surface,
+    \item stochastic volatility is mainly designed to model the future
+    evolution of volatility.
+\end{itemize}
+
+\paragraph{Consequences for hedging and computation.}
+Local volatility models remain one-factor and Markovian, so they are
+closer in spirit to Black--Scholes and remain relatively tractable.
+
+Stochastic volatility models are higher-dimensional, typically
+incomplete, and more difficult to calibrate and hedge.
+However, they often give a better description of market dynamics.
+
+\subsection{When stochastic rates matter}
+
+The need for stochastic interest rates depends strongly on the type of
+product being priced.
+
+\paragraph{Cases where constant rates may be sufficient.}
+For short-dated equity options, assuming deterministic or constant rates
+is often a reasonable approximation.
+In such products, the main source of uncertainty comes from the
+underlying asset, while the effect of rate dynamics is relatively small.
+
+\paragraph{Cases where stochastic rates become important.}
+By contrast, stochastic rates matter whenever:
+\begin{itemize}[leftmargin=1.4em]
+    \item the payoff depends directly on bond prices, yields, or forward
+    rates,
+    \item the maturity is long enough for rate uncertainty to become
+    material,
+    \item the product is written on fixed-income instruments,
+    \item discounting itself is a significant source of risk.
+\end{itemize}
+
+In these situations, the whole term structure becomes a relevant
+state variable, and modeling only the asset price is no longer enough.
+
+\paragraph{Examples.}
+Stochastic rates are essential for:
+\begin{itemize}[leftmargin=1.4em]
+    \item bonds and bond options,
+    \item caplets, floorlets, and swaptions,
+    \item long-dated structured products,
+    \item hybrid products with both equity and interest-rate exposure.
+\end{itemize}
+
+\paragraph{Main lesson.}
+The further one moves away from short-dated vanilla equity products and
+toward fixed-income or long-dated derivatives, the more important the
+stochastic modeling of interest rates becomes.
+
+\subsection{What is calibrated from market data?}
+
+A central practical question is: what object does each model attempt to
+fit?
+
+\paragraph{Local volatility calibration.}
+In local volatility models, one calibrates the function
+\[
+\sigma_{\mathrm{loc}}(t,s)
+\]
+so as to match the observed prices of European vanilla options across
+strikes and maturities.
+Equivalently, one calibrates to the full implied volatility surface.
+
+This is typically done through Dupire's formula or through numerical
+optimization.
+
+\paragraph{Stochastic volatility calibration.}
+In stochastic volatility models, one calibrates a finite-dimensional set
+of parameters, such as
+\[
+\kappa,\qquad \theta,\qquad \eta,\qquad \rho,\qquad V_0
+\]
+in the Heston model.
+
+The calibration target is again the market implied volatility surface,
+but the fit is obtained indirectly through these structural parameters.
+
+Thus:
+\begin{itemize}[leftmargin=1.4em]
+    \item local volatility calibrates a whole function,
+    \item stochastic volatility calibrates a finite set of parameters.
+\end{itemize}
+
+\paragraph{Interest-rate calibration.}
+In interest-rate models, calibration usually has two layers:
+\begin{itemize}[leftmargin=1.4em]
+    \item fit the initial term structure of bond prices or yields,
+    \item fit the prices of liquid rate derivatives, such as caplets or
+    swaptions.
+\end{itemize}
+
+Hence the calibration targets are different from the equity setting:
+instead of only fitting a vanilla option surface, one must also fit the
+yield curve.
+
+\paragraph{Main message.}
+The calibration problem depends on the model class:
+\begin{itemize}[leftmargin=1.4em]
+    \item local volatility fits a volatility surface,
+    \item stochastic volatility fits a smile through structural
+    parameters,
+    \item stochastic rates fit a yield curve and interest-rate
+    derivative prices.
+\end{itemize}
+
+\subsection{Main modeling trade-offs}
+
+All three approaches aim at improving realism beyond Black--Scholes, but
+each comes with its own balance between flexibility, tractability, and
+economic interpretation.
+
+\paragraph{Local volatility.}
+\begin{itemize}[leftmargin=1.4em]
+    \item \textbf{Advantage:} excellent fit to today's vanilla market
+    prices.
+    \item \textbf{Drawback:} less realistic smile dynamics and no genuine
+    volatility factor.
+\end{itemize}
+
+\paragraph{Stochastic volatility.}
+\begin{itemize}[leftmargin=1.4em]
+    \item \textbf{Advantage:} richer and more realistic dynamics,
+    especially for volatility risk and smile evolution.
+    \item \textbf{Drawback:} higher-dimensional models, incomplete
+    markets, and more difficult calibration.
+\end{itemize}
+
+\paragraph{Stochastic interest rates.}
+\begin{itemize}[leftmargin=1.4em]
+    \item \textbf{Advantage:} realistic modeling of discounting and
+    fixed-income markets.
+    \item \textbf{Drawback:} the state variable is no longer just one
+    asset price, but a full term structure or a factor representation of
+    it.
+\end{itemize}
+
+\paragraph{General conclusion.}
+There is no universally best model.
+The appropriate choice depends on the product to be priced, the market
+data available for calibration, and the balance one wants between:
+\begin{itemize}[leftmargin=1.4em]
+    \item exact fit to today's market,
+    \item realistic future dynamics,
+    \item computational tractability,
+    \item and interpretability of the parameters.
+\end{itemize}
+
+% ============================================================
+\section{Summary}
+% ============================================================
+
+\subsection{Main takeaways}
+
+In this lecture, we introduced three major directions for going beyond
+the Black--Scholes model.
+
+The first one was the local volatility approach, where the constant
+volatility parameter is replaced by a deterministic function of time and
+spot.
+This allows one to fit the whole implied volatility surface at a given
+date and leads to Dupire's formula.
+
+The second one was stochastic volatility, where volatility itself
+becomes a random process.
+This introduces an additional risk factor and leads to richer and more
+realistic smile dynamics, at the cost of greater modeling and numerical
+complexity.
+
+The third one was stochastic interest-rate modeling, which becomes
+necessary whenever the term structure of rates and discounting itself
+play an important role.
+This leads naturally to the study of bond prices, yields, forward rates,
+factor models, and the HJM framework.
+
+The main message is that all three extensions are motivated by the same
+goal:
+to improve realism beyond Black--Scholes while remaining sufficiently
+tractable for pricing, calibration, and risk management.
+
+\subsection{What students should remember}
+
+After this lecture, students should remember the following key points.
+
+\begin{itemize}[leftmargin=1.4em]
+    \item \textbf{Local volatility.}
+    A local volatility model has dynamics of the form
+    \[
+    \mathrm{d}S_t=rS_t\,\mathrm{d}t+\sigma_{\mathrm{loc}}(t,S_t)S_t\,\mathrm{d}W_t.
+    \]
+    It remains one-factor and Markovian.
+
+    \item \textbf{Dupire's formula.}
+    Local volatility can be recovered from European call prices across
+    strikes and maturities through Dupire's formula.
+
+    \item \textbf{Stochastic volatility.}
+    A stochastic volatility model introduces an additional random factor
+    \(V_t\), so the price process depends on both spot and volatility.
+
+    \item \textbf{Heston-type idea.}
+    In models such as Heston, the parameters controlling mean reversion,
+    volatility of volatility, and correlation play a central role in the
+    shape of the smile and skew.
+
+    \item \textbf{Fixed-income basics.}
+    The main objects of interest-rate modeling are zero-coupon bonds,
+    yields, forward rates, and the term structure of interest rates.
+
+    \item \textbf{Factor and HJM models.}
+    Interest-rate models may be built either from a finite number of
+    factors, often through short-rate models, or directly through the
+    forward-rate curve in the HJM framework.
+
+    \item \textbf{Model choice.}
+    Different models answer different needs:
+    local volatility is strong for static calibration,
+    stochastic volatility for dynamic smile modeling,
+    and stochastic rates for rate-sensitive products and fixed-income
+    markets.
+\end{itemize}
+
+\end{document}

@@ -1,0 +1,2624 @@
+\documentclass[11pt]{article}
+
+% ============================================================
+% Packages
+% ============================================================
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,mathtools,amsthm}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{tikz}
+\usepackage{cleveref}
+
+% ============================================================
+% Hyperref setup
+% ============================================================
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!60!black,
+  citecolor=blue!60!black,
+  urlcolor=blue!60!black
+}
+
+% ============================================================
+% Macros
+% ============================================================
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\F}{\mathcal{F}}
+\newcommand{\Pbb}{\mathbb{P}}
+\newcommand{\Qbb}{\mathbb{Q}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\dd}{\,\mathrm{d}}
+\newcommand{\1}{\mathbf{1}}
+
+% ============================================================
+% Theorem environments
+% ============================================================
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+% ============================================================
+% Title
+% ============================================================
+\title{Option Pricing --- Lecture Notes}
+\author{Nathan Sauldubois}
+\date{MSFE6233 --- Vanilla Options in Practice}
+
+\begin{document}
+\maketitle
+\vspace{-1em}
+
+\noindent\textbf{Lecture title.}
+\emph{Vanilla options in practice: payoffs, Black--Scholes formulas, and static arbitrage bounds}
+
+\vspace{0.5em}
+\hrule
+\vspace{1em}
+
+\noindent\textbf{Goals of the lecture.}
+This lecture is a practical continuation of the no-arbitrage principles introduced previously.
+The main objectives are:
+\begin{itemize}[leftmargin=1.4em]
+    \item to review the basic vanilla option contracts and the standard market vocabulary;
+    \item to recall the Black--Scholes pricing formulas and some useful practical approximations;
+    \item to derive the main static no-arbitrage inequalities for option prices;
+    \item to understand how arbitrage can be constructed when those inequalities are violated.
+\end{itemize}
+
+\tableofcontents
+\bigskip
+
+% ============================================================
+% ============================================================
+\section{Introduction and roadmap}
+% ============================================================
+
+\subsection{From general no-arbitrage principles to concrete option pricing}
+
+In the previous lecture we introduced the fundamental principles of
+arbitrage-free pricing.  
+In particular we discussed:
+
+\begin{itemize}[leftmargin=1.4em]
+    \item the \emph{dominance principle}: a contract that always pays more
+    cannot cost less;
+    \item the \emph{law of one price}: two strategies producing the same payoff
+    must have the same price;
+    \item the idea that replication determines the arbitrage-free price
+    of a derivative.
+\end{itemize}
+
+These principles provide the conceptual foundation of modern asset pricing.
+However, at this stage they remain somewhat abstract.
+
+The goal of the present lecture is to see how these ideas translate
+into concrete statements about \emph{option prices}.
+In particular we will study the most common derivative contracts
+in financial markets: \emph{vanilla options}.
+
+Vanilla options are simple contracts whose payoff depends only on the
+terminal value of an underlying asset.
+Despite their simplicity, they play a central role in financial markets:
+\begin{itemize}[leftmargin=1.4em]
+    \item they are actively traded on exchanges,
+    \item they are used to hedge risk,
+    \item they are the basic building blocks of more complex derivatives.
+\end{itemize}
+
+Understanding their pricing and the constraints imposed by no-arbitrage
+is therefore a key step toward more advanced models.
+
+\subsection{Why vanilla options matter in practice}
+
+From a practical perspective, vanilla options are the most liquid
+derivative instruments in financial markets.
+
+For a given underlying asset (such as a stock index or an equity),
+markets typically quote a large set of options with different:
+\begin{itemize}[leftmargin=1.4em]
+    \item strikes \(K\),
+    \item maturities \(T\).
+\end{itemize}
+
+These prices form what practitioners call the
+\emph{option surface}.
+Ensuring that this surface is consistent with no-arbitrage principles
+is a fundamental requirement.
+
+In practice, traders and risk managers constantly verify that option prices satisfy a number of structural properties such as:
+\begin{itemize}[leftmargin=1.4em]
+    \item positivity,
+    \item monotonicity in the strike,
+    \item convexity with respect to the strike,
+    \item consistency across maturities.
+\end{itemize}
+
+Violations of these conditions would immediately lead to
+\emph{static arbitrage opportunities}.
+Understanding these inequalities is therefore both mathematically
+interesting and extremely important in practice.
+
+Another reason vanilla options are central is that they admit a
+closed-form pricing formula in the Black--Scholes model.
+Even though the Black--Scholes model is not perfect,
+its formulas remain the standard benchmark used by practitioners.
+
+\subsection{Main themes of the lecture}
+
+This lecture will therefore focus on the practical structure of vanilla option pricing.
+
+We will first review the definition of calls and puts and introduce the
+market vocabulary used to describe option positions.
+We will then recall the Black--Scholes formulas and discuss how they are
+interpreted in practice.
+
+Finally, we will derive the main \emph{static arbitrage constraints}
+that option prices must satisfy and see how arbitrage strategies can be
+constructed if these constraints are violated.
+
+More precisely, the lecture is organized around four main themes:
+
+\begin{itemize}[leftmargin=1.4em]
+    \item \textbf{Payoff geometry.}  
+    Understanding option payoffs graphically is essential for building intuition
+    and for constructing arbitrage strategies.
+
+    \item \textbf{Market vocabulary.}  
+    Traders use a specific terminology (in-the-money, at-the-money,
+    straddles, spreads, etc.) which reflects the economic interpretation
+    of option positions.
+
+    \item \textbf{Black--Scholes benchmark formulas.}  
+    These formulas provide explicit prices for European options
+    and serve as a reference point for real market prices.
+
+    \item \textbf{Static arbitrage bounds and consistency checks.}  
+    No-arbitrage imposes strong structural restrictions on option prices.
+    We will derive these inequalities and understand the trading
+    strategies that arise when they are violated.
+\end{itemize}
+
+% ============================================================
+% ============================================================
+\section{Vanilla options: contracts, payoffs, and market language}
+% ============================================================
+
+\subsection{European call and European put}
+
+The simplest derivative contracts traded in financial markets are
+\emph{European options}.  
+A European option gives its holder the right (but not the obligation)
+to trade an asset at a predetermined price at a fixed future date.
+Let
+\begin{itemize}[leftmargin=1.4em]
+    \item \(S_T\) be the price of the underlying asset at maturity \(T\),
+    \item \(K\) be the \emph{strike price}.
+\end{itemize}
+
+\paragraph{European call.}
+A European call option gives the holder the right to \emph{buy}
+the asset at price \(K\) at time \(T\).
+
+Its payoff is
+\[
+(S_T-K)^+ = \max(S_T-K,0).
+\]
+
+Intuitively, the holder exercises the option only if the asset price
+is higher than the strike.
+
+\paragraph{European put.}
+A European put option gives the holder the right to \emph{sell}
+the asset at price \(K\) at time \(T\).
+
+Its payoff is
+\[
+(K-S_T)^+ = \max(K-S_T,0).
+\]
+
+The option is exercised only if the market price of the asset
+is below the strike.
+
+\begin{remark}
+European options can only be exercised at maturity \(T\).
+This is in contrast with \emph{American options}, which can be exercised
+at any time before maturity.
+In this course we focus mainly on European options.
+\end{remark}
+
+\subsection{Long and short positions}
+
+An option position can be held in two possible directions.
+
+\paragraph{Long position.}
+A trader who \emph{buys} an option is said to be \emph{long} the option.
+The payoff corresponds exactly to the option payoff defined above.
+
+\paragraph{Short position.}
+A trader who \emph{sells} an option is said to be \emph{short} the option.
+The payoff is the negative of the option payoff.
+
+For example:
+\[
+\text{short call payoff} = -(S_T-K)^+.
+\]
+
+Being short an option means the trader has sold the right to another market participant.
+
+\subsection{Payoff diagrams}
+
+Payoff diagrams provide a very intuitive way to understand option
+contracts and combinations.
+
+\paragraph{Long call.}
+The payoff is
+\[
+(S_T-K)^+.
+\]
+
+If \(S_T\le K\), the option expires worthless.  
+If \(S_T>K\), the payoff increases linearly with the asset price.
+
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+    % axes
+    \draw[->] (0,0) -- (5.5,0) node[right] {$S_T$};
+    \draw[->] (0,-0.5) -- (0,3) node[above] {Payoff};
+    % strike
+    \draw[dashed] (2,0) -- (2,0.2);
+    \node[below] at (2,0) {$K$};
+    % payoff
+    \draw[thick] (0,0) -- (2,0) -- (5,2.4);
+\end{tikzpicture}
+\end{center}
+
+\paragraph{Short call.}
+The payoff is
+\[
+-(S_T-K)^+.
+\]
+
+The seller receives the premium initially but faces potentially large losses if the asset price increases.
+
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+    % axes
+    \draw[->] (0,0) -- (5.5,0) node[right] {$S_T$};
+    \draw[->] (0,-3) -- (0,0.8) node[above] {Payoff};
+    % strike
+    \draw[dashed] (2,0) -- (2,-0.2);
+    \node[above] at (2,0) {$K$};
+    % payoff
+    \draw[thick] (0,0) -- (2,0) -- (5,-2.4);
+\end{tikzpicture}
+\end{center}
+
+\paragraph{Long put.}
+The payoff is
+\[
+(K-S_T)^+.
+\]
+
+This position profits when the underlying price decreases.
+
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+    % axes
+    \draw[->] (0,0) -- (5.5,0) node[right] {$S_T$};
+    \draw[->] (0,-0.5) -- (0,3) node[above] {Payoff};
+    % strike
+    \draw[dashed] (2,0) -- (2,0.2);
+    \node[below] at (2,0) {$K$};
+    % payoff
+    \draw[thick] (0,2) -- (2,0) -- (5,0);
+\end{tikzpicture}
+\end{center}
+
+\paragraph{Short put.}
+The payoff is
+\[
+-(K-S_T)^+.
+\]
+
+The seller benefits if the asset price remains above the strike.
+
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+    % axes
+    \draw[->] (0,0) -- (5.5,0) node[right] {$S_T$};
+    \draw[->] (0,-3) -- (0,0.8) node[above] {Payoff};
+    % strike
+    \draw[dashed] (2,0) -- (2,-0.2);
+    \node[above] at (2,0) {$K$};
+    % payoff
+    \draw[thick] (0,-2) -- (2,0) -- (5,0);
+\end{tikzpicture}
+\end{center}
+
+\begin{remark}
+Drawing payoff diagrams is an extremely useful technique.
+Many arbitrage arguments rely only on comparing payoff shapes.
+\end{remark}
+\subsection{Moneyness}
+
+The relation between the current asset price \(S_t\) and the strike \(K\)
+is called the \emph{moneyness} of the option.
+
+\paragraph{In the money (ITM).}
+An option is in the money if exercising it immediately would generate a positive payoff.
+
+For a call:
+\[
+S_t > K.
+\]
+
+For a put:
+\[
+S_t < K.
+\]
+
+\paragraph{At the money (ATM).}
+An option is at the money if the asset price is approximately equal to the strike:
+
+\[
+S_t \approx K.
+\]
+
+These options are particularly important in practice because they usually carry the largest time value.
+
+\paragraph{Out of the money (OTM).}
+An option is out of the money if exercising it immediately would produce zero payoff.
+
+For a call:
+\[
+S_t < K.
+\]
+
+For a put:
+\[
+S_t > K.
+\]
+
+\subsection{Basic option combinations}
+
+More complex payoffs can be constructed by combining several options.
+Such combinations are extremely common in practice.
+
+\paragraph{Straddle.}
+
+A \emph{straddle} consists of buying:
+\begin{itemize}[leftmargin=1.4em]
+    \item one call with strike \(K\),
+    \item one put with strike \(K\).
+\end{itemize}
+
+The payoff is
+\[
+(S_T-K)^+ + (K-S_T)^+ = |S_T-K|.
+\]
+
+This strategy benefits from large movements of the underlying asset
+in either direction.
+
+\paragraph{Protective put.}
+
+A protective put consists of:
+\begin{itemize}[leftmargin=1.4em]
+    \item holding the underlying asset,
+    \item buying a put option.
+\end{itemize}
+
+The payoff is
+\[
+S_T + (K-S_T)^+.
+\]
+
+This strategy provides downside protection while maintaining
+exposure to upward price movements.
+
+\paragraph{Covered call.}
+
+A covered call consists of:
+\begin{itemize}[leftmargin=1.4em]
+    \item holding the underlying asset,
+    \item selling a call option.
+\end{itemize}
+
+The payoff is
+\[
+S_T - (S_T-K)^+.
+\]
+
+This strategy generates additional income from the option premium,
+but limits the upside potential of the position.
+
+% ============================================================
+% ============================================================
+\section{Put--call parity and first applications}
+% ============================================================
+
+\subsection{Statement of put--call parity}
+
+Consider a European call and a European put written on the same underlying asset,
+with the same strike \(K\) and the same maturity \(T\).
+We denote by
+\[
+C_t \qquad\text{and}\qquad P_t
+\]
+their prices at time \(t\le T\).
+
+In the no-dividend case, the \emph{put--call parity} relation states that
+\[
+\boxed{
+\ C_t-P_t = S_t - K e^{-r(T-t)}.
+}
+\]
+
+Equivalently,
+\[
+\boxed{
+\ C_t + K e^{-r(T-t)} = P_t + S_t.
+}
+\]
+
+\paragraph{Meaning.}
+This identity is a static no-arbitrage relation linking the prices of calls and puts.
+It does \emph{not} rely on a specific model such as Black--Scholes:
+it follows only from the fact that two portfolios with the same terminal payoff
+must have the same price today.
+
+\subsection{Proof by replication}
+
+We compare the following two portfolios at time \(t\):
+
+\medskip
+\noindent
+\textbf{Portfolio A:}
+\begin{itemize}[leftmargin=1.4em]
+    \item one long call,
+    \item cash amount \(K e^{-r(T-t)}\) invested in the bank account.
+\end{itemize}
+
+At maturity \(T\), the bank account grows to \(K\), so the terminal payoff of Portfolio A is
+\[
+(S_T-K)^+ + K.
+\]
+
+\medskip
+\noindent
+\textbf{Portfolio B:}
+\begin{itemize}[leftmargin=1.4em]
+    \item one long put,
+    \item one share of stock.
+\end{itemize}
+
+Its terminal payoff is
+\[
+(K-S_T)^+ + S_T.
+\]
+
+\medskip
+We now compare the two payoffs state by state.
+
+\paragraph{Case 1: \(S_T\ge K\).}
+Then
+\[
+(S_T-K)^+ + K = (S_T-K)+K = S_T,
+\]
+while
+\[
+(K-S_T)^+ + S_T = 0 + S_T = S_T.
+\]
+
+\paragraph{Case 2: \(S_T\le K\).}
+Then
+\[
+(S_T-K)^+ + K = 0 + K = K,
+\]
+while
+\[
+(K-S_T)^+ + S_T = (K-S_T)+S_T = K.
+\]
+
+In both cases, the two portfolios have the same terminal payoff. Therefore,
+by the law of one price,
+\[
+C_t + K e^{-r(T-t)} = P_t + S_t.
+\]
+This proves put--call parity.
+
+\subsection{Interpretation and practical use}
+
+Put--call parity is one of the most important static relations in option pricing.
+
+\paragraph{A first interpretation.}
+The identity says that a call plus discounted cash is economically equivalent
+to a put plus the stock:
+\[
+\text{call} + \text{bond}
+\qquad\Longleftrightarrow\qquad
+\text{put} + \text{stock}.
+\]
+
+So a European call can be viewed as a synthetic position built from a put,
+the stock, and the money-market account.
+
+\paragraph{A second interpretation.}
+Put--call parity allows us to recover the price of one vanilla option from the other:
+\[
+C_t = P_t + S_t - K e^{-r(T-t)},
+\]
+or equivalently
+\[
+P_t = C_t - S_t + K e^{-r(T-t)}.
+\]
+
+\paragraph{Practical use.}
+In real markets, put--call parity is used as a consistency check on option quotes.
+If quoted prices violate parity, there is a static arbitrage opportunity.
+This is one of the first things traders verify when checking market data.
+
+\subsection{Arbitrage if parity is violated}
+
+Suppose the parity relation does \emph{not} hold.
+
+\paragraph{Case 1: the left-hand side is too large.}
+Assume
+\[
+C_t + K e^{-r(T-t)} > P_t + S_t.
+\]
+Then Portfolio A is overpriced relative to Portfolio B.
+
+An arbitrage strategy is:
+\begin{itemize}[leftmargin=1.4em]
+    \item sell Portfolio A,
+    \item buy Portfolio B.
+\end{itemize}
+
+The initial cashflow is strictly positive:
+\[
+\big(C_t + K e^{-r(T-t)}\big) - \big(P_t+S_t\big) > 0.
+\]
+At maturity, both portfolios have the same payoff, so the terminal net payoff is \(0\).
+Hence this is an arbitrage.
+
+\paragraph{Case 2: the right-hand side is too large.}
+Assume instead
+\[
+C_t + K e^{-r(T-t)} < P_t + S_t.
+\]
+Then Portfolio B is overpriced relative to Portfolio A.
+
+An arbitrage strategy is:
+\begin{itemize}[leftmargin=1.4em]
+    \item sell Portfolio B,
+    \item buy Portfolio A.
+\end{itemize}
+
+Again, the initial cashflow is strictly positive, and the terminal net payoff is \(0\).
+
+\paragraph{Conclusion.}
+Any violation of put--call parity immediately creates a static arbitrage opportunity.
+
+\subsection{Optional extension: parity with dividends}
+
+If the underlying asset pays a continuous proportional dividend yield \(q\),
+then holding one share of stock is no longer equivalent to holding its full discounted future value.
+The put--call parity relation must be adjusted.
+
+In that case, the correct parity becomes
+\[
+\boxed{
+\ C_t-P_t = S_t e^{-q(T-t)} - K e^{-r(T-t)}.
+}
+\]
+
+Equivalently,
+\[
+\boxed{
+\ C_t + K e^{-r(T-t)} = P_t + S_t e^{-q(T-t)}.
+}
+\]
+
+\paragraph{Interpretation.}
+The factor \(e^{-q(T-t)}\) reflects the fact that the stock pays dividends between \(t\) and \(T\).
+So the present value of holding the stock until maturity must be adjusted by the dividend yield.
+
+\begin{remark}
+In practice, it is essential to use the correct version of parity:
+\begin{itemize}[leftmargin=1.4em]
+    \item no dividends \(\Rightarrow\) \(C_t-P_t=S_t-Ke^{-r(T-t)}\),
+    \item continuous dividend yield \(q\) \(\Rightarrow\) \(C_t-P_t=S_t e^{-q(T-t)}-Ke^{-r(T-t)}\).
+\end{itemize}
+Using the wrong parity formula can create the illusion of arbitrage where there is none.
+\end{remark}
+% ============================================================
+% ============================================================
+\section{Black--Scholes formulas as practical pricing benchmarks}
+% ============================================================
+
+\subsection{Black--Scholes setting}
+
+We now introduce the Black--Scholes model, which provides explicit
+pricing formulas for European options.
+Although real markets are more complex, these formulas remain the
+standard benchmark used by practitioners.
+
+\paragraph{Risk-neutral dynamics.}
+
+Under the risk-neutral measure \(\Qbb\), the stock price is assumed to follow
+the stochastic differential equation
+\[
+\dd S_t = r S_t\,\dd t + \sigma S_t\,\dd W_t,
+\]
+where
+\begin{itemize}[leftmargin=1.4em]
+    \item \(r\) is the constant risk-free interest rate,
+    \item \(\sigma>0\) is the volatility of the asset,
+    \item \((W_t)_{t\ge0}\) is a Brownian motion under \(\Qbb\).
+\end{itemize}
+
+\paragraph{Explicit solution.}
+
+This stochastic differential equation has the explicit solution
+\[
+S_T
+=
+S_t\exp\!\Big(
+(r-\tfrac12\sigma^2)(T-t)+\sigma(W_T-W_t)
+\Big).
+\]
+
+\paragraph{Lognormal distribution.}
+
+Since \(W_T-W_t\sim \mathcal{N}(0,T-t)\), we obtain that
+\[
+\log S_T
+\]
+is normally distributed. In other words, the stock price \(S_T\) follows
+a \emph{lognormal distribution}.
+
+This property is the key reason why the Black--Scholes model admits
+closed-form option pricing formulas.
+
+\subsection{Closed-form formula for the call}
+
+Consider a European call option with strike \(K\) and maturity \(T\).
+Its payoff is
+\[
+(S_T-K)^+ .
+\]
+
+The Black--Scholes formula gives the time-\(t\) price of the call as
+\[
+\boxed{
+C_t
+=
+S_t\,N(d_1)
+-
+K e^{-r(T-t)} N(d_2)
+}
+\]
+
+where \(N(\cdot)\) denotes the cumulative distribution function of the
+standard normal distribution:
+\[
+N(x)=\Pbb(Z\le x), \qquad Z\sim\mathcal{N}(0,1).
+\]
+
+The parameters \(d_1\) and \(d_2\) are defined by
+\[
+d_1=
+\frac{\ln(S_t/K)+(r+\tfrac12\sigma^2)(T-t)}
+{\sigma\sqrt{T-t}},
+\]
+
+\[
+d_2=
+\frac{\ln(S_t/K)+(r-\tfrac12\sigma^2)(T-t)}
+{\sigma\sqrt{T-t}}.
+\]
+
+\subsection{Closed-form formula for the put}
+
+The price of a European put option can be obtained either directly
+or using put--call parity.
+
+The Black--Scholes formula for the put is
+\[
+\boxed{
+P_t
+=
+K e^{-r(T-t)} N(-d_2)
+-
+S_t N(-d_1)
+}
+\]
+
+An alternative way to compute the put price is to use
+put--call parity:
+\[
+P_t = C_t - S_t + K e^{-r(T-t)}.
+\]
+
+In practice, many systems compute the call price first and obtain the
+put price using this identity.
+
+\subsection{The parameters \(d_1\) and \(d_2\)}
+
+The quantities \(d_1\) and \(d_2\) play a central role in the
+Black--Scholes formula.
+
+They depend on
+\begin{itemize}[leftmargin=1.4em]
+    \item the ratio \(S_t/K\),
+    \item the volatility \(\sigma\),
+    \item the time to maturity \(T-t\),
+    \item the interest rate \(r\).
+\end{itemize}
+
+Observe that
+\[
+d_2 = d_1 - \sigma\sqrt{T-t}.
+\]
+
+Although \(d_1\) and \(d_2\) arise naturally from the mathematical
+derivation of the Black--Scholes formula, they also admit a financial
+interpretation.
+
+Roughly speaking,
+\[
+N(d_2)
+\]
+can be interpreted as the risk-neutral probability that the option
+finishes in the money:
+\[
+\Pbb^{\Qbb}(S_T>K).
+\]
+
+Similarly,
+\[
+N(d_1)
+\]
+appears when computing the expected value of the stock in the
+risk-neutral pricing formula.
+
+% ============================================================
+\subsection{Option Greeks}
+% ============================================================
+
+In practice, traders are not only interested in the price of an option,
+but also in how this price reacts to changes in the model parameters.
+
+These sensitivities are called the \emph{Greeks}.  
+They play a central role in risk management and hedging.
+
+Throughout this subsection we consider a European option with price
+
+\[
+V(S,t).
+\]
+
+The Greeks measure how this price changes when the underlying variables
+are modified.
+
+% ------------------------------------------------------------
+\paragraph{Delta}
+% ------------------------------------------------------------
+
+The \emph{Delta} measures the sensitivity of the option price with
+respect to the underlying asset price.
+
+\[
+\Delta = \frac{\partial V}{\partial S}.
+\]
+
+\paragraph{Interpretation.}
+
+Delta represents the approximate change in the option price for a small
+change in the underlying asset price.
+
+For example, if
+\[
+\Delta = 0.6,
+\]
+then a small increase of \(1\) in the stock price increases the option
+price by approximately \(0.6\).
+
+\paragraph{Black--Scholes formulas.}
+
+For a European call and put:
+
+\[
+\Delta_{\text{call}} = N(d_1),
+\]
+
+\[
+\Delta_{\text{put}} = N(d_1)-1.
+\]
+
+\paragraph{Economic interpretation.}
+
+Delta also represents the number of shares needed to hedge a short
+option position in the Black--Scholes model.
+
+% ------------------------------------------------------------
+\paragraph{Gamma}
+% ------------------------------------------------------------
+
+The \emph{Gamma} measures how Delta changes when the stock price moves.
+
+\[
+\Gamma = \frac{\partial^2 V}{\partial S^2}.
+\]
+
+\paragraph{Interpretation.}
+
+Gamma captures the curvature of the option price with respect to the
+underlying asset.
+
+High Gamma means that the Delta changes rapidly as the stock price moves.
+
+\paragraph{Black--Scholes formula.}
+
+For both calls and puts,
+
+\[
+\Gamma
+=
+\frac{N'(d_1)}{S\sigma\sqrt{T-t}},
+\]
+
+where \(N'\) denotes the standard normal density.
+
+\paragraph{Remark.}
+
+Gamma is largest for \emph{at-the-money} options and becomes small for
+deep in-the-money or deep out-of-the-money options.
+
+% ------------------------------------------------------------
+\paragraph{Vega}
+% ------------------------------------------------------------
+
+The \emph{Vega} measures the sensitivity of the option price to the
+volatility parameter.
+
+\[
+\text{Vega} = \frac{\partial V}{\partial \sigma}.
+\]
+
+\paragraph{Interpretation.}
+
+Vega represents the change in the option price for a small change in
+volatility.
+
+For example, if Vega is equal to \(0.4\), then increasing volatility by
+\(1\%\) increases the option price by approximately \(0.004\).
+
+\paragraph{Black--Scholes formula.}
+
+For both calls and puts,
+
+\[
+\text{Vega}
+=
+S \sqrt{T-t}\, N'(d_1).
+\]
+
+\paragraph{Remark.}
+
+Vega is typically largest for at-the-money options with intermediate
+maturity.
+
+% ------------------------------------------------------------
+\paragraph{Theta}
+% ------------------------------------------------------------
+
+The \emph{Theta} measures the sensitivity of the option price with
+respect to time.
+
+\[
+\Theta = \frac{\partial V}{\partial t}.
+\]
+
+\paragraph{Interpretation.}
+
+Theta measures the change in the option price as time passes,
+all other parameters being fixed.
+
+For long option positions, Theta is typically negative: as time passes,
+the option loses part of its time value.
+This phenomenon is often called \emph{time decay}.
+
+\paragraph{Black--Scholes formulas.}
+
+For a European call option,
+
+\[
+\Theta_{\text{call}}
+=
+-
+\frac{S\sigma N'(d_1)}{2\sqrt{T-t}}
+-
+rK e^{-r(T-t)} N(d_2).
+\]
+
+For a European put option,
+
+\[
+\Theta_{\text{put}}
+=
+-
+\frac{S\sigma N'(d_1)}{2\sqrt{T-t}}
++
+rK e^{-r(T-t)} N(-d_2).
+\]
+
+\paragraph{Remark.}
+
+The first term in the Theta formula corresponds to the decay of the
+option's time value due to the reduction of uncertainty as maturity
+approaches.
+
+The second term reflects the effect of interest rates on the discounted
+strike.
+
+% ------------------------------------------------------------
+\paragraph{Rho}
+% ------------------------------------------------------------
+
+The \emph{Rho} measures the sensitivity of the option price with respect
+to the interest rate.
+
+\[
+\rho = \frac{\partial V}{\partial r}.
+\]
+
+\paragraph{Interpretation.}
+
+Rho captures how the option price changes when interest rates change.
+
+\paragraph{Black--Scholes formulas.}
+
+\[
+\rho_{\text{call}}
+=
+K(T-t)e^{-r(T-t)} N(d_2),
+\]
+
+\[
+\rho_{\text{put}}
+=
+- K(T-t)e^{-r(T-t)} N(-d_2).
+\]
+
+% ------------------------------------------------------------
+\paragraph{Summary}
+% ------------------------------------------------------------
+
+The main Greeks are summarized below:
+
+\[
+\begin{array}{c|c}
+\text{Greek} & \text{Sensitivity to} \\ \hline
+\Delta & \text{underlying price} \\
+\Gamma & \text{curvature with respect to the price} \\
+\text{Vega} & \text{volatility} \\
+\Theta & \text{time} \\
+\rho & \text{interest rate}
+\end{array}
+\]
+
+These quantities are fundamental tools for traders because they describe
+how the value of an option reacts to changes in market conditions.
+
+
+
+\subsection{How to read the formula in practice}
+
+The Black--Scholes formula also provides valuable intuition about how
+option prices depend on the model parameters.
+
+\paragraph{Dependence on the strike.}
+
+For a fixed maturity, the call price decreases as the strike increases.
+Intuitively, the right to buy the asset at a higher price is less valuable.
+
+Conversely, the price of a put increases with the strike.
+
+\paragraph{Dependence on maturity.}
+
+For fixed parameters, options with longer maturity tend to be more
+expensive because they provide more time for favorable price movements.
+
+This effect is particularly strong for at-the-money options.
+
+\paragraph{Dependence on volatility.}
+
+Volatility plays a crucial role in option pricing.
+Higher volatility increases the probability of large movements in the
+underlying asset.
+
+Since option payoffs are convex functions of \(S_T\), greater volatility
+generally increases the value of both calls and puts.
+
+\paragraph{Dependence on the interest rate.}
+
+Interest rates also influence option prices.
+
+For call options, higher interest rates tend to increase the option value
+because the discounted strike \(K e^{-r(T-t)}\) becomes smaller.
+
+For put options, the effect works in the opposite direction.
+
+
+
+\subsection{Implied volatility}
+
+In practice, option prices are rarely quoted directly in financial
+markets. Instead, traders typically quote the \emph{implied volatility}
+of an option.
+
+\paragraph{Definition.}
+
+Given a market price \(C^{\text{mkt}}\) for a European call,
+the \emph{implied volatility} is defined as the value of \(\sigma\)
+that solves
+
+\[
+C^{\text{BS}}(S_t,K,T,r,\sigma) = C^{\text{mkt}},
+\]
+
+where \(C^{\text{BS}}\) denotes the Black--Scholes call price.
+
+In other words, the implied volatility is the volatility parameter that,
+when inserted into the Black--Scholes formula, reproduces the observed
+market price.
+
+\paragraph{Why this convention is used.}
+
+There are several reasons why traders prefer quoting implied
+volatility instead of option prices:
+
+\begin{itemize}[leftmargin=1.4em]
+\item option prices depend strongly on the level of the underlying asset,
+while implied volatility is more stable;
+
+\item volatility provides a natural measure of uncertainty about the
+future evolution of the asset price;
+
+\item quoting volatility makes it easier to compare options with
+different strikes and maturities.
+\end{itemize}
+
+\paragraph{Implied volatility surface.}
+
+In real markets, implied volatility varies across strikes and maturities.
+The function
+
+\[
+(K,T) \mapsto \sigma_{\text{imp}}(K,T)
+\]
+
+is called the \emph{implied volatility surface}.
+
+Studying and modeling this surface is a central topic in modern
+quantitative finance.
+
+
+\paragraph{Volatility smile and volatility skew.}
+
+In the Black--Scholes model, volatility is assumed to be constant.
+Therefore the implied volatility should be the same for all strikes \(K\)
+and maturities \(T\).
+
+In real markets this is not the case.
+When implied volatility is computed from observed option prices,
+it typically varies with the strike.
+
+\medskip
+
+\textbf{Volatility smile.}
+
+For some assets (historically in FX markets), the implied volatility
+curve as a function of the strike has a roughly symmetric shape:
+it is higher for deep in-the-money and deep out-of-the-money options,
+and lower near the at-the-money strike.
+
+This pattern is called the \emph{volatility smile}.
+
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+    % axes
+    \draw[->] (0,0) -- (6,0) node[right] {Strike \(K\)};
+    \draw[->] (0,0) -- (0,3.5) node[above] {Implied vol};
+    % ATM mark
+    \draw[dashed] (3,0) -- (3,0.25);
+    \node[below] at (3,0) {ATM};
+    % smile
+    \draw[thick,domain=0.7:5.3,smooth,variable=\x]
+        plot ({\x},{0.8+0.22*(\x-3)^2});
+\end{tikzpicture}
+\end{center}
+
+\medskip
+
+\paragraph{Volatility skew.}
+
+In equity markets, the pattern of implied volatility across strikes is
+typically asymmetric.
+
+More precisely, implied volatility tends to \emph{increase as the strike
+decreases}.  
+Equivalently, options with low strikes usually have higher implied
+volatility than options close to the current spot price.
+
+In particular, \emph{out-of-the-money put options} (which provide
+protection against large downward movements of the underlying asset)
+often display higher implied volatility than at-the-money options.
+
+This asymmetric pattern is called the \emph{volatility skew}
+(or sometimes the \emph{volatility smirk}).
+
+\paragraph{Economic intuition.}
+
+One important explanation comes from the demand for
+\emph{downside protection}.
+
+Investors such as asset managers and pension funds often hold large
+equity portfolios and are therefore exposed to large market downturns.
+Buying out-of-the-money put options provides insurance against such
+crashes.
+
+Because these options provide protection against rare but severe
+downside events, they are in high demand.
+As a result, their market prices tend to be relatively high.
+
+When these higher prices are translated into Black--Scholes implied
+volatilities, they appear as higher implied volatility for low strikes.
+
+\paragraph{Interpretation in terms of risk-neutral distributions.}
+
+The volatility skew can also be interpreted in terms of the
+risk-neutral distribution of the future asset price.
+
+Recall that option prices contain information about the distribution of
+\(S_T\) under the risk-neutral measure.
+In particular, the curvature of call prices with respect to the strike
+is directly related to the density of this distribution.
+
+A pronounced volatility skew typically indicates that the market
+assigns relatively more probability mass to large downward moves of the
+underlying asset than predicted by the lognormal distribution of the
+Black--Scholes model.
+
+In other words, the market-implied distribution of returns is often
+\emph{negatively skewed}.
+
+\paragraph{Contrast with the Black--Scholes model.}
+
+In the Black--Scholes model, volatility is constant and therefore
+implied volatility should be the same for all strikes.
+
+The existence of a volatility skew in real markets shows that this
+assumption is unrealistic and that the true distribution of asset
+returns deviates significantly from the lognormal model.
+
+Understanding and modeling this skew is a major topic in modern option
+pricing.
+
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+    % axes
+    \draw[->] (0,0) -- (6,0) node[right] {Strike \(K\)};
+    \draw[->] (0,0) -- (0,3.5) node[above] {Implied vol};
+    % ATM mark
+    \draw[dashed] (3,0) -- (3,0.25);
+    \node[below] at (3,0) {ATM};
+    % skew
+    \draw[thick,domain=0.7:5.3,smooth,variable=\x]
+        plot ({\x},{2.8-0.42*\x+0.035*(\x-3)^2});
+\end{tikzpicture}
+\end{center}
+
+\medskip
+
+\textbf{Economic interpretation.}
+
+The volatility skew reflects the fact that large downward movements in
+equity markets are perceived as more likely than large upward movements.
+Investors therefore demand protection against market crashes,
+which increases the price of out-of-the-money put options.
+
+\medskip
+
+\textbf{Implication for modeling.}
+
+The presence of volatility smiles and skews shows that the constant
+volatility assumption of the Black--Scholes model is not realistic.
+
+This is one of the main motivations for more advanced models such as
+local volatility models, stochastic volatility models, and jump models.
+
+% ============================================================
+% ============================================================
+\section{Practical approximations and trader intuition}
+% ============================================================
+
+The Black--Scholes formulas provide exact prices within the model.
+However, in practice traders rarely think directly in terms of the full
+formula. Instead they rely on simple approximations and intuition about
+how option prices behave in different regimes.
+
+Understanding these approximations is very useful for developing a quick
+intuition about option prices.
+
+\subsection{Intrinsic value and time value}
+
+The price of an option can be decomposed into two components.
+
+\paragraph{Intrinsic value.}
+
+The intrinsic value is the immediate exercise value of the option.
+
+For a call:
+\[
+\text{Intrinsic value} = (S_t-K)^+.
+\]
+
+For a put:
+\[
+\text{Intrinsic value} = (K-S_t)^+.
+\]
+
+This is the payoff that would be obtained if the option could be exercised
+immediately.
+
+\paragraph{Time value.}
+
+The difference between the option price and the intrinsic value is called
+the \emph{time value}.
+
+For a call:
+\[
+\text{Time value} = C_t - (S_t-K)^+ .
+\]
+
+For a put:
+\[
+\text{Time value} = P_t - (K-S_t)^+ .
+\]
+
+The time value reflects the possibility that the asset price may move
+favorably before maturity.
+
+\begin{remark}
+Options that are close to the money typically have the largest time value.
+Deep in-the-money or deep out-of-the-money options have relatively small
+time value.
+\end{remark}
+
+\subsection{Short-maturity intuition}
+
+When the maturity \(T-t\) becomes very small, the option price approaches
+its intrinsic value.
+
+Indeed, when there is very little time remaining, there is little
+opportunity for the asset price to move significantly.
+
+Therefore,
+\[
+C_t \approx (S_t-K)^+
+\]
+for very short maturities.
+
+Similarly,
+\[
+P_t \approx (K-S_t)^+ .
+\]
+
+This approximation becomes increasingly accurate as the maturity
+approaches zero.
+
+\subsection{Deep ITM / deep OTM regimes}
+
+The Black--Scholes formula also simplifies in extreme regimes.
+
+\paragraph{Deep in-the-money call.}
+
+If \(S_t \gg K\), the call option behaves approximately like the stock.
+Indeed,
+\[
+C_t \approx S_t - K e^{-r(T-t)}.
+\]
+
+In this situation the probability of finishing in the money is close to
+one, so the option behaves almost like holding the stock minus the
+discounted strike.
+
+\paragraph{Deep out-of-the-money call.}
+
+If \(S_t \ll K\), the call option is very unlikely to finish in the money,
+so its value is small.
+
+In that regime
+\[
+C_t \approx 0.
+\]
+
+The option mainly reflects the small probability of a large upward move.
+
+\paragraph{Similar intuition for puts.}
+
+For puts, the opposite regimes hold:
+\begin{itemize}[leftmargin=1.4em]
+    \item if \(S_t \ll K\), the put is deep in the money and behaves
+    approximately like \(K e^{-r(T-t)}-S_t\);
+    \item if \(S_t \gg K\), the put price is close to zero.
+\end{itemize}
+
+\subsection{ATM options and time value}
+
+At-the-money options (\(S_t \approx K\)) behave differently.
+
+In this regime:
+\begin{itemize}[leftmargin=1.4em]
+\item the intrinsic value is close to zero,
+\item the entire price of the option consists essentially of time value.
+\end{itemize}
+
+This explains why at-the-money options are usually the most sensitive to
+volatility.
+
+In fact, the Black--Scholes price of an ATM option is roughly of the order
+\[
+S_t \sigma \sqrt{T-t}.
+\]
+
+This scaling reflects the typical magnitude of Brownian fluctuations over
+the time horizon \(T-t\).
+
+\subsection{Numerical and practical remarks}
+
+In real markets, option pricing uses a number of standard conventions.
+
+\paragraph{Annualized volatility.}
+
+Volatility is quoted in annualized units.
+For example,
+\[
+\sigma = 20\%
+\]
+means that the standard deviation of yearly log-returns is approximately
+\(20\%\).
+
+\paragraph{Time measured in years.}
+
+Maturity is typically expressed in years.
+For example:
+\begin{itemize}[leftmargin=1.4em]
+\item 3 months \( \approx 0.25 \),
+\item 6 months \( \approx 0.5 \),
+\item 1 year \( = 1 \).
+\end{itemize}
+
+\paragraph{Role of interest rates and dividends.}
+
+Interest rates influence option prices through the discounted strike
+\(K e^{-r(T-t)}\).
+
+Dividends reduce the expected future stock price and therefore tend to
+decrease call prices while increasing put prices.
+
+\paragraph{Implied volatility.}
+
+In practice, traders rarely quote option prices directly.
+Instead they quote the \emph{implied volatility}.
+
+The implied volatility is the value of \(\sigma\) that, when inserted into
+the Black--Scholes formula, reproduces the observed market price.
+
+This convention makes it easier to compare options across different
+strikes and maturities.
+% ============================================================
+% ============================================================
+\section{Static no-arbitrage inequalities for calls and puts}
+% ============================================================
+
+Even without specifying a particular model for the underlying asset,
+option prices must satisfy a number of structural inequalities.
+These inequalities follow only from the absence of arbitrage.
+
+They provide very useful \emph{consistency checks} for option prices.
+
+Throughout this section we consider European options with strike \(K\)
+and maturity \(T\), and denote by \(C_t\) and \(P_t\) the prices of the
+call and the put at time \(t\).
+
+% ------------------------------------------------------------
+\subsection{Basic upper and lower bounds for calls}
+% ------------------------------------------------------------
+
+We begin with simple bounds for the price of a European call.
+
+\paragraph{Lower bound.}
+
+Since the payoff of a call is non-negative,
+\[
+(S_T-K)^+ \ge 0,
+\]
+the price of the option must also be non-negative:
+\[
+C_t \ge 0.
+\]
+
+A stronger lower bound can be obtained using put--call parity.
+
+From
+\[
+C_t - P_t = S_t - K e^{-r(T-t)},
+\]
+and the fact that \(P_t \ge 0\), we obtain
+\[
+\boxed{
+C_t \ge S_t - K e^{-r(T-t)}.
+}
+\]
+
+Combining both inequalities gives
+\[
+\boxed{
+C_t \ge \max\!\big(S_t-K e^{-r(T-t)},\,0\big).
+}
+\]
+
+\paragraph{Upper bound.}
+
+A call option gives the right to buy the asset at price \(K\).
+Clearly this right cannot be worth more than the asset itself.
+
+Indeed, if
+\[
+C_t > S_t,
+\]
+one could sell the call and buy the stock, obtaining a positive
+cashflow initially while never losing money at maturity.
+
+Therefore
+\[
+\boxed{
+C_t \le S_t.
+}
+\]
+
+\paragraph{Summary.}
+
+We obtain the classical bounds
+\[
+\boxed{
+\max(S_t-K e^{-r(T-t)},0)
+\;\le\;
+C_t
+\;\le\;
+S_t.
+}
+\]
+
+% ------------------------------------------------------------
+\subsection{Basic upper and lower bounds for puts}
+% ------------------------------------------------------------
+
+Similar arguments yield bounds for the price of a put option.
+
+\paragraph{Lower bound.}
+
+The payoff of a put satisfies
+\[
+(K-S_T)^+ \ge 0,
+\]
+so
+\[
+P_t \ge 0.
+\]
+
+Using put--call parity again,
+\[
+P_t = C_t - S_t + K e^{-r(T-t)},
+\]
+and the fact that \(C_t \ge 0\), we obtain
+
+\[
+\boxed{
+P_t \ge K e^{-r(T-t)} - S_t.
+}
+\]
+
+Combining both inequalities gives
+
+\[
+\boxed{
+P_t \ge \max\!\big(K e^{-r(T-t)} - S_t,\,0\big).
+}
+\]
+
+\paragraph{Upper bound.}
+
+A put option allows the holder to sell the asset at price \(K\).
+The maximum possible payoff occurs when the asset price is zero.
+
+In that case the payoff is \(K\), so the present value of the maximum
+possible payoff is
+
+\[
+K e^{-r(T-t)}.
+\]
+
+Therefore
+\[
+\boxed{
+P_t \le K e^{-r(T-t)}.
+}
+\]
+
+\paragraph{Summary.}
+
+We obtain
+
+\[
+\boxed{
+\max(K e^{-r(T-t)}-S_t,0)
+\;\le\;
+P_t
+\;\le\;
+K e^{-r(T-t)}.
+}
+\]
+
+% ------------------------------------------------------------
+\subsection{Positivity of option prices}
+% ------------------------------------------------------------
+
+One of the simplest but most fundamental consequences of no-arbitrage
+is that option prices must be non-negative.
+
+Indeed, if an option price were negative, a trader could simply
+buy the option and receive money immediately.
+
+Since the payoff of both calls and puts is always non-negative,
+this would produce an arbitrage.
+
+Therefore
+
+\[
+\boxed{
+C_t \ge 0
+\qquad
+\text{and}
+\qquad
+P_t \ge 0.
+}
+\]
+
+Although this condition may seem obvious, it is the first consistency
+check that any option price must satisfy.
+
+% ------------------------------------------------------------
+\subsection{Interpretation of the bounds}
+% ------------------------------------------------------------
+
+These inequalities have a simple economic interpretation.
+
+\paragraph{Lower bounds.}
+
+The lower bounds correspond to the fact that an option should be worth
+at least its \emph{intrinsic value} (up to discounting effects).
+
+If the option price were lower than this bound, one could construct
+an arbitrage by combining the option with the underlying asset
+and the risk-free bond.
+
+\paragraph{Upper bounds.}
+
+The upper bounds reflect the fact that an option payoff is limited.
+
+A call cannot be worth more than the underlying asset,
+and a put cannot be worth more than the discounted strike.
+
+\paragraph{Practical role.}
+
+In practice these inequalities are constantly used to verify
+whether market quotes are consistent.
+
+If any of these bounds is violated, a simple static arbitrage
+strategy can immediately be constructed.
+% % ============================================================
+\section{Monotonicity and convexity in the strike}
+% ============================================================
+
+In addition to the basic bounds derived previously, option prices must
+also satisfy structural properties with respect to the strike.
+These properties follow directly from the shape of option payoffs.
+
+Let \(C(K)\) and \(P(K)\) denote the prices of a European call and put
+with strike \(K\) and fixed maturity \(T\).
+
+% ------------------------------------------------------------
+\subsection{Monotonicity of call prices with respect to strike}
+% ------------------------------------------------------------
+
+Call prices must be decreasing functions of the strike.
+
+\begin{proposition}
+If \(K_1 < K_2\), then
+\[
+C(K_1) \ge C(K_2).
+\]
+\end{proposition}
+
+\paragraph{Proof.}
+
+The payoff of a call with strike \(K_1\) satisfies
+\[
+(S_T-K_1)^+ \ge (S_T-K_2)^+
+\]
+for every value of \(S_T\).
+
+In other words, a call with a lower strike always pays at least as much
+as a call with a higher strike.
+
+By the dominance principle, the price must therefore satisfy
+
+\[
+C(K_1) \ge C(K_2).
+\]
+
+\paragraph{Interpretation.}
+
+A call with a lower strike gives the right to buy the asset at a cheaper
+price. It is therefore more valuable.
+
+% ------------------------------------------------------------
+\subsection{Monotonicity of put prices with respect to strike}
+% ------------------------------------------------------------
+
+The opposite relation holds for put options.
+
+\begin{proposition}
+If \(K_1 < K_2\), then
+\[
+P(K_1) \le P(K_2).
+\]
+\end{proposition}
+
+\paragraph{Proof.}
+
+For all \(S_T\),
+
+\[
+(K_1-S_T)^+ \le (K_2-S_T)^+ .
+\]
+
+Thus a put with a higher strike always delivers a payoff at least as
+large as a put with a lower strike.
+
+By the dominance principle,
+
+\[
+P(K_1) \le P(K_2).
+\]
+
+\paragraph{Interpretation.}
+
+A put with a higher strike gives the right to sell the asset at a higher
+price, which is more valuable.
+
+% ------------------------------------------------------------
+\subsection{Convexity of call prices with respect to strike}
+% ------------------------------------------------------------
+
+Option prices must also be convex functions of the strike.
+
+\begin{proposition}
+The call price \(C(K)\) is a convex function of the strike \(K\).
+\end{proposition}
+
+\paragraph{Proof using convexity of the payoff.}
+Fix \(K_1<K_2<K_3\) and assume
+\[
+K_2=\lambda K_1+(1-\lambda)K_3
+\qquad\text{for some } \lambda\in(0,1).
+\]
+For every fixed value of \(S_T\), the function
+\[
+K\mapsto (S_T-K)^+
+\]
+is convex. Therefore,
+\[
+(S_T-K_2)^+
+\le
+\lambda (S_T-K_1)^+
++
+(1-\lambda)(S_T-K_3)^+.
+\]
+By the dominance principle, the same inequality must hold for prices:
+\[
+C(K_2)
+\le
+\lambda C(K_1)+(1-\lambda)C(K_3).
+\]
+Hence \(K\mapsto C(K)\) is convex.
+\qed
+
+\paragraph{Proof using a butterfly portfolio.}
+
+Consider three strikes
+\[
+K_1 < K_2 < K_3
+\]
+and suppose that \(K_2\) lies between the two others.
+
+Define the weights
+\[
+\lambda=\frac{K_3-K_2}{K_3-K_1},
+\qquad
+1-\lambda=\frac{K_2-K_1}{K_3-K_1}.
+\]
+
+Observe that \(0<\lambda<1\) and that
+\[
+K_2=\lambda K_1+(1-\lambda)K_3.
+\]
+
+Now consider the portfolio
+
+\[
+\lambda \text{ calls with strike } K_1
++
+(1-\lambda) \text{ calls with strike } K_3
+-
+1 \text{ call with strike } K_2 .
+\]
+
+\paragraph{Payoff at maturity.}
+
+The payoff of this portfolio is
+
+\[
+\lambda (S_T-K_1)^+
++
+(1-\lambda)(S_T-K_3)^+
+-
+(S_T-K_2)^+ .
+\]
+
+We now examine the payoff in the three possible regions.
+
+\medskip
+
+\textbf{Case 1: \(S_T \le K_1\).}
+
+All calls expire worthless, so the payoff is
+
+\[
+0.
+\]
+
+\medskip
+
+\textbf{Case 2: \(K_1 \le S_T \le K_2\).}
+
+Only the first call is in the money, so the payoff is
+
+\[
+\lambda (S_T-K_1) \ge 0 .
+\]
+
+\medskip
+
+\textbf{Case 3: \(K_2 \le S_T \le K_3\).}
+
+Two calls are active and the payoff becomes
+
+\[
+\lambda (S_T-K_1) - (S_T-K_2).
+\]
+
+Using \(K_2=\lambda K_1+(1-\lambda)K_3\), one can verify that this quantity
+is non-negative.
+
+\medskip
+
+\textbf{Case 4: \(S_T \ge K_3\).}
+
+All three options are in the money and the payoff becomes
+
+\[
+\lambda (S_T-K_1)
++
+(1-\lambda)(S_T-K_3)
+-
+(S_T-K_2).
+\]
+
+A direct computation shows that this expression equals \(0\).
+
+\medskip
+
+Thus the payoff of the portfolio is always non-negative.
+
+\paragraph{No-arbitrage argument.}
+
+Since the terminal payoff is non-negative, the initial cost of the
+portfolio must also be non-negative.
+
+Therefore
+
+\[
+\lambda C(K_1)
++
+(1-\lambda)C(K_3)
+-
+C(K_2)
+\ge 0.
+\]
+
+Rearranging gives
+
+\[
+C(K_2)
+\le
+\lambda C(K_1)
++
+(1-\lambda)C(K_3),
+\]
+
+which is exactly the definition of convexity.
+
+\paragraph{Financial interpretation.}
+
+If this inequality were violated, the butterfly portfolio would have
+a negative price but a non-negative payoff, producing an arbitrage.
+
+This type of arbitrage is called a \emph{butterfly arbitrage}.
+More precisely, convexity implies
+
+\[
+C(K_2)
+\le
+\frac{K_3-K_2}{K_3-K_1}C(K_1)
++
+\frac{K_2-K_1}{K_3-K_1}C(K_3).
+\]
+
+If this inequality were violated, a static arbitrage would exist.
+
+% ------------------------------------------------------------
+\subsection{Convexity of put prices with respect to strike}
+% ------------------------------------------------------------
+
+The same argument applies to put options.
+
+\begin{proposition}
+The put price \(P(K)\) is also a convex function of \(K\).
+\end{proposition}
+
+This property follows directly from the convexity of the payoff
+\[
+(K-S_T)^+
+\]
+with respect to \(K\).
+
+\paragraph{Remark.}
+
+Convexity of option prices is a very important property.
+It ensures that the option price curve cannot contain local concave
+regions.
+
+In continuous models this property is closely related to the existence
+of a non-negative probability density for the underlying asset.
+
+%   
+
+% ============================================================
+\section{Maturity inequalities under simple assumptions}
+% ============================================================
+
+In addition to constraints with respect to the strike,
+option prices must also satisfy consistency conditions across
+different maturities.
+
+These relations are sometimes called \emph{calendar inequalities}.
+They ensure that option prices behave consistently when the maturity
+of the contract changes.
+
+Throughout this section we consider European call options with
+fixed strike \(K\) but different maturities.
+
+% ------------------------------------------------------------
+\subsection{Monotonicity in maturity when rates and dividends are zero}
+% ------------------------------------------------------------
+
+We first consider the simplest situation where
+\[
+r = 0
+\qquad\text{and}\qquad
+\text{the asset pays no dividends}.
+\]
+
+In that case, call prices must be increasing with maturity.
+
+\begin{proposition}
+Let \(T_1 < T_2\).
+If interest rates and dividends are zero, then
+\[
+C(K,T_2) \ge C(K,T_1).
+\]
+\end{proposition}
+
+\paragraph{Intuition.}
+
+An option with longer maturity gives the holder strictly more
+flexibility.
+
+Indeed, holding a call with maturity \(T_2\) allows the investor to
+benefit from price movements over a longer time period than a call
+with maturity \(T_1\).
+
+Therefore the longer option cannot be less valuable.
+
+\paragraph{Payoff argument.}
+
+Consider two call options with the same strike \(K\)
+but maturities \(T_1<T_2\).
+
+At time \(T_1\), the payoff of the first option is
+
+\[
+(S_{T_1}-K)^+ .
+\]
+
+The holder of the longer option still owns a contract
+that remains alive until time \(T_2\).
+In particular, the payoff at time \(T_2\) is
+
+\[
+(S_{T_2}-K)^+ .
+\]
+
+Since the second option offers strictly more opportunities for
+favorable price movements, it must have a price at least as large.
+
+\paragraph{Economic interpretation.}
+
+The extra time to maturity increases the probability that the option
+finishes in the money.
+Therefore longer maturities typically correspond to larger option prices.
+
+\paragraph{Remark (calendar spreads).}
+
+Assume that interest rates and dividends are zero, and consider two
+European calls with the same strike \(K\) but different maturities
+\[
+T_1 < T_2.
+\]
+
+Suppose that the maturity monotonicity is violated, that is,
+\[
+C(K,T_2) < C(K,T_1).
+\]
+
+Then the longer-maturity option is cheaper than the shorter-maturity one,
+even though it gives strictly more flexibility to its holder.
+
+A natural strategy is the following:
+\begin{itemize}[leftmargin=1.4em]
+    \item buy one call with maturity \(T_2\),
+    \item sell one call with maturity \(T_1\).
+\end{itemize}
+
+\paragraph{Initial cashflow.}
+At time \(t\), the initial value of this portfolio is
+\[
+C(K,T_2)-C(K,T_1)<0.
+\]
+So the trader receives the strictly positive amount
+\[
+C(K,T_1)-C(K,T_2)>0
+\]
+at inception.
+
+\paragraph{What happens at time \(T_1\)?}
+At time \(T_1\), the short call expires and its payoff is
+\[
+-(S_{T_1}-K)^+.
+\]
+The long call with maturity \(T_2\) is still alive. Its market value at
+time \(T_1\) is the price of a call with residual maturity \(T_2-T_1\),
+namely
+\[
+C_{T_1}(K,T_2).
+\]
+
+Hence the value of the portfolio at time \(T_1\) is
+\[
+C_{T_1}(K,T_2) - (S_{T_1}-K)^+.
+\]
+
+Now, under the same no-arbitrage logic as before, a call with remaining
+time to maturity must be worth at least its intrinsic value. Therefore,
+\[
+C_{T_1}(K,T_2)\ge (S_{T_1}-K)^+.
+\]
+It follows that
+\[
+C_{T_1}(K,T_2) - (S_{T_1}-K)^+ \ge 0.
+\]
+
+So at time \(T_1\), after the short call has been settled, the trader is
+left with a portfolio of non-negative value.
+
+\paragraph{Conclusion.}
+The strategy produces:
+\begin{itemize}[leftmargin=1.4em]
+    \item a strictly positive gain at time \(t\),
+    \item and a non-negative value at time \(T_1\).
+\end{itemize}
+This is an arbitrage.
+
+Such strategies are called \emph{calendar spreads}, because they exploit
+inconsistencies between option prices across different maturities.
+
+% ------------------------------------------------------------
+\subsection{Why maturity effects can become subtler in general}
+% ------------------------------------------------------------
+
+The previous monotonicity property relied on the simplifying
+assumption that interest rates and dividends are zero.
+
+When interest rates or dividends are present,
+the comparison between different maturities becomes more subtle.
+
+\paragraph{Role of interest rates.}
+
+With positive interest rates, the present value of the strike
+\(K e^{-r(T-t)}\) decreases as maturity increases.
+
+This effect tends to increase call prices for longer maturities.
+
+\paragraph{Role of dividends.}
+
+Dividends have the opposite effect.
+Since dividends reduce the expected future price of the stock,
+they tend to decrease call prices for longer maturities.
+
+As a result, the monotonicity of option prices with respect to maturity
+may no longer hold in full generality.
+
+\paragraph{Practical implication.}
+
+In real markets, traders must verify more sophisticated consistency
+conditions across maturities in order to rule out
+\emph{calendar arbitrage}.
+
+These conditions play an important role in the construction of
+arbitrage-free volatility surfaces.
+
+% ============================================================
+% ============================================================
+\section{How to construct arbitrage when bounds are violated}
+% ============================================================
+
+The inequalities derived in the previous sections are not merely
+theoretical properties.
+Whenever one of these conditions is violated, it is possible to construct
+a trading strategy that produces an arbitrage.
+
+In this section we illustrate how such strategies can be constructed.
+
+\subsection{Arbitrage through super-replication}
+
+The same arbitrage logic applies more generally to non-liquid claims.
+
+Suppose that a contingent claim \(\xi\) is traded over the counter and is
+not itself liquidly replicable in the market.
+Assume however that we can construct a self-financing portfolio of liquidly
+traded assets whose terminal wealth \(X_T\) satisfies
+
+\[
+X_T \ge \xi
+\qquad\text{almost surely.}
+\]
+
+In other words, the liquid portfolio \emph{super-replicates} the claim.
+
+Let \(X_0\) denote the initial cost of setting up this portfolio.
+
+\paragraph{Suppose now that the non-liquid claim is sold at price \(P\) with}
+\[
+P > X_0.
+\]
+
+Then the claim is overpriced relative to a super-replicating strategy.
+
+\paragraph{Arbitrage strategy.}
+
+The arbitrageur proceeds as follows:
+\begin{itemize}[leftmargin=1.4em]
+    \item sell the non-liquid claim \(\xi\) at price \(P\),
+    \item use \(X_0\) to buy the liquid super-replicating portfolio,
+    \item keep the strictly positive difference
+    \[
+    P-X_0 > 0
+    \]
+    as an initial profit.
+\end{itemize}
+
+\paragraph{Terminal payoff.}
+
+At maturity, the arbitrageur owes the payoff \(\xi\) to the buyer of the
+non-liquid contract.
+
+However, the liquid portfolio delivers \(X_T\), and by construction
+\[
+X_T \ge \xi.
+\]
+
+Therefore, after delivering \(\xi\), the arbitrageur is left with
+\[
+X_T-\xi \ge 0.
+\]
+
+So the terminal net payoff is non-negative in every state of the world.
+
+\paragraph{Conclusion.}
+
+The strategy produces:
+\begin{itemize}[leftmargin=1.4em]
+    \item a strictly positive gain at time \(0\),
+    \item and a non-negative terminal payoff.
+\end{itemize}
+
+This is an arbitrage.
+
+\paragraph{Interpretation.}
+
+This argument shows that the price of any claim cannot exceed the initial
+cost of a super-replicating strategy built from liquid assets.
+
+Equivalently, if \(V_0\) denotes an admissible arbitrage-free price of the
+claim, then necessarily
+\[
+V_0 \le X_0
+\]
+for every super-replicating portfolio.
+
+Hence the \emph{super-hedging price} provides an upper bound on the
+arbitrage-free price of the claim.
+
+
+\paragraph{Lower replication (sub-replication).}
+
+A symmetric argument provides a lower bound on the arbitrage-free price
+of a contingent claim.
+
+Suppose that we can construct a portfolio of liquid assets with terminal
+wealth \(Y_T\) satisfying
+\[
+Y_T \le \xi
+\qquad\text{almost surely.}
+\]
+
+In this case the portfolio is said to \emph{sub-replicate} the claim.
+Let \(Y_0\) be the initial cost of building this portfolio.
+
+If the market price \(P\) of the claim satisfies
+\[
+P < Y_0,
+\]
+then the claim is underpriced relative to the sub-replicating strategy.
+
+\paragraph{Arbitrage strategy.}
+
+An arbitrageur can then:
+\begin{itemize}[leftmargin=1.4em]
+\item buy the claim \(\xi\) at price \(P\),
+\item short the liquid portfolio costing \(Y_0\),
+\item keep the initial gain \(Y_0 - P > 0\).
+\end{itemize}
+
+At maturity the arbitrageur receives \(\xi\) from the claim and must
+deliver \(Y_T\) from the short position.
+Since \(Y_T \le \xi\), the remaining payoff
+\[
+\xi - Y_T \ge 0
+\]
+is non-negative in every state of the world.
+
+\paragraph{Conclusion.}
+
+Therefore the price of any claim must satisfy
+\[
+Y_0 \le V_0 \le X_0,
+\]
+where \(Y_0\) is the cost of a sub-replicating portfolio and \(X_0\) the
+cost of a super-replicating portfolio.
+These two quantities provide universal no-arbitrage bounds for the
+price of the claim.
+
+
+% ------------------------------------------------------------
+\subsection{If a call is too expensive}
+% ------------------------------------------------------------
+
+Recall the upper bound
+\[
+C_t \le S_t .
+\]
+
+Suppose instead that
+\[
+C_t > S_t .
+\]
+
+Then the call is overpriced relative to the underlying asset.
+
+\paragraph{Arbitrage strategy.}
+
+\begin{itemize}[leftmargin=1.4em]
+\item Sell one call option.
+\item Buy one share of the underlying asset.
+\end{itemize}
+
+\paragraph{Initial cashflow.}
+
+\[
+C_t - S_t > 0.
+\]
+
+So the strategy generates an immediate positive profit.
+
+\paragraph{Terminal payoff.}
+
+At maturity:
+
+\begin{itemize}[leftmargin=1.4em]
+\item If \(S_T>K\), the call is exercised and the stock is delivered.
+The net payoff is \(K\).
+\item If \(S_T\le K\), the call expires worthless and the trader still
+owns the stock worth \(S_T\ge0\).
+\end{itemize}
+
+In both cases the payoff is non-negative.
+Therefore the strategy produces an arbitrage.
+
+% ------------------------------------------------------------
+\subsection{If a call is too cheap}
+% ------------------------------------------------------------
+
+Recall the lower bound
+\[
+C_t \ge S_t - K e^{-r(T-t)} .
+\]
+
+Suppose instead that
+
+\[
+C_t < S_t - K e^{-r(T-t)} .
+\]
+
+Then the call is underpriced.
+
+\paragraph{Arbitrage strategy.}
+
+\begin{itemize}[leftmargin=1.4em]
+\item Buy one call.
+\item Sell one share of the underlying asset.
+\item Invest \(K e^{-r(T-t)}\) in the risk-free asset.
+\end{itemize}
+
+\paragraph{Initial cashflow.}
+
+The initial cost is
+
+\[
+C_t - S_t + K e^{-r(T-t)} < 0.
+\]
+
+Thus the trader receives money initially.
+
+\paragraph{Terminal payoff.}
+
+At maturity the payoff becomes
+
+\[
+(S_T-K)^+ - S_T + K .
+\]
+
+It is easy to check that this quantity is always non-negative.
+Hence the strategy yields an arbitrage.
+
+% ------------------------------------------------------------
+\subsection{If a put is too expensive or too cheap}
+% ------------------------------------------------------------
+
+The bounds for put options are
+
+\[
+\max(K e^{-r(T-t)}-S_t,0)
+\le
+P_t
+\le
+K e^{-r(T-t)}.
+\]
+
+\paragraph{If the put is too expensive.}
+
+If
+
+\[
+P_t > K e^{-r(T-t)},
+\]
+
+one can construct an arbitrage by
+
+\begin{itemize}[leftmargin=1.4em]
+\item selling the put,
+\item investing the premium in the risk-free asset.
+\end{itemize}
+
+The payoff of the put is always bounded by \(K\),
+so the strategy cannot lose money.
+
+\paragraph{If the put is too cheap.}
+
+If
+
+\[
+P_t < K e^{-r(T-t)} - S_t,
+\]
+
+an arbitrage can be constructed using
+
+\begin{itemize}[leftmargin=1.4em]
+\item a long put,
+\item a long position in the stock,
+\item borrowing the discounted strike.
+\end{itemize}
+
+% ------------------------------------------------------------
+\subsection{If put--call parity is violated}
+% ------------------------------------------------------------
+
+Recall the put--call parity relation
+
+\[
+C_t - P_t = S_t - K e^{-r(T-t)}.
+\]
+
+Suppose instead that
+
+\[
+C_t - P_t > S_t - K e^{-r(T-t)} .
+\]
+
+Then the portfolio
+
+\[
+\text{call} + \text{bond}
+\]
+
+is overpriced relative to
+
+\[
+\text{put} + \text{stock}.
+\]
+
+\paragraph{Arbitrage strategy.}
+
+\begin{itemize}[leftmargin=1.4em]
+\item Sell one call and sell the bond \(K e^{-r(T-t)}\).
+\item Buy one put and one share of stock.
+\end{itemize}
+
+The two portfolios have identical payoffs at maturity,
+but the first one is more expensive.
+Selling the expensive portfolio and buying the cheap one yields an
+arbitrage.
+
+% ------------------------------------------------------------
+\subsection{If monotonicity in strike is violated}
+% ------------------------------------------------------------
+
+Recall that call prices must satisfy
+
+\[
+K_1 < K_2
+\quad\Rightarrow\quad
+C(K_1) \ge C(K_2).
+\]
+
+Suppose instead that
+
+\[
+C(K_1) < C(K_2).
+\]
+
+Then the higher-strike option is more expensive than the lower-strike one.
+
+\paragraph{Arbitrage strategy.}
+
+\begin{itemize}[leftmargin=1.4em]
+\item Buy the call with strike \(K_1\).
+\item Sell the call with strike \(K_2\).
+\end{itemize}
+
+\paragraph{Terminal payoff.}
+
+The payoff is
+
+\[
+(S_T-K_1)^+ - (S_T-K_2)^+ .
+\]
+
+It is easy to verify that this payoff is always non-negative.
+
+If the initial cost of the portfolio is negative,
+this produces an arbitrage.
+
+% ------------------------------------------------------------
+\subsection{If convexity in strike is violated}
+% ------------------------------------------------------------
+
+Convexity of call prices implies
+
+\[
+C(K_2)
+\le
+\frac{K_3-K_2}{K_3-K_1}C(K_1)
++
+\frac{K_2-K_1}{K_3-K_1}C(K_3).
+\]
+
+If this inequality is violated,
+one can construct a \emph{butterfly spread}.
+
+\paragraph{Butterfly strategy.}
+
+\begin{itemize}[leftmargin=1.4em]
+\item Buy one call with strike \(K_1\),
+\item Buy one call with strike \(K_3\),
+\item Sell two calls with strike \(K_2\).
+\end{itemize}
+
+\paragraph{Payoff.}
+
+The payoff is
+
+\[
+(S_T-K_1)^+ - 2(S_T-K_2)^+ + (S_T-K_3)^+.
+\]
+
+This payoff is always non-negative.
+
+If the initial price of this portfolio is negative,
+the strategy yields an arbitrage.
+
+\paragraph{Interpretation.}
+
+Violations of convexity correspond to
+\emph{butterfly arbitrage}.
+Such arbitrages are one of the main consistency checks
+used when constructing option price surfaces.
+% \section{Lecture summary}
+% ============================================================
+
+\subsection{Main takeaways}
+\begin{itemize}[leftmargin=1.4em]
+    \item vanilla options are best understood through payoff geometry;
+    \item put--call parity is a central static no-arbitrage identity;
+    \item Black--Scholes gives explicit benchmark prices and practical intuition;
+    \item option prices must satisfy strong static arbitrage constraints;
+    \item violations of these constraints immediately suggest trading strategies.
+\end{itemize}
+
+\subsection{Checklist: what students should know after this lecture}
+\begin{itemize}[leftmargin=1.4em]
+    \item define and draw the payoff of calls, puts, and straddles;
+    \item explain ITM / ATM / OTM terminology;
+    \item state and use put--call parity;
+    \item recall the Black--Scholes call and put formulas;
+    \item state the basic no-arbitrage bounds for calls and puts;
+    \item explain monotonicity and convexity in the strike;
+    \item construct simple arbitrages when static bounds are violated.
+\end{itemize}
+
+% ============================================================
+\section{Lecture summary}
+% ============================================================
+
+\subsection{Main takeaways}
+
+In this lecture we introduced the main practical principles governing
+the pricing of vanilla options.  
+Although many option pricing models exist, several structural properties
+hold independently of any specific model.
+
+The key ideas are summarized below.
+
+\begin{itemize}[leftmargin=1.4em]
+    \item \textbf{Payoff geometry is fundamental.}  
+    Understanding option payoffs graphically is often the simplest way
+    to reason about derivatives and construct arbitrage strategies.
+
+    \item \textbf{Put--call parity is a central identity.}  
+    It links the prices of calls, puts, the underlying asset and the
+    risk-free asset through a static no-arbitrage argument.
+
+    \item \textbf{Black--Scholes provides a benchmark.}  
+    Even though real markets are more complex, the Black--Scholes formulas
+    give explicit prices and valuable intuition about how option prices
+    depend on volatility, maturity, and the strike.
+
+    \item \textbf{Option prices satisfy strong structural constraints.}  
+    These include positivity, upper and lower bounds, monotonicity with
+    respect to the strike, convexity in the strike, and consistency
+    across maturities.
+
+    \item \textbf{Violations of these constraints imply arbitrage.}  
+    Whenever one of these inequalities is violated, it is possible to
+    construct a static trading strategy that produces a risk-free profit.
+\end{itemize}
+
+\subsection{Checklist: what students should know after this lecture}
+
+After this lecture, students should be able to:
+
+\begin{itemize}[leftmargin=1.4em]
+    \item define European calls and puts and draw their payoff diagrams;
+
+    \item explain the notions of \emph{in-the-money}, \emph{at-the-money},
+    and \emph{out-of-the-money};
+
+    \item describe simple option combinations such as straddles,
+    protective puts, and covered calls;
+
+    \item state and apply the put--call parity relation;
+
+    \item recall the Black--Scholes pricing formulas for European calls
+    and puts and interpret the parameters \(d_1\) and \(d_2\);
+
+    \item state the basic no-arbitrage bounds for option prices;
+
+    \item explain why call prices decrease with the strike and why
+    option prices are convex in the strike;
+
+    \item identify simple arbitrage opportunities when these
+    static constraints are violated;
+
+    \item perform basic consistency checks on option prices
+    observed in the market.
+\end{itemize}
+
+\paragraph{Looking ahead.}
+
+In the next lectures we will build on these principles to study
+dynamic hedging strategies and the mathematical foundations of
+continuous-time option pricing models.
+
+
+\appendix
+\section{Option Greeks}
+
+
+\end{document}

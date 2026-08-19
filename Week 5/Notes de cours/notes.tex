@@ -1,0 +1,1590 @@
+% !TEX program = pdflatex
+\documentclass[11pt]{article}
+
+% ==========================
+% Encoding / language (pdflatex)
+% ==========================
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+
+% In the preamble
+\usepackage{amsthm}
+
+% Numbered within sections (recommended)
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{exercise}[theorem]{Exercise}
+
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+% ==========================
+% Page layout
+% ==========================
+\usepackage[margin=1in]{geometry}
+
+% ==========================
+% Math
+% ==========================
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{enumitem}
+
+% ==========================
+% Macros
+% ==========================
+\newcommand{\Pbb}{\mathbb{P}}
+\newcommand{\Qbb}{\mathbb{Q}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\F}{\mathcal{F}}
+\newcommand{\1}{\mathbf{1}}
+\newcommand{\dd}{\,\mathrm{d}}
+\newcommand{\wt}{\widetilde}
+\newcommand{\bs}{\boldsymbol}
+
+% ==========================
+% Theorem-like
+% ==========================
+\theoremstyle{definition}
+
+% ==========================
+% "Board" environment (English)
+% ==========================
+\newenvironment{board}{%
+  \par\medskip
+  \noindent
+  \fbox{%
+    \begin{minipage}{0.98\linewidth}
+    \textbf{On the board (plan + comments).}\par\medskip
+}{%
+    \end{minipage}%
+  }%
+  \par\medskip
+}
+
+% ==========================
+% Document
+% ==========================
+\begin{document}
+
+\begin{center}
+{\Large \textbf{Lecture notes --- It\^o examples \& first steps toward Girsanov}}\\[0.25em]
+{\small (Board-ready derivations; focus: explicit computations + intuition for change of measure)}
+\end{center}
+
+\vspace{-0.5em}
+
+
+% ==========================================================
+\section*{Part A --- It\^o formula: 40--45 minutes of explicit computations}
+% ==========================================================
+
+\subsection*{A.1 Warm-up: the prototype computation}
+Let $(W_t)_{t\ge 0}$ be a Brownian motion and recall It\^o's formula:
+for $f\in C^{1,2}([0,T]\times\R)$ and an It\^o process $X_t$ with
+\[
+\dd X_t = b_t\,\dd t + \sigma_t\,\dd W_t,
+\]
+we have
+\[
+\dd f(t,X_t)
+=
+\partial_t f(t,X_t)\,\dd t
++ \partial_x f(t,X_t)\,\dd X_t
++ \frac12 \partial_{xx} f(t,X_t)\,(\dd X_t)^2,
+\qquad (\dd X_t)^2=\sigma_t^2\,\dd t.
+\]
+
+
+\begin{itemize}[leftmargin=1.5em, itemsep=0.25em]
+\item Always separate: \textbf{(drift)} $\dd t$ part vs \textbf{(martingale)} $\dd W$ part.
+\item Remember: $(\dd W_t)^2=\dd t$, $\dd t\,\dd W_t=0$, $(\dd t)^2=0$.
+\end{itemize}
+
+
+\subsection*{A.2 Example 1: $W_t^2-t$ is a martingale}
+Apply It\^o to $f(x)=x^2$ with $X_t=W_t$.
+We have $f'(x)=2x$, $f''(x)=2$, and $\dd W_t = 0\cdot \dd t + 1\cdot \dd W_t$:
+\[
+\dd(W_t^2) = 2W_t\,\dd W_t + \frac12\cdot 2 \,(\dd W_t)^2
+= 2W_t\,\dd W_t + \dd t.
+\]
+Hence
+\[
+\dd(W_t^2-t)=2W_t\,\dd W_t,
+\]
+so $W_t^2-t$ is an It\^o integral and therefore a martingale (integrable, mean $0$ increment).
+
+
+\textbf{What to highlight.} The \emph{only} reason we need the ``$-t$'' is the It\^o correction term.
+
+
+\subsection*{A.3 Example 2: Exponential martingale (``kill the drift'')}
+Let $Y_t=\exp(a t + b W_t)$, with constants $a,b\in\R$.
+Use It\^o with $f(t,x)=e^{at+bx}$.
+Compute derivatives:
+\[
+\partial_t f = a f,\qquad \partial_x f = b f,\qquad \partial_{xx}f=b^2 f.
+\]
+With $X_t=W_t$:
+\[
+\dd Y_t = aY_t\,\dd t + bY_t\,\dd W_t + \tfrac12 b^2 Y_t\,\dd t
+= Y_t\Big( (a+\tfrac12 b^2)\,\dd t + b\,\dd W_t\Big).
+\]
+Choose $a=-\tfrac12 b^2$ to remove the drift:
+\[
+\dd Y_t = bY_t\,\dd W_t,
+\quad\Rightarrow\quad
+Y_t=\exp\Big(bW_t-\tfrac12 b^2 t\Big)
+\text{ is a martingale.}
+\]
+
+
+\textbf{Pedagogical link.} This is the prototype of the Radon--Nikodym density used in Girsanov.
+
+
+\subsection*{A.4 Example 3: Geometric Brownian motion and the log trick}
+Consider GBM:
+\[
+\dd S_t = \mu S_t\,\dd t + \sigma S_t\,\dd W_t,\qquad S_0>0.
+\]
+Let $f(x)=\ln x$, $f'(x)=1/x$, $f''(x)=-1/x^2$.
+Then
+\[
+\dd(\ln S_t)
+=
+\frac{1}{S_t}\dd S_t + \frac12\Big(-\frac{1}{S_t^2}\Big)(\dd S_t)^2
+=
+\frac{1}{S_t}(\mu S_t\,\dd t+\sigma S_t\,\dd W_t)
+-\frac12\frac{1}{S_t^2}(\sigma^2 S_t^2\,\dd t),
+\]
+so
+\[
+\dd(\ln S_t) = \Big(\mu-\tfrac12\sigma^2\Big)\dd t + \sigma\,\dd W_t.
+\]
+Integrate:
+\[
+\ln S_t = \ln S_0 + \Big(\mu-\tfrac12\sigma^2\Big)t + \sigma W_t,
+\qquad
+S_t = S_0\exp\Big(\Big(\mu-\tfrac12\sigma^2\Big)t+\sigma W_t\Big).
+\]
+
+
+\textbf{Board payoff.} You get the explicit solution + lognormal law in one shot.
+
+
+\subsection*{A.5 Example 4: Discounting trick (product rule, no PDE yet)}
+Let $A_t$ be a deterministic (or finite-variation adapted) process with
+\[
+\dd A_t = -\gamma_t A_t\,\dd t,
+\qquad A_0=1,
+\]
+and let $S_t$ satisfy $\dd S_t = \mu_t S_t\dd t + \sigma_t S_t\dd W_t$.
+Define $X_t:=A_t S_t$. Use product rule:
+\[
+\dd X_t = A_t\,\dd S_t + S_t\,\dd A_t + \dd[A,S]_t.
+\]
+Here $A$ has zero quadratic variation, so $\dd[A,S]_t=0$, hence
+\[
+\dd X_t = A_t(\mu_t S_t\,\dd t+\sigma_t S_t\,\dd W_t) - \gamma_t A_t S_t\,\dd t
+= X_t(\mu_t-\gamma_t)\dd t + X_t\sigma_t\,\dd W_t.
+\]
+Choose $\gamma_t=\mu_t$:
+\[
+\dd X_t = X_t\sigma_t\,\dd W_t,
+\]
+so $(X_t)$ is a martingale (under suitable integrability, e.g. $\E\int_0^T X_t^2\sigma_t^2\dd t<\infty$).
+
+
+\textbf{Message.} ``Find the right discount factor $\Rightarrow$ spot the right drift for pricing.''
+
+
+\subsection*{A.6 (If time) Example 5: A simple It\^o identity to remove a stochastic integral}
+Goal: compute an expression for $\int_0^t e^{W_s}\,\dd W_s$ \emph{without} stochastic integral.
+
+Take $f(x)=e^x$ and $X_t=W_t$:
+\[
+\dd(e^{W_t}) = e^{W_t}\,\dd W_t + \tfrac12 e^{W_t}\,\dd t.
+\]
+Integrate from $0$ to $t$:
+\[
+e^{W_t}-1 = \int_0^t e^{W_s}\,\dd W_s + \frac12\int_0^t e^{W_s}\,\dd s,
+\]
+so
+\[
+\boxed{
+\int_0^t e^{W_s}\,\dd W_s
+=
+e^{W_t}-1-\frac12\int_0^t e^{W_s}\,\dd s.}
+\]
+
+\subsection*{A.7: Norm squared $\|W_t\|^2$ and drift identification}
+Assume for simplicity $\Sigma=I_d$ (independent coordinates).
+Let $R_t:=\|W_t\|^2=\sum_{i=1}^d (W_t^i)^2$.
+Using $\dd (W^i)^2 = 2W^i\,\dd W^i + \dd t$ and summing:
+\[
+\dd R_t = 2\sum_{i=1}^d W_t^i\,\dd W_t^i + d\,\dd t
+= 2\,W_t^\top \dd W_t + d\,\dd t.
+\]
+\textbf{Extract:} $\|W_t\|^2-dt$ is a martingale.
+\textbf{Comment:} this shows the ``dimension drift'' $+d\,dt$.
+
+% ----------------------------------------------------------
+\subsection*{A.8: MD-8: It\^o for $f(X^1_t,X^2_t)$ with correlated Brownian drivers}
+
+
+\textbf{Setup (correlated Brownian motion).}
+Let $(W_t^1,W_t^2)$ be a 2D Brownian motion with correlation $\rho\in[-1,1]$:
+\[
+\dd[W^1]_t=\dd t,\qquad \dd[W^2]_t=\dd t,\qquad \dd[W^1,W^2]_t=\rho\,\dd t.
+\]
+Let $X^1,X^2$ be It\^o processes driven by $(W^1,W^2)$:
+\[
+\dd X_t^1 = b_1(t)\,\dd t + \sigma_{11}(t)\,\dd W_t^1 + \sigma_{12}(t)\,\dd W_t^2,
+\qquad
+\dd X_t^2 = b_2(t)\,\dd t + \sigma_{21}(t)\,\dd W_t^1 + \sigma_{22}(t)\,\dd W_t^2.
+\]
+Let $f\in C^2(\R^2)$ and set $Y_t:=f(X_t^1,X_t^2)$.
+
+\medskip
+\textbf{Step 1: write the quadratic covariations.}
+Using bilinearity and $\dd W^1\dd W^2=\rho\,\dd t$:
+\[
+\dd[X^1]_t
+=
+\Big(\sigma_{11}^2 + \sigma_{12}^2 + 2\rho\,\sigma_{11}\sigma_{12}\Big)\dd t,
+\]
+\[
+\dd[X^2]_t
+=
+\Big(\sigma_{21}^2 + \sigma_{22}^2 + 2\rho\,\sigma_{21}\sigma_{22}\Big)\dd t,
+\]
+\[
+\dd[X^1,X^2]_t
+=
+\Big(\sigma_{11}\sigma_{21}+\sigma_{12}\sigma_{22}
++\rho(\sigma_{11}\sigma_{22}+\sigma_{12}\sigma_{21})\Big)\dd t.
+\]
+
+\medskip
+\textbf{Step 2: apply 2D It\^o formula.}
+\[
+\dd Y_t
+=
+f_{x_1}(X_t)\,\dd X_t^1
++
+f_{x_2}(X_t)\,\dd X_t^2
++\frac12 f_{x_1x_1}(X_t)\,\dd[X^1]_t
++ f_{x_1x_2}(X_t)\,\dd[X^1,X^2]_t
++\frac12 f_{x_2x_2}(X_t)\,\dd[X^2]_t.
+\]
+
+\textbf{Board takeaway:} the correlation $\rho$ appears only through $\dd[X^1]$, $\dd[X^2]$, and especially $\dd[X^1,X^2]$,
+which multiplies the mixed derivative $f_{x_1x_2}$.
+
+% ----------------------------------------------------------
+\subsection*{Concrete choice: $f(x_1,x_2)=x_1x_2$ (product)}
+Take $f(x_1,x_2)=x_1x_2$. Then
+\[
+f_{x_1}=x_2,\quad f_{x_2}=x_1,\quad f_{x_1x_2}=1,\quad f_{x_1x_1}=f_{x_2x_2}=0.
+\]
+Hence
+\[
+\dd(X_t^1X_t^2)
+=
+X_t^2\,\dd X_t^1 + X_t^1\,\dd X_t^2 + \dd[X^1,X^2]_t.
+\]
+Plug the formula for $\dd[X^1,X^2]_t$ above to see explicitly where $\rho$ enters.
+
+% ----------------------------------------------------------
+\subsection*{Concrete choice: $f(x_1,x_2)=\exp(\alpha x_1+\beta x_2)$ (drift-killing style)}
+Let $f(x_1,x_2)=\exp(\alpha x_1+\beta x_2)$, so
+\[
+f_{x_1}=\alpha f,\quad f_{x_2}=\beta f,\quad
+f_{x_1x_1}=\alpha^2 f,\quad f_{x_2x_2}=\beta^2 f,\quad f_{x_1x_2}=\alpha\beta f.
+\]
+Then
+\[
+\frac{\dd Y_t}{Y_t}
+=
+\alpha\,\dd X_t^1 + \beta\,\dd X_t^2
++\frac12\alpha^2\,\dd[X^1]_t
++\alpha\beta\,\dd[X^1,X^2]_t
++\frac12\beta^2\,\dd[X^2]_t.
+\]
+\textbf{Board takeaway:} compared to 1D, the extra term is the cross-variation piece
+$\alpha\beta\,\dd[X^1,X^2]_t$, which carries the correlation $\rho$.
+% ==========================================================
+
+% ==========================================================
+\section*{Part B --- Black--Scholes hedging $\Rightarrow$ PDE $\Rightarrow$ expectation}
+% ==========================================================
+
+% ----------------------------------------------------------
+\subsection*{B.1 Model setup (GBM + bank account)}
+% ----------------------------------------------------------
+Assume a frictionless market with one risky asset $S$ and one money-market account $B$:
+\[
+\frac{\dd S_t}{S_t}=\mu\,\dd t+\sigma\,\dd W_t,
+\qquad \mu\in\R,\ \sigma>0,
+\]
+\[
+\dd B_t=rB_t\,\dd t,\qquad B_0=1,\qquad B_t=e^{rt}.
+\]
+Define the discount factor
+\[
+D_t:=B_t^{-1}=e^{-rt}.
+\]
+
+\begin{itemize}[leftmargin=1.6em, itemsep=0.2em]
+\item Parameters: $\mu$ (real drift), $\sigma$ (volatility), $r$ (short rate).
+\item $B_t=e^{rt}$ is deterministic; $D_t=e^{-rt}$ is its inverse.
+\end{itemize}
+
+% ----------------------------------------------------------
+\subsection*{B.2 Derivative price as a Markov function and It\^o expansion}
+% ----------------------------------------------------------
+Fix a maturity $T$ and a European payoff $g(S_T)$.
+Assume the time-$t$ price is given by a smooth deterministic function
+\[
+V_t=p(t,S_t),
+\qquad 0\le t\le T,
+\qquad p(T,s)=g(s).
+\]
+By It\^o's formula (with $(\dd S_t)^2=\sigma^2 S_t^2\,\dd t$),
+\[
+\dd p(t,S_t)
+=
+\Big(\partial_t p(t,S_t)
++\mu S_t\,\partial_s p(t,S_t)
++\tfrac12\sigma^2 S_t^2\,\partial_{ss}p(t,S_t)\Big)\dd t
++\sigma S_t\,\partial_s p(t,S_t)\,\dd W_t.
+\]
+
+\begin{itemize}[leftmargin=1.6em, itemsep=0.2em]
+\item Write explicitly: \emph{drift part} + \emph{noise part}.
+\item The coefficient of $\dd W_t$ is $\sigma S_t\,\partial_s p(t,S_t)$.
+\end{itemize}
+
+% ----------------------------------------------------------
+\subsection*{B.3 Self-financing hedging portfolio and ``kill the $\dd W$''}
+% ----------------------------------------------------------
+Consider a self-financing portfolio holding $\Delta_t$ shares of stock and the rest in the bank account:
+\[
+X_t := \Delta_t S_t + \beta_t B_t.
+\]
+Self-financing means ``no external cash injection'':
+\[
+\dd X_t = \Delta_t\,\dd S_t + \beta_t\,\dd B_t.
+\]
+Using $\beta_t B_t = X_t-\Delta_t S_t$ and $\dd B_t=rB_t\,\dd t$,
+\[
+\dd X_t
+=
+\Delta_t(\mu S_t\,\dd t+\sigma S_t\,\dd W_t)
++r\big(X_t-\Delta_t S_t\big)\dd t.
+\]
+
+We aim to replicate the option: $X_t \equiv p(t,S_t)$, so $\dd X_t=\dd p(t,S_t)$.
+Comparing the \textbf{$\dd W_t$ coefficients} gives the \textbf{delta hedge}:
+\[
+\boxed{\ \Delta_t=\partial_s p(t,S_t)\ }.
+\]
+
+\begin{itemize}[leftmargin=1.6em, itemsep=0.2em]
+\item This is the ``kill the noise'' step: choose $\Delta_t$ to cancel the $\dd W_t$ term.
+\item Once the noise is removed, the hedged position becomes locally riskless.
+\end{itemize}
+
+% ----------------------------------------------------------
+\subsection*{B.4 Black--Scholes PDE (no-arbitrage)}
+% ----------------------------------------------------------
+Plug $\Delta_t=\partial_s p(t,S_t)$ into the drift matching.
+From the portfolio drift:
+\[
+\dd X_t
+=
+\Big(rX_t+(\mu-r)S_t\Delta_t\Big)\dd t
++\sigma S_t\Delta_t\,\dd W_t.
+\]
+From the It\^o expansion:
+\[
+\dd p(t,S_t)
+=
+\Big(\partial_t p+\mu S_t\partial_s p+\tfrac12\sigma^2 S_t^2\partial_{ss}p\Big)\dd t
++\sigma S_t\partial_s p\,\dd W_t.
+\]
+After setting $\Delta_t=\partial_s p(t,S_t)$, the $\dd W_t$ terms match automatically.
+Matching the drift terms yields
+\[
+r\,p(t,S_t)+(\mu-r)S_t\partial_s p(t,S_t)
+=
+\partial_t p(t,S_t)+\mu S_t\partial_s p(t,S_t)
++\tfrac12\sigma^2 S_t^2\partial_{ss}p(t,S_t).
+\]
+The $\mu S_t\partial_s p$ cancels on both sides, giving the \textbf{valuation PDE}:
+\[
+\boxed{\ 
+\partial_t p(t,s)+rs\,\partial_s p(t,s)
++\tfrac12\sigma^2 s^2\,\partial_{ss}p(t,s)-r\,p(t,s)=0,
+\qquad p(T,s)=g(s).
+\ }
+\]
+
+\begin{itemize}[leftmargin=1.6em, itemsep=0.2em]
+\item \textbf{Key point: $\mu$ disappears.} Prices do not depend on the real drift.
+\item This is the core Black--Scholes hedging argument.
+\end{itemize}
+
+% ==========================================================
+\section*{Solving the Black--Scholes PDE via the heat equation}
+% ==========================================================
+
+We now solve
+\[
+\partial_t p + rs\,\partial_s p + \tfrac12\sigma^2 s^2\,\partial_{ss}p - rp = 0,
+\qquad p(T,s)=g(s).
+\]
+
+% ----------------------------------------------------------
+\subsection*{Step 1: time-to-maturity and discounting}
+% ----------------------------------------------------------
+Let
+\[
+\tau:=T-t,
+\qquad v(\tau,s):=p(T-\tau,s),
+\qquad v(0,s)=g(s).
+\]
+Since $\partial_t p = -\partial_\tau v$, the PDE becomes
+\[
+\partial_\tau v
+=
+rs\,\partial_s v + \tfrac12\sigma^2 s^2\,\partial_{ss}v - r v.
+\]
+Remove the $-rv$ term via discounting:
+\[
+u(\tau,s):=e^{r\tau}v(\tau,s).
+\]
+A short computation gives
+\[
+\partial_\tau u
+=
+rs\,\partial_s u + \tfrac12\sigma^2 s^2\,\partial_{ss}u,
+\qquad u(0,s)=g(s).
+\]
+
+% ----------------------------------------------------------
+\subsection*{Step 2: logarithmic change of variables}
+% ----------------------------------------------------------
+Set
+\[
+x:=\ln s,\qquad w(\tau,x):=u(\tau,e^x).
+\]
+Using
+\[
+\partial_s u=\frac{1}{s}w_x,\qquad
+\partial_{ss}u=\frac{1}{s^2}(w_{xx}-w_x),
+\]
+we obtain
+\[
+\partial_\tau w
+=
+\tfrac12\sigma^2 w_{xx} + \Big(r-\tfrac12\sigma^2\Big)w_x,
+\qquad w(0,x)=g(e^x).
+\]
+
+% ----------------------------------------------------------
+\subsection*{Step 3: remove the transport term (shift)}
+% ----------------------------------------------------------
+Let
+\[
+a:=r-\tfrac12\sigma^2,
+\qquad
+\varphi(\tau,y):=w(\tau,y-a\tau).
+\]
+Then $\varphi$ solves the heat equation
+\[
+\partial_\tau \varphi
+=
+\tfrac12\sigma^2\,\partial_{yy}\varphi,
+\qquad
+\varphi(0,y)=g(e^y).
+\]
+
+% ----------------------------------------------------------
+\subsection*{Step 4: heat equation solution $\Rightarrow$ expectation form}
+% ----------------------------------------------------------
+If $Z\sim\mathcal N(0,1)$, the heat equation solution is
+\[
+\varphi(\tau,y)
+=
+\E\!\left[g\!\left(e^{\,y+\sigma\sqrt{\tau}\,Z}\right)\right].
+\]
+Undoing the changes of variables yields, for $\tau=T-t$,
+\[
+\boxed{
+\;
+p(t,s)
+=
+e^{-r(T-t)}
+\E\!\left[
+g\!\left(
+s\exp\!\Big((r-\tfrac12\sigma^2)(T-t)+\sigma\sqrt{T-t}\,Z\Big)
+\right)
+\right].
+\;}
+\]
+
+\begin{remark}[Pedagogical takeaway]
+The expectation representation comes from \emph{solving the PDE} (via the heat equation).
+Next, Girsanov will explain how the same representation arises from a change of probability measure.
+\end{remark}
+
+% ==========================================================
+\section*{Closed-form call formula and hedging}
+% ==========================================================
+
+From now on, take $g(s)=(s-K)_+$ (European call with strike $K$).
+A direct computation of the expectation above yields the Black--Scholes formula.
+
+\begin{theorem}[Black--Scholes call price]
+\[
+\boxed{
+\;
+p(0,S_0)=S_0\,\mathbf N(d_+)-K e^{-rT}\,\mathbf N(d_-),
+\;}
+\qquad
+d_\pm
+=
+\frac{\ln\!\big(\frac{S_0}{K e^{-rT}}\big)}{\sigma\sqrt{T}}
+\pm \frac12\sigma\sqrt{T}.
+\]
+\end{theorem}
+
+\begin{theorem}[Delta hedge]
+\[
+\boxed{
+\;
+\Delta_t=\partial_s p(t,S_t)=\mathbf N\!\big(d_+(t,S_t)\big),
+\;}
+\qquad
+d_+(t,s)
+=
+\frac{\ln\!\big(\frac{s}{K e^{-r(T-t)}}\big)}{\sigma\sqrt{T-t}}
++\frac12\sigma\sqrt{T-t}.
+\]
+\end{theorem}
+
+% ----------------------------------------------------------
+\subsection*{Greeks (definitions + interpretation)}
+% ----------------------------------------------------------
+Define the main sensitivities:
+\[
+\Delta := \partial_s p,\qquad
+\Gamma := \partial_{ss}p,\qquad
+\Theta := \partial_t p,\qquad
+\text{Vega}:=\partial_\sigma p,\qquad
+\rho:=\partial_r p.
+\]
+\begin{itemize}[leftmargin=1.6em, itemsep=0.2em]
+\item $\Delta$: hedge ratio (shares in the replicating strategy).
+\item $\Gamma$: curvature; drives rebalancing intensity (liquidity/transaction-cost sensitivity).
+\item $\Theta$: time decay of the option value.
+\item Vega: sensitivity to volatility misspecification (positive for calls).
+\item $\rho$: sensitivity to the interest rate level.
+\end{itemize}
+
+\begin{remark}
+In practice, ``model risk'' is precisely the sensitivity of prices to parameters:
+the Greeks are first-order diagnostics of how wrong-model inputs distort valuation.
+\end{remark}
+
+
+% ==========================================================
+% \section*{Part B --- Black--Scholes hedging $\Rightarrow$ PDE $\Rightarrow$ expectation}
+% % ==========================================================
+
+% \subsection*{B.1 Model setup (GBM + bank account)}
+% Assume a frictionless market with:
+% \[
+% \frac{\dd S_t}{S_t}=\mu\,\dd t+\sigma\,\dd W_t,
+% \qquad \mu\in\R,\ \sigma>0,
+% \]
+% and a money market account with constant short rate $r$:
+% \[
+% \dd B_t=rB_t\,\dd t,\qquad B_0=1,\qquad B_t=e^{rt}.
+% \]
+% Let $D_t:=B_t^{-1}=e^{-rt}$ denote the discount factor.
+
+
+% \begin{itemize}
+% \item Recall: GBM dynamics and interpretation of parameters $(\mu,\sigma,r)$.
+% \item Write $B_t=e^{rt}$ and $D_t=e^{-rt}$.
+% \end{itemize}
+
+
+% \subsection*{B.2 Derivative price as a function $p(t,s)$ and It\^o expansion}
+% Consider a European payoff $g(S_T)$ at maturity $T$.
+% Assume its time-$t$ price is given by a deterministic function
+% \[
+% V_t=p(t,S_t),\qquad 0\le t\le T,\qquad p(T,s)=g(s).
+% \]
+% By It\^o's formula (1D),
+% \[
+% \dd p(t,S_t)
+% =
+% \partial_t p(t,S_t)\,\dd t
+% +\partial_s p(t,S_t)\,\dd S_t
+% +\frac12 \partial_{ss}p(t,S_t)\,(\sigma^2 S_t^2)\,\dd t.
+% \]
+
+
+% \begin{itemize}
+% \item Write It\^o carefully: $(\dd S_t)^2=\sigma^2 S_t^2\,\dd t$.
+% \item Separate drift part and $\dd W$ part explicitly.
+% \end{itemize}
+
+
+% \subsection*{B.3 Self-financing hedging portfolio and ``kill the $\dd W$''}
+% The seller holds $\Delta_t$ shares of stock and invests the remaining wealth in the bank account.
+% Define the portfolio value
+% \[
+% X_t := \Delta_t S_t + \beta_t B_t,
+% \]
+% and assume the strategy is self-financing:
+% \[
+% \dd X_t = \Delta_t\,\dd S_t + \beta_t\,\dd B_t
+% = \Delta_t\,\dd S_t + r\big(X_t-\Delta_t S_t\big)\,\dd t.
+% \]
+% We aim to replicate the option: $X_t \equiv p(t,S_t)$, hence $\dd X_t=\dd p(t,S_t)$.
+% Comparing the \textbf{$\dd W_t$ coefficients} in $\dd p(t,S_t)$ and $\dd X_t$,
+% choose the \textbf{delta hedge}
+% \[
+% \boxed{\ \Delta_t=\partial_s p(t,S_t)\ }.
+% \]
+
+
+% \begin{itemize}
+% \item Write $\dd X_t = \Delta_t(\mu S_t\,\dd t+\sigma S_t\,\dd W_t)+r(X_t-\Delta_t S_t)\dd t$.
+% \item Match the $\dd W$ terms: $\sigma S_t \Delta_t = \sigma S_t \partial_s p$.
+% \item Conclude: $\Delta_t=\partial_s p(t,S_t)$.
+% \end{itemize}
+
+
+% \subsection*{B.4 Derive the Black--Scholes PDE (no-arbitrage)}
+% With $\Delta_t=\partial_s p(t,S_t)$, the stochastic term is hedged away and
+% \[
+% \dd\big(X_t-p(t,S_t)\big)=0
+% \quad\Rightarrow\quad
+% \dd X_t = \dd p(t,S_t).
+% \]
+% Using the drift parts only:
+% \[
+% r\big(p(t,S_t)-S_t\partial_s p(t,S_t)\big)\,\dd t
+% =
+% \partial_t p(t,S_t)\,\dd t
+% +\mu S_t\partial_s p(t,S_t)\,\dd t
+% +\frac12\sigma^2 S_t^2 \partial_{ss}p(t,S_t)\,\dd t
+% -\mu S_t\partial_s p(t,S_t)\,\dd t,
+% \]
+% so the $\mu$ terms cancel (key point) and we obtain the \textbf{valuation PDE}:
+% \[
+% \boxed{\ \partial_t p(t,s)+rs\,\partial_s p(t,s)
+% +\frac12\sigma^2 s^2\,\partial_{ss}p(t,s)-r\,p(t,s)=0,\qquad p(T,s)=g(s). \ }
+% \]
+
+
+% \begin{itemize}
+% \item Emphasize: \textbf{$\mu$ disappears} $\Rightarrow$ price does not depend on real drift.
+% \item This is exactly the Black--Scholes hedging argument in the slides. 
+% \end{itemize}
+
+% % ==========================================================
+% \section{Solving the Black--Scholes PDE via the heat equation}
+% % ==========================================================
+
+% We consider the Black--Scholes valuation PDE (constant coefficients):
+% \[
+% \partial_t p(t,s)
+% + r s\,\partial_s p(t,s)
+% + \frac12\sigma^2 s^2\,\partial_{ss}p(t,s)
+% - r\,p(t,s)=0,
+% \qquad
+% p(T,s)=g(s).
+% \]
+
+% \begin{remark}
+% The key conceptual point (already emphasized) is that the real drift $\mu$ does not appear:
+% the price depends only on $(r,\sigma)$.
+% \end{remark}
+
+% % ----------------------------------------------------------
+% \subsection{Step 1: Time reversal and discounting}
+% % ----------------------------------------------------------
+
+% Introduce the time-to-maturity variable
+% \[
+% \tau := T-t,
+% \qquad
+% v(\tau,s):=p(T-\tau,s).
+% \]
+% Then $\partial_t p=-\partial_\tau v$, and the PDE becomes
+% \[
+% \partial_\tau v
+% = r s\,\partial_s v
+% + \frac12\sigma^2 s^2\,\partial_{ss}v
+% - r v,
+% \qquad
+% v(0,s)=g(s).
+% \]
+
+% To eliminate the term $-rv$, define the discounted function
+% \[
+% u(\tau,s):=e^{r\tau}v(\tau,s).
+% \]
+% A direct computation yields
+% \[
+% \partial_\tau u
+% = r s\,\partial_s u
+% + \frac12\sigma^2 s^2\,\partial_{ss}u,
+% \qquad
+% u(0,s)=g(s).
+% \]
+
+% % ----------------------------------------------------------
+% \subsection{Step 2: Logarithmic change of variables}
+% % ----------------------------------------------------------
+
+% Set
+% \[
+% x:=\ln s,
+% \qquad
+% w(\tau,x):=u(\tau,e^x).
+% \]
+% Using
+% \[
+% \partial_s u=\frac{1}{s}w_x,
+% \qquad
+% \partial_{ss}u=\frac{1}{s^2}(w_{xx}-w_x),
+% \]
+% the PDE becomes
+% \[
+% \partial_\tau w
+% =
+% \frac12\sigma^2 w_{xx}
+% +\Big(r-\tfrac12\sigma^2\Big) w_x,
+% \qquad
+% w(0,x)=g(e^x).
+% \]
+
+% % ----------------------------------------------------------
+% \subsection{Step 3: Removing the transport term}
+% % ----------------------------------------------------------
+
+% Define
+% \[
+% a:=r-\tfrac12\sigma^2,
+% \qquad
+% y:=x+a\tau,
+% \qquad
+% \varphi(\tau,y):=w(\tau,y-a\tau).
+% \]
+% Then $\varphi$ satisfies the heat equation
+% \[
+% \partial_\tau \varphi
+% =
+% \frac12\sigma^2\,\partial_{yy}\varphi,
+% \qquad
+% \varphi(0,y)=g(e^y).
+% \]
+
+% % ----------------------------------------------------------
+% \subsection{Step 4: Solution of the heat equation}
+% % ----------------------------------------------------------
+
+% The solution is given by convolution with the Gaussian kernel:
+% \[
+% \varphi(\tau,y)
+% =
+% \int_{\mathbb{R}}
+% g(e^z)\,
+% \frac{1}{\sqrt{2\pi\sigma^2\tau}}
+% \exp\!\left(-\frac{(y-z)^2}{2\sigma^2\tau}\right)\,\dd z.
+% \]
+
+% Equivalently, if $Z\sim\mathcal N(0,1)$,
+% \[
+% \varphi(\tau,y)
+% =
+% \E\!\left[g\!\left(e^{\,y+\sigma\sqrt{\tau}\,Z}\right)\right].
+% \]
+
+% % ----------------------------------------------------------
+% \subsection{Step 5: Back to the price function}
+% % ----------------------------------------------------------
+
+% Undoing all changes of variables, with $\tau=T-t$,
+% \[
+% p(t,s)
+% =
+% e^{-r(T-t)}
+% \,
+% \E\!\left[
+% g\!\left(
+% s\exp\!\left(
+% (r-\tfrac12\sigma^2)(T-t)
+% +\sigma\sqrt{T-t}\,Z
+% \right)
+% \right)
+% \right].
+% \]
+
+% This yields the pricing representation
+% \[
+% \boxed{
+% \;
+% p(t,s)
+% =
+% \E^{\Q}\!\left[
+% e^{-r(T-t)}\,g(S_T)
+% \mid S_t=s
+% \right],
+% \;}
+% \]
+% where under $\Q$,
+% \[
+% S_T
+% =
+% s\exp\!\left(
+% (r-\tfrac12\sigma^2)(T-t)
+% +\sigma(W_T-W_t)
+% \right).
+% \]
+
+% \begin{remark}
+% This representation will later be justified rigorously by
+% martingale pricing and Girsanov's theorem.
+% \end{remark}
+
+% % ==========================================================
+% \section{Closed-form Black--Scholes formula and hedging}
+% % ==========================================================
+
+% We now specialize to the classical Black--Scholes setting with
+% \emph{constant} parameters:
+% \[
+% \dd S_t = \mu S_t\,\dd t + \sigma S_t\,\dd W_t,
+% \qquad
+% r,\sigma>0 \ \text{constants}.
+% \]
+
+% We consider a European call option with maturity $T$ and strike $K$:
+% \[
+% H=(S_T-K)_+.
+% \]
+
+% % ----------------------------------------------------------
+% \subsection{Risk-neutral pricing formula}
+% % ----------------------------------------------------------
+
+% From the previous section, we know that the option price can be written as
+% \[
+% p(0,S_0)
+% =
+% \E^{\Q}\!\left[
+% e^{-rT}(S_T-K)_+
+% \right],
+% \]
+% where under the risk-neutral measure $\Q$,
+% \[
+% S_T
+% =
+% S_0
+% \exp\!\left(
+% \Big(r-\tfrac12\sigma^2\Big)T
+% +\sigma\sqrt{T}\,Z
+% \right),
+% \qquad Z\sim\mathcal N(0,1).
+% \]
+
+% A direct computation of this expectation yields the celebrated
+% \textbf{Black--Scholes closed-form formula}.
+
+% \begin{theorem}[Black--Scholes call price]
+% The time-$0$ price of a European call option is
+% \[
+% \boxed{
+% \;
+% p(0,S_0)
+% =
+% S_0\,\mathbf N(d_+)
+% -
+% K e^{-rT}\,\mathbf N(d_-),
+% \;}
+% \]
+% where
+% \[
+% \mathbf N(x):=\int_{-\infty}^x \frac{e^{-y^2/2}}{\sqrt{2\pi}}\,\dd y
+% \]
+% is the standard normal distribution function, and
+% \[
+% d_\pm
+% =
+% \frac{\ln\!\left(\frac{S_0}{K e^{-rT}}\right)}{\sigma\sqrt{T}}
+% \pm
+% \frac12\sigma\sqrt{T}.
+% \]
+% \end{theorem}
+
+% \begin{remark}[Interpretation of the terms]
+% \begin{itemize}[leftmargin=2em]
+% \item $S_0$ is the current stock price.
+% \item $K e^{-rT}$ is the \emph{discounted strike}.
+% \item $\sigma^2 T$ is the total variance over $[0,T]$.
+% \item $\mathbf N(d_+)$ and $\mathbf N(d_-)$ are probabilities under $\Q$
+% associated with being in-the-money.
+% \end{itemize}
+% \end{remark}
+
+% % ----------------------------------------------------------
+% \subsection{Hedging strategy (Delta)}
+% % ----------------------------------------------------------
+
+% The optimal self-financing hedging strategy is obtained by differentiation
+% of the price with respect to the stock price.
+
+% \begin{theorem}[Delta hedge]
+% The number of shares held at time $t$ is
+% \[
+% \boxed{
+% \;
+% \Delta_t
+% =
+% \frac{\partial p}{\partial s}(t,S_t)
+% =
+% \mathbf N\!\left(
+% d_+(t,S_t)
+% \right),
+% \;}
+% \]
+% where
+% \[
+% d_+(t,s)
+% =
+% \frac{\ln\!\left(\frac{s}{K e^{-r(T-t)}}\right)}{\sigma\sqrt{T-t}}
+% +
+% \frac12\sigma\sqrt{T-t}.
+% \]
+% \end{theorem}
+
+% \begin{remark}[Economic meaning]
+% \begin{itemize}[leftmargin=2em]
+% \item $\Delta_t\in(0,1)$ represents the fraction of one share needed
+% to hedge the option.
+% \item When the option is deep in-the-money, $\Delta_t\approx 1$.
+% \item When it is far out-of-the-money, $\Delta_t\approx 0$.
+% \end{itemize}
+% \end{remark}
+
+% % ----------------------------------------------------------
+% \subsection{Connection with PDE and martingale pricing}
+% % ----------------------------------------------------------
+
+% \begin{itemize}[leftmargin=2em]
+% \item The Black--Scholes PDE comes from \emph{replication and delta hedging}.
+% \item The expectation formula comes from \emph{martingale pricing under $\Q$}.
+% \item The fact that both approaches lead to the same price is a
+% manifestation of \textbf{no-arbitrage}.
+% \end{itemize}
+
+% \begin{remark}[Key takeaway]
+% \[
+% \text{Hedging (PDE)} \quad \Longleftrightarrow \quad
+% \text{Pricing (expectation under }\Q\text{)}.
+% \]
+% The drift $\mu$ of the real-world dynamics never appears in the final price.
+% \end{remark}
+
+% % ==========================================================
+% \section{Material required for the assignment}
+% % ==========================================================
+
+% The following results and tools are assumed and may be used freely.
+
+% \begin{itemize}[leftmargin=2em]
+
+% \item \textbf{Brownian motion.}
+% Independent increments, Gaussianity, scaling, and conditional distributions:
+% \[
+% W_T-W_t \sim \mathcal N(0,T-t), \quad \text{independent of } \mathcal F_t.
+% \]
+
+% \item \textbf{It\^o's formula (1D).}
+% For $X_t$ solving
+% \(
+% \dd X_t=\mu_t\,\dd t+\sigma_t\,\dd W_t
+% \)
+% and $f\in C^{1,2}$,
+% \[
+% \dd f(t,X_t)
+% =
+% \partial_t f\,\dd t
+% +\partial_x f\,\dd X_t
+% +\tfrac12\sigma_t^2\,\partial_{xx}f\,\dd t.
+% \]
+
+% \item \textbf{Geometric Brownian motion.}
+% If
+% \(
+% \dd S_t=\mu S_t\,\dd t+\sigma S_t\,\dd W_t,
+% \)
+% then
+% \[
+% S_t
+% =
+% S_0\exp\!\left(
+% (\mu-\tfrac12\sigma^2)t+\sigma W_t
+% \right).
+% \]
+
+% \item \textbf{Black--Scholes PDE.}
+% Derived from self-financing replication and delta-hedging:
+% \[
+% \partial_t p
+% + rs\,\partial_s p
+% + \tfrac12\sigma^2 s^2\,\partial_{ss}p
+% - rp
+% =0.
+% \]
+
+% \item \textbf{Heat equation.}
+% Solution of
+% \(
+% \partial_\tau u=\tfrac12\sigma^2\partial_{yy}u
+% \)
+% with initial condition $u(0,y)=\phi(y)$:
+% \[
+% u(\tau,y)
+% =
+% \E\!\left[\phi(y+\sigma\sqrt{\tau}\,Z)\right].
+% \]
+
+% \item \textbf{Gaussian expectations.}
+% If $Z\sim\mathcal N(0,1)$, then
+% \[
+% \E[e^{aZ}]=e^{\frac12 a^2},
+% \qquad
+% \E[\Phi(Z)]=\int \Phi(z)\,\varphi(z)\,\dd z.
+% \]
+
+% \item \textbf{Risk-neutral pricing (formal).}
+% For European payoffs,
+% \[
+% V_t
+% =
+% \E^{\Q}\!\left[
+% e^{-\int_t^T r\,\dd s}H
+% \mid\mathcal F_t
+% \right].
+% \]
+
+% \end{itemize}
+
+% \begin{remark}
+% All computations in the assignment rely only on these tools.
+% No advanced measure-theoretic results beyond Girsanov's theorem
+% are required.
+% \end{remark}
+
+% \subsection*{B.5 Greeks (definitions + interpretation)}
+% Assume $p(0,S_0)$ is the time-0 option price.
+% Define the standard sensitivities (Greeks):
+% \[
+% \Delta := \frac{\partial p}{\partial s},\qquad
+% \Gamma := \frac{\partial^2 p}{\partial s^2},\qquad
+% \Theta := \frac{\partial p}{\partial t},\qquad
+% \text{Vega}:=\frac{\partial p}{\partial \sigma},\qquad
+% \rho:=\frac{\partial p}{\partial r}.
+% \]
+% \begin{itemize}[leftmargin=1.5em, itemsep=0.2em]
+% \item $\Delta$ = hedge ratio (number of shares in the replicating strategy).
+% \item $\Gamma$ = curvature; drives rebalancing intensity (liquidity/transaction cost sensitivity).
+% \item $\Theta$ = time decay.
+% \item Vega = sensitivity to volatility misspecification.
+% \item $\rho$ = sensitivity to the interest rate.
+% \end{itemize}
+
+
+% \begin{itemize}
+% \item Connect to replication: $\Delta_t=\partial_s p(t,S_t)$ is \emph{the} hedge.
+% \item Give intuition for $\Gamma>0$ for convex payoffs (calls/puts).
+% \end{itemize}
+
+
+% \subsection*{B.6 From PDE to an expectation (motivation)}
+% We now explain why the PDE solution can be written as a discounted expectation
+% under a measure where the stock drift is $r$.
+
+% \paragraph{Heuristic step.}
+% Consider an auxiliary process $\widetilde S$ defined by
+% \[
+% \frac{\dd \widetilde S_t}{\widetilde S_t}=r\,\dd t+\sigma\,\dd \widetilde W_t,
+% \]
+% for some Brownian motion $\widetilde W$ (under some probability measure $\Qbb$).
+% Then It\^o + standard arguments (Feynman--Kac viewpoint) suggest that the PDE solution satisfies
+% \[
+% \boxed{\ p(t,s)=\E^{\Qbb}\!\Big[e^{-r(T-t)}\,g(\widetilde S_T)\,\Big|\,\widetilde S_t=s\Big].\ }
+% \]
+% In particular,
+% \[
+% p(0,S_0)=\E^{\Qbb}\!\big[e^{-rT}\,g(S_T)\big],
+% \qquad \text{with}\quad \frac{\dd S_t}{S_t}=r\,\dd t+\sigma\,\dd \widetilde W_t.
+% \]
+
+
+% \begin{itemize}
+% \item Tell students: ``We will justify this properly soon; today it's motivation.''
+% \item Key message: pricing uses a measure where discounted $S$ has zero drift.
+% \end{itemize}
+
+
+% ==========================================================
+% \section*{Part C --- Girsanov: make the drift become $r$}
+% % ==========================================================
+
+% \subsection*{C.1 Discounted stock and the drift we want to remove}
+% Let $\bar S_t:=D_t S_t=e^{-rt}S_t$. Product rule (since $D$ has finite variation):
+% \[
+% \dd \bar S_t
+% =
+% \dd(e^{-rt}S_t)
+% =
+% e^{-rt}\dd S_t - r e^{-rt}S_t\,\dd t
+% =
+% (\mu-r)\bar S_t\,\dd t + \sigma \bar S_t\,\dd W_t.
+% \]
+% Define the market price of risk
+% \[
+% \theta:=\frac{\mu-r}{\sigma}.
+% \]
+% Then
+% \[
+% \dd \bar S_t = \sigma \bar S_t(\theta\,\dd t+\dd W_t).
+% \]
+
+
+% \begin{itemize}
+% \item Compute $\dd(e^{-rt}S_t)$ explicitly.
+% \item Introduce $\theta=(\mu-r)/\sigma$ and state: ``we want to eliminate $\theta\,dt$''.
+% \end{itemize}
+
+
+% \subsection*{C.2 Exponential martingale and change of measure}
+% Define
+% \[
+% Z_t:=\exp\Big(-\theta W_t-\frac12\theta^2 t\Big).
+% \]
+% Assume (here automatic since $\theta$ constant) that $(Z_t)_{t\le T}$ is a true martingale, so $\E[Z_T]=1$.
+% Define a new probability measure $\Qbb$ on $\F_T$ by
+% \[
+% \frac{\dd\Qbb}{\dd\Pbb}\Big|_{\F_T}=Z_T.
+% \]
+% Girsanov theorem implies that
+% \[
+% \widetilde W_t:=W_t+\theta t
+% \]
+% is a Brownian motion under $\Qbb$.
+
+
+% \begin{itemize}
+% \item Link to earlier example: exponential martingale ``kill the drift''.
+% \item State Girsanov (no proof now): under $\Qbb$, $W$ shifts by $+\theta t$.
+% \end{itemize}
+
+
+% \subsection*{C.3 Apply to discounted stock (drift becomes zero)}
+% Rewrite $\dd W_t = \dd\widetilde W_t-\theta\,\dd t$ and plug into
+% $\dd\bar S_t=\sigma\bar S_t(\theta\,\dd t+\dd W_t)$:
+% \[
+% \dd\bar S_t=\sigma\bar S_t\big(\theta\,\dd t+\dd\widetilde W_t-\theta\,\dd t\big)
+% =\sigma\bar S_t\,\dd\widetilde W_t.
+% \]
+% Hence, under $\Qbb$, $(\bar S_t)_{t\le T}$ is a martingale, i.e.
+% \[
+% \boxed{\ \dd(e^{-rt}S_t)=\sigma e^{-rt}S_t\,\dd\widetilde W_t.\ }
+% \]
+% Equivalently, under $\Qbb$:
+% \[
+% \boxed{\ \frac{\dd S_t}{S_t}=r\,\dd t+\sigma\,\dd\widetilde W_t.\ }
+% \]
+
+
+% \begin{itemize}
+% \item The only change is the drift: $\mu\leadsto r$. Volatility unchanged.
+% \item This is the rigorous bridge to the expectation formula.
+% \end{itemize}
+
+% ==========================================================
+\section*{Part C --- Change of probability measure and Girsanov:
+make the drift become $r$}
+% ==========================================================
+
+\subsection*{C.0 Why change the probability measure? (conceptual motivation)}
+
+Up to now, pricing was obtained via \emph{hedging}, leading to the
+Black--Scholes PDE.
+We now explain why the same price can be written as a discounted expectation
+under a suitable probability measure.
+
+The key idea is the following:
+
+\begin{quote}
+\emph{We may reweight scenarios so that the discounted stock price has zero drift.}
+\end{quote}
+
+This reweighting is precisely what a \emph{change of probability measure} does.
+
+\paragraph{Change of measure (basic definition).}
+Let $(\Omega,\mathcal F,\Pbb)$ be a probability space.
+Given a nonnegative random variable $Z$ such that $\E[Z]=1$, define a new probability
+measure $\Qbb$ by
+\[
+\Qbb(A):=\E[\mathbf 1_A Z],\qquad A\in\mathcal F.
+\]
+We write
+\[
+Z=\frac{d\Qbb}{d\Pbb}
+\quad\text{(Radon--Nikodym derivative).}
+\]
+
+\paragraph{Key identity.}
+For any integrable random variable $X$,
+\[
+\E^{\Qbb}[X]=\E[XZ].
+\]
+If $(Z_t)$ is a positive martingale with $\E[Z_T]=1$ and
+$\frac{d\Qbb}{d\Pbb}\big|_{\mathcal F_T}=Z_T$, then for $0\le s\le t\le T$,
+\[
+\E^{\Qbb}[Y\mid\mathcal F_s]
+=
+\frac{1}{Z_s}\,\E[YZ_t\mid\mathcal F_s].
+\]
+
+
+\textbf{On the board (intuition).}
+\begin{itemize}
+\item Changing measure = reweighting paths.
+\item Large $Z(\omega)$ makes scenario $\omega$ more likely under $\Qbb$.
+\item We will choose $Z$ so that the drift of the discounted stock disappears.
+\end{itemize}
+
+
+% ----------------------------------------------------------
+\subsection*{C.1 Discounted stock and the drift we want to remove}
+% ----------------------------------------------------------
+
+Recall the Black--Scholes model under $\Pbb$:
+\[
+\frac{dS_t}{S_t}=\mu\,dt+\sigma\,dW_t,
+\qquad
+B_t=e^{rt},
+\qquad
+D_t=e^{-rt}.
+\]
+Define the discounted stock
+\[
+\bar S_t := D_t S_t = e^{-rt}S_t.
+\]
+Since $D$ has finite variation, the product rule gives
+\[
+d\bar S_t
+=
+e^{-rt}dS_t - r e^{-rt}S_t\,dt
+=
+(\mu-r)\bar S_t\,dt + \sigma \bar S_t\,dW_t.
+\]
+
+Introduce the \emph{market price of risk}
+\[
+\theta:=\frac{\mu-r}{\sigma}.
+\]
+Then
+\[
+d\bar S_t=\sigma \bar S_t(\theta\,dt+dW_t).
+\]
+
+
+\textbf{Key observation.}
+\begin{itemize}
+\item Under $\Pbb$, the discounted stock has drift $(\mu-r)$.
+\item We want a measure under which this drift vanishes.
+\end{itemize}
+
+
+% ----------------------------------------------------------
+\subsection*{C.2 Exponential martingale and change of measure}
+% ----------------------------------------------------------
+
+Define the exponential process
+\[
+Z_t:=\exp\Big(-\theta W_t-\tfrac12\theta^2 t\Big).
+\]
+Since $\theta$ is constant, $(Z_t)$ is a true martingale and $\E[Z_T]=1$.
+
+Define a new probability measure $\Qbb$ on $\mathcal F_T$ by
+\[
+\frac{d\Qbb}{d\Pbb}\Big|_{\mathcal F_T}=Z_T.
+\]
+
+\begin{theorem}[Girsanov (constant drift case)]
+Under $\Qbb$, the process
+\[
+\widetilde W_t:=W_t+\theta t
+\]
+is a standard Brownian motion.
+\end{theorem}
+
+
+\textbf{Interpretation.}
+\begin{itemize}
+\item Under $\Pbb$: $W$ is Brownian.
+\item Under $\Qbb$: the Brownian motion is $\widetilde W=W+\theta t$.
+\item Drift has moved from the SDE into the measure.
+\end{itemize}
+
+
+% ==========================================================
+\subsection*{How to compute expectations under $\Qbb$ (examples)}
+% ==========================================================
+
+Recall the constant-drift Girsanov setup:
+\[
+Z_t=\exp\!\left(-\theta W_t-\frac12\theta^2 t\right),\qquad
+\frac{d\Qbb}{d\Pbb}\Big|_{\F_T}=Z_T,
+\qquad
+\widetilde W_t:=W_t+\theta t \text{ is Brownian under }\Qbb.
+\]
+
+\begin{remark}[Change-of-measure identities]
+For any integrable $\F_t$-measurable random variable $Y$,
+\[
+\E^\Qbb[Y]=\E^\Pbb[Y\,Z_t].
+\]
+More generally, for $0\le s\le t\le T$ and integrable $\F_t$-measurable $Y$,
+\[
+\E^\Qbb[Y\mid \F_s]=\frac{1}{Z_s}\,\E^\Pbb[Y\,Z_t\mid \F_s].
+\]
+\end{remark}
+
+% ----------------------------------------------------------
+\subsubsection*{Example 1: distribution of $W_t$ under $\Qbb$}
+% ----------------------------------------------------------
+
+Since $\widetilde W_t=W_t+\theta t$ is $\mathcal N(0,t)$ under $\Qbb$, we have
+\[
+W_t=\widetilde W_t-\theta t \sim \mathcal N(-\theta t,\,t)\quad \text{under }\Qbb.
+\]
+Hence for any bounded measurable $\varphi:\R\to\R$,
+\[
+\E^\Qbb[\varphi(W_t)]
+=
+\E\Big[\varphi(\widetilde W_t-\theta t)\Big]
+=
+\int_{\R}\varphi(x)\,
+\frac{1}{\sqrt{2\pi t}}
+\exp\!\left(-\frac{(x+\theta t)^2}{2t}\right)\,dx.
+\]
+
+In particular,
+\[
+\E^\Qbb[W_t]=-\theta t,\qquad \text{Var}^\Qbb(W_t)=t.
+\]
+
+% ----------------------------------------------------------
+\subsubsection*{Example 2: exponential moments (sanity check)}
+% ----------------------------------------------------------
+
+Let $a\in\R$. Using the Gaussian law under $\Qbb$:
+\[
+\E^\Qbb\!\left[e^{aW_t}\right]
+=
+\exp\!\left(a(-\theta t)+\frac12 a^2 t\right)
+=
+\exp\!\left(\frac12 a^2 t-a\theta t\right).
+\]
+
+Equivalently (same computation via $\Pbb$),
+\[
+\E^\Qbb\!\left[e^{aW_t}\right]
+=
+\E^\Pbb\!\left[e^{aW_t}Z_t\right]
+=
+\E^\Pbb\!\left[\exp\!\left((a-\theta)W_t-\frac12\theta^2 t\right)\right]
+=
+\exp\!\left(\frac12(a-\theta)^2 t-\frac12\theta^2 t\right).
+\]
+
+% ----------------------------------------------------------
+\subsubsection*{Example 3: geometric Brownian motion and $\E^\Qbb[f(S_t)]$}
+% ----------------------------------------------------------
+
+Consider a stock of the form
+\[
+S_t = S_0\exp\!\left(\alpha t+\sigma W_t\right),
+\qquad \sigma>0.
+\]
+Under $\Qbb$, since $W_t=\widetilde W_t-\theta t$, we can rewrite
+\[
+S_t
+=
+S_0\exp\!\left((\alpha-\sigma\theta)t+\sigma \widetilde W_t\right).
+\]
+Hence, under $\Qbb$,
+\[
+\ln S_t \sim \mathcal N\!\left(\ln S_0+(\alpha-\sigma\theta)t,\ \sigma^2 t\right).
+\]
+
+Therefore for any measurable $f$ such that $f(S_t)$ is integrable,
+\[
+\boxed{
+\;
+\E^\Qbb[f(S_t)]
+=
+\E\Big[f\!\Big(S_0\exp\!\big((\alpha-\sigma\theta)t+\sigma\sqrt{t}\,Z\big)\Big)\Big],
+\qquad Z\sim\mathcal N(0,1).
+\;}
+\]
+Equivalently, in integral form,
+\[
+\E^\Qbb[f(S_t)]
+=
+\int_{\R} f\!\Big(S_0 e^{(\alpha-\sigma\theta)t+\sigma x}\Big)\,
+\frac{1}{\sqrt{2\pi t}}e^{-x^2/(2t)}\,dx.
+\]
+
+% ----------------------------------------------------------
+\subsubsection*{Example 4 (Black--Scholes drift switch): make the drift become $r$}
+% ----------------------------------------------------------
+
+Suppose under $\Pbb$,
+\[
+\frac{dS_t}{S_t}=\mu\,dt+\sigma\,dW_t,
+\qquad \mu\in\R,\ \sigma>0.
+\]
+Fix a constant $r$ and choose
+\[
+\theta:=\frac{\mu-r}{\sigma}.
+\]
+Then under $\Qbb$ (since $dW_t=d\widetilde W_t-\theta\,dt$),
+\[
+\frac{dS_t}{S_t}
+=
+\mu\,dt+\sigma(d\widetilde W_t-\theta\,dt)
+=
+r\,dt+\sigma\,d\widetilde W_t.
+\]
+So
+\[
+S_t
+=
+S_0\exp\!\left(\Big(r-\frac12\sigma^2\Big)t+\sigma \widetilde W_t\right)
+\quad \text{under }\Qbb.
+\]
+
+Thus for any integrable $f$,
+\[
+\boxed{
+\;
+\E^\Qbb[f(S_t)]
+=
+\E\Big[f\!\Big(S_0\exp\!\big((r-\tfrac12\sigma^2)t+\sigma\sqrt{t}\,Z\big)\Big)\Big],
+\qquad Z\sim\mathcal N(0,1).
+\;}
+\]
+
+% ----------------------------------------------------------
+\subsubsection*{Example 5: conditional expectation (useful for pricing)}
+% ----------------------------------------------------------
+
+Under $\Qbb$, $\widetilde W_t-\widetilde W_s\sim\mathcal N(0,t-s)$ independent of $\F_s$.
+Hence, for $s<t$,
+\[
+S_t
+=
+S_s\exp\!\left(\Big(r-\frac12\sigma^2\Big)(t-s)+\sigma(\widetilde W_t-\widetilde W_s)\right).
+\]
+Therefore, for any measurable $f$ with integrable $f(S_t)$,
+\[
+\boxed{
+\;
+\E^\Qbb[f(S_t)\mid \F_s]
+=
+\Psi_{t-s}(S_s),
+\quad
+\Psi_{u}(x):=\E\Big[f\!\big(x e^{(r-\frac12\sigma^2)u+\sigma\sqrt{u}\,Z}\big)\Big].
+\;}
+\]
+This is the basic ``lognormal transition'' identity used in Black--Scholes computations.
+
+
+% ----------------------------------------------------------
+\subsection*{C.3 Apply to the discounted stock}
+% ----------------------------------------------------------
+
+Rewrite $dW_t=d\widetilde W_t-\theta\,dt$ and substitute into
+\[
+d\bar S_t=\sigma \bar S_t(\theta\,dt+dW_t).
+\]
+We obtain
+\[
+d\bar S_t=\sigma \bar S_t\,d\widetilde W_t.
+\]
+
+\[
+\boxed{\quad (e^{-rt}S_t)_{t\le T}\ \text{is a martingale under }\Qbb.\quad}
+\]
+
+Equivalently, under $\Qbb$ the stock price satisfies
+\[
+\boxed{\quad \frac{dS_t}{S_t}=r\,dt+\sigma\,d\widetilde W_t.\quad}
+\]
+
+
+\textbf{Punchline.}
+\begin{itemize}
+\item Drift changes: $\mu \longrightarrow r$.
+\item Volatility unchanged.
+\item Discounted prices become martingales.
+\end{itemize}
+
+
+% ----------------------------------------------------------
+\subsection*{C.4 Link with pricing}
+% ----------------------------------------------------------
+
+Since $e^{-rt}S_t$ is a martingale under $\Qbb$, it is natural to expect that
+discounted derivative prices should also be martingales.
+This leads to the representation
+\[
+p(t,s)
+=
+\E^{\Qbb}\!\left[e^{-r(T-t)}g(S_T)\mid S_t=s\right],
+\]
+which coincides with the solution of the Black--Scholes PDE.
+
+\begin{remark}
+Today this is presented as motivation.
+A full justification via no-arbitrage and self-financing strategies
+will be given in the next lecture.
+\end{remark}
+
+
+\end{document}

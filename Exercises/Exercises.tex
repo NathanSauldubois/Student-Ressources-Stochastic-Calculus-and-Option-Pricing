@@ -1,0 +1,1665 @@
+% !TEX program = pdflatex
+\documentclass[11pt]{article}
+
+% ==========================
+% Encoding / language (pdflatex)
+% ==========================
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+
+% ==========================
+% Page layout
+% ==========================
+\usepackage[margin=1in]{geometry}
+
+% ==========================
+% Math
+% ==========================
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+
+% ==========================
+% Lists
+% ==========================
+\usepackage{enumitem}
+
+% ==========================
+% Hyperref
+% ==========================
+\usepackage[hidelinks]{hyperref}
+
+% ==========================
+% Macros
+% ==========================
+\newcommand{\Pb}{\mathbb{P}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\F}{\mathcal{F}}
+\newcommand{\1}{\mathbf{1}}
+\newcommand{\dd}{\,\mathrm{d}}
+\newcommand{\norm}[1]{\left\lVert #1\right\rVert}
+
+% ==========================
+% Theorem-like environments
+% ==========================
+\theoremstyle{definition}
+\newtheorem{exercise}{Exercise}[section]
+\newtheorem{remark}{Remark}[section]
+
+% ==========================
+% Exercise utilities
+% ==========================
+% Optional short header at the beginning of each lecture section
+\newcommand{\lecturesummary}[1]{%
+  \begin{quote}\small\textbf{Focus.} #1\end{quote}
+}
+
+% A compact enumerate style often useful inside exercises
+\newlist{exparts}{enumerate}{1}
+\setlist[exparts,1]{label=\textbf{(\alph*)}, itemsep=0.25em, topsep=0.4em, leftmargin=2em}
+
+% ==========================
+% Document metadata
+% ==========================
+\title{Stochastic Calculus --- Training Problem Set (Lectures 1--6)}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-1.2em}
+
+\noindent\textbf{Instructions.}
+\begin{itemize}[leftmargin=1.6em]
+  \item This sheet is meant for practice before the midterm/final.
+\end{itemize}
+
+% ==========================================================
+\section{Lecture 1 --- Option Pricing : Motivations and First Mathematical and Numerical tools}
+
+% --- Put ~10--15 exercises here ---
+% =====================================================
+%  Exercise 1
+% =====================================================
+\begin{exercise}[Quadratic transformation of a normal variable]
+Let $X\sim \mathcal N(0,1)$ and define $Y:=X^2$.
+\begin{enumerate}[label=\textbf{(\alph*)}, itemsep=0.25em]
+  \item Compute the cdf $F_Y(y)=\mathbb P(Y\le y)$ for $y\ge 0$.
+  \item Deduce the density $f_Y$.
+  \item Identify the distribution of $Y$ (name and parameters).
+  \item Compute $\mathbb E[Y]$ and $\mathrm{Var}(Y)$.
+\end{enumerate}
+\end{exercise}
+
+% =====================================================
+%  Exercise 2
+% =====================================================
+\begin{exercise}[Characteristic function: inversion and identification]
+Let $X$ be a real-valued random variable with characteristic function
+$$
+\varphi_X(t)=\mathbb E\!\left[e^{itX}\right]=\frac{1}{1+t^2},\qquad t\in\mathbb R.
+$$
+\begin{enumerate}[label=\textbf{(\alph*)}, itemsep=0.35em]
+
+  \item \textbf{Warm-up checks.}
+  \begin{enumerate}[label=\textbf{(\roman*)}, itemsep=0.2em]
+    \item Verify that $\varphi_X(0)=1$ and that $\varphi_X$ is even and real-valued.
+    \item Show that $|\varphi_X(t)|\le 1$ for all $t\in\mathbb R$.
+    \item Compute $\displaystyle \lim_{|t|\to\infty}\varphi_X(t)$.
+  \end{enumerate}
+
+  \item \textbf{Integrability.}
+  Show that $\varphi_X\in L^1(\mathbb R)$ by computing
+  $$
+  \int_{-\infty}^{\infty}\left|\varphi_X(t)\right|\,dt
+  =
+  \int_{-\infty}^{\infty}\frac{1}{1+t^2}\,dt.
+  $$
+  (You may recall $\int_{-\infty}^{\infty}\frac{1}{1+t^2}\,dt=\pi$.)
+
+  \item \textbf{Recovering a density (Fourier inversion).}
+  Assume $\varphi_X\in L^1(\mathbb R)$. Then $X$ admits a continuous density $f_X$ given by
+  $$
+  f_X(x)=\frac{1}{2\pi}\int_{-\infty}^{\infty} e^{-itx}\,\varphi_X(t)\,dt.
+  $$
+  \begin{enumerate}[label=\textbf{(\roman*)}, itemsep=0.2em]
+    \item Using the identity
+    $$
+    \int_{-\infty}^{\infty} e^{-itx}\,\frac{1}{1+t^2}\,dt
+    = \pi e^{-|x|},
+    $$
+    deduce that
+    $$
+    f_X(x)=\frac12 e^{-|x|},\qquad x\in\mathbb R.
+    $$
+    \item Check that $f_X$ integrates to $1$.
+  \end{enumerate}
+
+  \item \textbf{Identification of the law.}
+  \begin{enumerate}[label=\textbf{(\roman*)}, itemsep=0.2em]
+    \item Identify the distribution with density $f_X(x)=\frac12 e^{-|x|}$ (name and parameters).
+    \item Compute $\mathbb P(X\ge 0)$ and explain why it must be $1/2$.
+  \end{enumerate}
+
+  \item \textbf{Moments: existence and computation.}
+  \begin{enumerate}[label=\textbf{(\roman*)}, itemsep=0.2em]
+    \item Does $\mathbb E[X]$ exist? Justify carefully.
+    \item Compute $\mathbb E[X]$.
+    \item Compute $\mathbb E[|X|]$ and $\mathrm{Var}(X)$.
+  \end{enumerate}
+
+  \item \textbf{Smoothness of $\varphi_X$ and moments (optional).}
+  \begin{enumerate}[label=\textbf{(\roman*)}, itemsep=0.2em]
+    \item Compute $\varphi_X'(t)$ and check whether $\varphi_X'(0)$ exists.
+    Recall: if $\mathbb E[|X|]<\infty$, then $\varphi_X'(0)=i\,\mathbb E[X]$.
+    \item Compute $\varphi_X''(0)$ and discuss what it suggests about $\mathbb E[X^2]$.
+    (Recall: if $\mathbb E[X^2]<\infty$, then $\varphi_X''(0)=-\mathbb E[X^2]$.)
+  \end{enumerate}
+
+  \item \textbf{Comparison with the Gaussian case (optional).}
+  Let $Z\sim\mathcal N(0,\sigma^2)$ with characteristic function
+  $$
+  \varphi_Z(t)=\exp\!\left(-\frac{\sigma^2 t^2}{2}\right).
+  $$
+  \begin{enumerate}[label=\textbf{(\roman*)}, itemsep=0.2em]
+    \item Compare the decay of $\varphi_X(t)=\frac{1}{1+t^2}$ and $\varphi_Z(t)$ as $|t|\to\infty$.
+    \item Explain qualitatively what this implies about the tails of $X$ versus $Z$.
+    \item Which one has heavier tails? Give one quantitative argument (e.g.\ tail asymptotics).
+  \end{enumerate}
+
+\end{enumerate}
+\end{exercise}
+
+% =====================================================
+%  Exercise 3
+% =====================================================
+\begin{exercise}[Gaussian conditioning (explicit formulas)]
+Let $(X,Y)$ be jointly Gaussian with
+$$
+\mathbb E[X]=\mu_X,\quad \mathbb E[Y]=\mu_Y,\quad
+\mathrm{Var}(X)=\sigma_X^2,\quad \mathrm{Var}(Y)=\sigma_Y^2,\quad
+\mathrm{Cov}(X,Y)=\rho\sigma_X\sigma_Y.
+$$
+\begin{enumerate}[label=\textbf{(\alph*)}, itemsep=0.25em]
+  \item Show that
+  $$
+  \mathbb E[X\mid Y]=\mu_X+\frac{\mathrm{Cov}(X,Y)}{\mathrm{Var}(Y)}(Y-\mu_Y).
+  $$
+  \item Show that
+  $$
+  \mathrm{Var}(X\mid Y)=\sigma_X^2(1-\rho^2).
+  $$
+  \item (Finance) Interpret $\rho$ as ``hedge effectiveness'' and relate $\mathrm{Var}(X\mid Y)$ to residual risk.
+\end{enumerate}
+\end{exercise}
+
+% =====================================================
+%  Exercise 4
+% =====================================================
+\begin{exercise}[One-step binomial pricing (mini finance)]
+A stock price satisfies $S_0=100$. After one period,
+$$
+S_1=
+\begin{cases}
+120 & \text{(up state)},\\
+90  & \text{(down state)}.
+\end{cases}
+$$
+The \emph{physical} probability of the up state is $p\in(0,1)$.
+We price by \emph{no-arbitrage}. The risk-free rate is $r=0$,
+so the bank account satisfies $B_0=1$ and $B_1=1$.
+
+Consider a European call option with strike $K=100$:
+$$
+H=(S_1-K)_+.
+$$
+
+\begin{enumerate}[label=\textbf{(\alph*)}, itemsep=0.35em]
+
+  \item \textbf{Payoff table.}
+  Compute the option payoff $H$ in each state and fill:
+  $$
+  \begin{array}{c|c|c}
+  \text{State} & S_1 & H=(S_1-100)_+\\ \hline
+  \text{Up} & 120 & \ ? \ \\
+  \text{Down} & 90 & \ ? \ \\
+  \end{array}
+  $$
+
+  \item \textbf{Risk-neutral probability.}
+  A probability $q\in(0,1)$ is \emph{risk-neutral} if the discounted stock price
+  is a martingale. Since $r=0$, this means
+  $$
+  \mathbb E^{q}[S_1]=S_0.
+  $$
+  \begin{enumerate}[label=\textbf{(\roman*)}, itemsep=0.2em]
+    \item Write $\mathbb E^{q}[S_1]$ explicitly in terms of $q$.
+    \item Solve for $q$ and check that $0<q<1$.
+    \item Explain in one sentence why $q$ is not necessarily equal to the real probability $p$.
+  \end{enumerate}
+
+  \item \textbf{No-arbitrage option price.}
+  The no-arbitrage price is the risk-neutral expectation (no discounting here):
+  $$
+  V_0=\mathbb E^{q}[H].
+  $$
+  \begin{enumerate}[label=\textbf{(\roman*)}, itemsep=0.2em]
+    \item Write $\mathbb E^{q}[H]$ using the two-state payoff table.
+    \item Compute $V_0$ numerically.
+  \end{enumerate}
+
+  \item \textbf{Replicating portfolio.}
+  Find $\Delta$ (shares) and $B$ (cash) such that
+  $$
+  \Delta S_1 + B = H
+  \quad\text{in both states.}
+  $$
+  \begin{enumerate}[label=\textbf{(\roman*)}, itemsep=0.2em]
+    \item Write the two equations and solve for $\Delta$ and $B$.
+    \item Compute the initial cost $\Delta S_0 + B$ and check it matches $V_0$.
+  \end{enumerate}
+
+  \item \textbf{Short interpretation.}
+  \begin{enumerate}[label=\textbf{(\roman*)}, itemsep=0.2em]
+    \item Is $B$ positive or negative? Interpret (lending vs borrowing).
+    \item Is $\Delta$ between $0$ and $1$? Interpret as a hedge ratio.
+  \end{enumerate}
+
+\end{enumerate}
+\end{exercise}
+
+
+
+% ==========================================================
+\section{Lecture 2 --- Option Pricing : Brownian Motion and Quadratic Variation.}
+
+\begin{exercise}[Gaussian increments \& scaling warm-up]
+Let $0\le s<t$.
+\begin{enumerate}
+\item Compute the law of $B_t-B_s$ and its mean/variance.
+\item Show that $\mathrm{Cov}(B_s,B_t)=s$ and $\E[B_sB_t]=s$.
+\item (Scaling) For $c>0$, define $W_t:=\frac{1}{\sqrt c}B_{ct}$.
+Show that $(W_t)_{t\ge 0}$ is again a standard Brownian motion.
+\end{enumerate}
+\end{exercise}
+
+% ----------------------------------------------------------
+\begin{exercise}[$B_t^2-t$ is a martingale]
+\begin{enumerate}
+\item Using It\^o's formula, compute $\mathrm{d}(B_t^2)$.
+\item Deduce that $B_t^2-t$ is a martingale.
+\item Use this to compute $\E[B_t^2]$.
+\end{enumerate}
+\end{exercise}
+
+% ----------------------------------------------------------
+\begin{exercise}[Exponential martingale (drift killing)]
+Fix $b\in\R$ and define
+$$
+Y_t:=\exp\Big(bB_t-\tfrac12 b^2 t\Big).
+$$
+\begin{enumerate}
+\item Compute $\mathrm{d} Y_t$ using It\^o and show that $(Y_t)$ is a martingale.
+\item Deduce $\E[e^{bB_t}]=e^{\frac12 b^2 t}$.
+\item (Optional) Show that $\E[Y_t^p]<\infty$ for every $p>0$ and compute it.
+\end{enumerate}
+\end{exercise}
+
+% ----------------------------------------------------------
+\begin{exercise}[Hitting a level: reflection principle]
+Fix $a>0$ and define the first passage time $\tau_a:=\inf\{t\ge 0:\,B_t=a\}$.
+\begin{enumerate}
+\item Show that for every $t>0$,
+$$
+\mathbb{P}(\tau_a\le t)=2\,\mathbb{P}(B_t\ge a).
+$$
+\item Deduce an explicit formula for $\mathbb{P}(\tau_a\le t)$ in terms of the Gaussian cdf.
+\item Differentiate (formally) to guess the density of $\tau_a$.
+\end{enumerate}
+\end{exercise}
+
+% ----------------------------------------------------------
+\begin{exercise}[Max distribution]
+Let $M_t:=\sup_{0\le s\le t}B_s$.
+\begin{enumerate}
+\item Show that for $m>0$, $\mathbb{P}(M_t\ge m)=2\,\mathbb{P}(B_t\ge m)$.
+\item Deduce the cdf of $M_t$ and compute $\E[M_t]$ (hint: integrate the tail).
+\end{enumerate}
+\end{exercise}
+
+% ----------------------------------------------------------
+\begin{exercise}[Joint law of $(M_t,B_t)$ (application)]
+Assume you are given that $(M_t,B_t)$ has density, for $m>0$ and $w\le m$,
+$$
+f_{M_t,B_t}(m,w)=\frac{2(2m-w)}{t\sqrt{2\pi t}}
+\exp\!\Big(-\frac{(2m-w)^2}{2t}\Big).
+$$
+\begin{enumerate}
+\item Check that $f_{M_t,B_t}$ integrates to $1$.
+\item Compute the conditional density of $M_t$ given $B_t=w$ (for $w\in\R$).
+\item Compute $\mathbb{P}(M_t\le m\,|\,B_t=w)$ for $m\ge \max(w,0)$.
+\end{enumerate}
+\end{exercise}
+
+% ----------------------------------------------------------
+\begin{exercise}[Barrier probability from reflection]
+Let $H>0$. Compute explicitly
+$$
+\mathbb{P}(M_t < H)\qquad\text{and}\qquad \mathbb{P}(M_t \ge H).
+$$
+Then interpret $\{M_t<H\}$ as a “survival” event for an up-and-out barrier.
+\end{exercise}
+
+% ----------------------------------------------------------
+% ----------------------------------------------------------
+\begin{exercise}[Exit time of an interval $(a,b)$ with $a<0<b$ (guided)]
+Let $(B_t)_{t\ge 0}$ be a standard Brownian motion with $B_0=0$ and fix
+$$
+a<0<b.
+$$
+Define the exit time
+$$
+\tau:=\inf\{t\ge 0:\, B_t\notin(a,b)\}.
+$$
+
+\begin{enumerate}[label=\textbf{(\alph*)}, itemsep=0.35em]
+
+\item \textbf{Where can you exit?}
+Using the continuity of Brownian paths, show that
+$$
+B_\tau \in \{a,b\}\quad\text{a.s.}
+$$
+
+\item \textbf{Truncation (bounded stopping times).}
+For $n\in\mathbb{N}$ define the bounded stopping time
+$$
+\tau_n:=\tau\wedge n.
+$$
+Check that $\tau_n\le n$ and that $B_{\tau_n}$ is integrable.
+
+(\emph{Hint:} argue that $B_{t\wedge\tau}\in[a,b]$ for all $t\ge 0$, hence $|B_{\tau_n}|\le \max\{|a|,|b|\}$.)
+
+\item \textbf{Hitting probabilities via the martingale $B_t$.}
+Let
+$$
+p:=\mathbb{P}(B_\tau=b).
+$$
+\begin{enumerate}[label=\roman*)]
+\item Apply optional stopping to the martingale $(B_t)$ at $\tau_n$:
+$$
+\E[B_{\tau_n}]=0.
+$$
+\item Justify briefly that you may pass to the limit $n\to\infty$ and obtain
+$$
+\E[B_\tau]=0.
+$$
+(\emph{Hint:} dominated convergence using the bound $|B_{\tau_n}|\le \max\{|a|,|b|\}$.)
+\item Use $B_\tau\in\{a,b\}$ a.s. to write
+$$
+\E[B_\tau]=a(1-p)+bp,
+$$
+and solve for $p$. Deduce $\mathbb{P}(B_\tau=a)=1-p$.
+\end{enumerate}
+
+\item \textbf{Expected exit time via the martingale $B_t^2-t$.}
+Consider the martingale
+$$
+M_t:=B_t^2-t.
+$$
+\begin{enumerate}[label=\roman*)]
+\item Apply optional stopping to $(M_t)$ at $\tau_n$:
+$$
+\E[B_{\tau_n}^2-\tau_n]=0.
+$$
+\item Rearrange:
+$$
+\E[\tau_n]=\E[B_{\tau_n}^2].
+$$
+\item Show that $B_{\tau_n}\to B_\tau$ a.s. and that $|B_{\tau_n}|\le \max\{|a|,|b|\}$, hence
+$$
+\E[B_{\tau_n}^2]\to \E[B_\tau^2].
+$$
+(\emph{Hint:} dominated convergence.)
+\item Conclude that $\E[\tau_n]\to \E[\tau]$ and obtain
+$$
+\E[\tau]=\E[B_\tau^2].
+$$
+Finally compute $\E[B_\tau^2]$ using the probabilities from the previous question and
+$$
+B_\tau^2=
+\begin{cases}
+a^2 & \text{if } B_\tau=a,\\
+b^2 & \text{if } B_\tau=b.
+\end{cases}
+$$
+\end{enumerate}
+
+\end{enumerate}
+\end{exercise}
+
+% ----------------------------------------------------------
+% ----------------------------------------------------------
+%\begin{exercise}[Laplace transform of exit time (medium)]
+%With the same $(\tau,1,b,x)$ as above, fix $\lambda>0$ and set
+%$$
+%u(x):=\E_x\!\left[e^{-\lambda \tau}\,;\,B_\tau=b\right].
+%$$
+%\begin{enumerate}
+%\item Argue (heuristically or using Markov property) that $u$ solves the ODE
+%$$
+%\frac12 u''(x)=\lambda u(x),\qquad x\in(1,b),
+%$$
+%with boundary conditions $u(1)=0$, $u(b)=1$.
+%\item Solve the ODE and give $u(x)$ explicitly.
+%\end{enumerate}
+%\end{exercise}
+
+% ----------------------------------------------------------
+\begin{exercise}[A clean identity: $\int_0^t f(s)\,\mathrm{d} B_s$ without stochastic integral]
+Let $f:[0,T]\to\R$ be $C^1$.
+\begin{enumerate}
+\item Apply It\^o to $f(t)B_t$ and show that
+$$
+\int_0^t f(s)\,\mathrm{d} B_s = f(t)B_t-\int_0^t f'(s)B_s\,\mathrm{d} s.
+$$
+\item Apply this to $f(s)=e^{\alpha s}$ and simplify.
+\end{enumerate}
+\end{exercise}
+
+% ----------------------------------------------------------
+\begin{exercise}[Compute $\int_0^t e^{B_s}\,\mathrm{d} B_s$ without $\mathrm{d} B$]
+\begin{enumerate}
+\item Apply It\^o to $e^{B_t}$ and isolate the term $\int_0^t e^{B_s}\,\mathrm{d} B_s$.
+\item Deduce an expression for $\int_0^t e^{B_s}\,\mathrm{d} B_s$ involving only $e^{B_t}$ and ordinary integrals.
+\end{enumerate}
+\end{exercise}
+
+% ----------------------------------------------------------
+\begin{exercise}[Quadratic variation on a uniform grid]
+Let $0=t_0<\dots<t_n=T$ be the uniform grid $t_k=kT/n$ and set
+$$
+Q_T^{(n)}:=\sum_{k=0}^{n-1}\big(B_{t_{k+1}}-B_{t_k}\big)^2.
+$$
+\begin{enumerate}
+\item Compute $\E[Q_T^{(n)}]$ and $\mathrm{Var}(Q_T^{(n)})$.
+\item Deduce that $Q_T^{(n)}\to T$ in $L^2$.
+\item Explain briefly why this suggests that Riemann--Stieltjes integrals are unstable for BM.
+\end{enumerate}
+\end{exercise}
+
+% ----------------------------------------------------------
+\begin{exercise}[Left vs right sums for $\phi_t=B_t$]
+On the uniform grid $t_k=kT/n$, define
+$$
+L_n:=\sum_{k=0}^{n-1} B_{t_k}\,(B_{t_{k+1}}-B_{t_k}),
+\qquad
+R_n:=\sum_{k=0}^{n-1} B_{t_{k+1}}\,(B_{t_{k+1}}-B_{t_k}).
+$$
+\begin{enumerate}
+\item Show that $R_n-L_n=\sum_{k=0}^{n-1}(B_{t_{k+1}}-B_{t_k})^2=Q_T^{(n)}$.
+\item Deduce that $R_n-L_n\to T$ in probability.
+\item Use the algebraic identity
+$$
+B_{t_{k+1}}^2-B_{t_k}^2 = 2B_{t_k}(B_{t_{k+1}}-B_{t_k})+(B_{t_{k+1}}-B_{t_k})^2
+$$
+to guess the limit of $L_n$.
+\end{enumerate}
+\end{exercise}
+
+% ==========================================================
+\section{Lecture 3 --- Stochastic Integral.}
+
+\begin{exercise}[Warm-up: definition on simple processes, mean zero, isometry]
+Let $(W_t)_{t\ge 0}$ be a 1D Brownian motion with its natural filtration $(\F_t)$.
+Fix $T>0$ and consider a \emph{simple} (step) process on $[0,T]$:
+$$
+\phi_t=\sum_{k=0}^{n-1}\phi_{t_k}\,\1_{(t_k,t_{k+1}]}(t),
+\qquad 0=t_0<\cdots<t_n=T,\qquad \phi_{t_k}\in\F_{t_k}.
+$$
+Define the It\^o integral by the left-point sum
+$$
+\int_0^T \phi_t\,\mathrm{d} W_t
+:=\sum_{k=0}^{n-1}\phi_{t_k}\big(W_{t_{k+1}}-W_{t_k}\big).
+$$
+\begin{enumerate}[label=\textbf{(\alph*)}, itemsep=0.25em]
+\item Prove that $\E\!\left[\int_0^T \phi_t\,\mathrm{d} W_t\right]=0$.
+\item Prove the It\^o isometry for simple processes:
+$$
+\E\!\left[\left(\int_0^T \phi_t\,\mathrm{d} W_t\right)^2\right]
+=\E\!\left[\int_0^T \phi_t^2\,\mathrm{d} t\right]
+=\sum_{k=0}^{n-1}\E[\phi_{t_k}^2]\,(t_{k+1}-t_k).
+$$
+\item (Bonus) Prove the polarized identity for two simple processes $\phi,\psi$:
+$$
+\E\!\left[\Big(\int_0^T \phi_t\,\mathrm{d} W_t\Big)\Big(\int_0^T \psi_t\,\mathrm{d} W_t\Big)\right]
+=\E\!\left[\int_0^T \phi_t\psi_t\,\mathrm{d} t\right].
+$$
+\end{enumerate}
+
+\smallskip
+\noindent\textit{Hint.}
+Use conditional expectation w.r.t.\ $\F_{t_k}$ and the independence/centering of increments.
+For (b), expand the square and show cross-terms vanish by conditioning at the later time.
+\end{exercise}
+
+% ----------------------------------------------------------
+\begin{exercise}[Why the left-point matters: right sums for $\phi_t=W_t$]
+Fix $t>0$ and a partition $\pi=\{0=t_0<\cdots<t_n=t\}$.
+Define
+$$
+S^{\text{left}}_\pi:=\sum_{k=0}^{n-1}W_{t_k}\big(W_{t_{k+1}}-W_{t_k}\big),
+\qquad
+S^{\text{right}}_\pi:=\sum_{k=0}^{n-1}W_{t_{k+1}}\big(W_{t_{k+1}}-W_{t_k}\big).
+$$
+\begin{enumerate}[label=\textbf{(\alph*)}, itemsep=0.25em]
+\item Show the identity
+$$
+S^{\text{right}}_\pi - S^{\text{left}}_\pi
+=\sum_{k=0}^{n-1}\big(W_{t_{k+1}}-W_{t_k}\big)^2.
+$$
+\item Assume you know (from Lecture 1--2) that the quadratic variation along refining partitions satisfies
+$\sum_{k} (W_{t_{k+1}}-W_{t_k})^2 \to t$ in probability.
+Deduce that
+$$
+\lim_{|\pi|\to 0} S^{\text{right}}_\pi
+=
+\left(\lim_{|\pi|\to 0} S^{\text{left}}_\pi\right)+t,
+$$
+whenever the left limit exists.
+\item Using the algebraic identity
+$W_{t_{k+1}}^2 - W_{t_k}^2
+= 2W_{t_k}(W_{t_{k+1}}-W_{t_k}) + (W_{t_{k+1}}-W_{t_k})^2$,
+show that
+$$
+\int_0^t W_s\,\mathrm{d} W_s
+=\frac12\big(W_t^2 - t\big).
+$$
+\end{enumerate}
+
+\smallskip
+\noindent\textit{Comment.}
+This exercise is precisely the “pathology” motivating the left-point convention. % cf slides
+\end{exercise}
+
+% ----------------------------------------------------------
+\begin{exercise}[Deterministic integrand: Gaussianity + variance]
+Let $f\in L^2([0,T])$ be deterministic.
+\begin{enumerate}[label=\textbf{(\alph*)}, itemsep=0.25em]
+\item First assume that $f$ is a step function:
+$f(t)=\sum_{k=0}^{n-1}c_k\,\1_{(t_k,t_{k+1}]}(t)$.
+Show that
+$$
+\int_0^T f(t)\,\mathrm{d} W_t
+=\sum_{k=0}^{n-1}c_k\big(W_{t_{k+1}}-W_{t_k}\big)
+$$
+is Gaussian, centered, with variance $\int_0^T f(t)^2\,\mathrm{d} t$.
+\item Deduce (by approximation in $L^2$ and the isometry) that for general deterministic
+$f\in L^2([0,T])$,
+$$
+\int_0^T f(t)\,\mathrm{d} W_t \sim \mathcal{N}\!\left(0,\int_0^T f(t)^2\,\mathrm{d} t\right).
+$$
+\item Compute explicitly the moment generating function
+$\E[\exp(\lambda\int_0^T f(t)\,\mathrm{d} W_t)]$ for $\lambda\in\R$.
+\end{enumerate}
+
+\smallskip
+\noindent\textit{Hint.}
+A finite linear combination of independent Gaussians is Gaussian; for (c) use the mgf of
+$\mathcal{N}(0,\sigma^2)$.
+\end{exercise}
+
+% ----------------------------------------------------------
+\begin{exercise}[A Brownian motion built from another one (orthogonal integrand)]
+Let $W$ be a Brownian motion in $\R^d$.
+Let $A:[0,\infty)\to\R^{d\times d}$ be deterministic, measurable, and assume
+$$
+A(t)A(t)^\top = I_d \qquad \text{for all } t\ge 0.
+$$
+Define the $\R^d$-valued process
+$$
+B_t := \int_0^t A(s)\,\mathrm{d} W_s.
+$$
+\begin{enumerate}[label=\textbf{(\alph*)}, itemsep=0.25em]
+\item Show that $B$ has centered Gaussian increments.
+\item Compute the covariance matrix of $B_t-B_s$ for $0\le s<t$.
+\item Deduce that $B$ is a Brownian motion in $\R^d$.
+\end{enumerate}
+
+\smallskip
+\noindent\textit{Hint.}
+First check the claim for step-matrix functions $A$, then extend by $L^2$ approximation
+using the vector It\^o isometry.
+\end{exercise}
+
+
+% ==========================================================
+\section{Lecture 4 --- Ito Calculus and Formula.}
+
+\begin{exercise}[Warm-up: It\^o formula for $f(t,W_t)$]
+Let $(W_t)_{t\ge 0}$ be a standard Brownian motion and let $f\in C^{1,2}([0,T]\times\R)$.
+\begin{enumerate}[label=\textbf{(\alph*)}, itemsep=0.25em]
+  \item State It\^o's formula for $f(t,W_t)$ in differential form and in integral form.
+  \item Apply it to $f(t,x)=x^2$ and deduce the decomposition
+  $$
+    W_t^2 = t + 2\int_0^t W_s\,\mathrm{d} W_s.
+  $$
+  \item Apply it to $f(t,x)=x^3$ and write $W_t^3$ as the sum of a Lebesgue integral and an It\^o integral.
+\end{enumerate}
+\end{exercise}
+
+\begin{exercise}[Moments without Gaussian computations]
+Let $(W_t)$ be a Brownian motion and fix $T>0$.
+\begin{enumerate}[label=\textbf{(\alph*)}, itemsep=0.25em]
+  \item Apply It\^o's formula to $f(x)=x^4$ and write $W_T^4$ as
+  $$
+    W_T^4 = \int_0^T a_s\,\mathrm{d} s + \int_0^T b_s\,\mathrm{d} W_s
+  $$
+  for explicit adapted processes $(a_s)$ and $(b_s)$.
+  \item Take expectations and use $\E[W_t^2]=t$ to recover $\E[W_T^4]=3T^2$.
+  \item (Optional) Repeat with $f(x)=x^6$ and obtain a closed form for $\E[W_T^6]$.
+\end{enumerate}
+\end{exercise}
+
+
+\begin{exercise}[Exponential Brownian martingale]
+Fix $b\in\R$ and define
+$$
+Y_t := \exp\!\big(a t + b W_t\big), \qquad t\in[0,T],
+$$
+where $a\in\R$ is to be chosen.
+\begin{enumerate}[label=\textbf{(\alph*)}, itemsep=0.25em]
+  \item Compute $\mathrm{d} Y_t$ using It\^o's formula.
+  \item Choose $a=a(b)$ so that the \emph{drift term} vanishes.
+  \item Conclude that $(Y_t)_{0\le t\le T}$ is a martingale, and deduce $\E[Y_T]$.
+\end{enumerate}
+\end{exercise}
+
+\begin{exercise}[Generalized geometric Brownian motion]
+Let $X$ be the It\^o process
+$$
+\mathrm{d} X_t = \alpha_t\,\mathrm{d} t + \sigma_t\,\mathrm{d} W_t,\qquad X_0=x_0,
+$$
+where $(\alpha_t)$ and $(\sigma_t)$ are adapted and satisfy
+$$
+\E\!\left[\int_0^T |\alpha_t|\,\mathrm{d} t\right]<\infty,
+\qquad
+\E\!\left[\int_0^T \sigma_t^2\,\mathrm{d} t\right]<\infty.
+$$
+Define $S_t := \exp(X_t)$.
+\begin{enumerate}[label=\textbf{(\alph*)}, itemsep=0.25em]
+  \item Apply It\^o's formula to $f(x)=e^x$ and derive the dynamics of $(S_t)$:
+  write $\mathrm{d} S_t$ in the form $\mathrm{d} S_t = S_t(\cdots)\mathrm{d} t + S_t(\cdots)\mathrm{d} W_t$.
+  \item Specialize to $\alpha_t = r_t - \tfrac12\sigma_t^2$ and show that
+  $$
+    \mathrm{d} S_t = r_t S_t\,\mathrm{d} t + \sigma_t S_t\,\mathrm{d} W_t.
+  $$
+  \item (Optional) Assume $r_t$ is deterministic and integrable, and set
+  $$
+    \widetilde S_t := \exp\!\Big(-\int_0^t r_u\,\mathrm{d} u\Big)S_t.
+  $$
+  Compute $\mathrm{d}\widetilde S_t$ and give a condition ensuring $(\widetilde S_t)$ is a martingale.
+\end{enumerate}
+\end{exercise}
+
+
+\begin{exercise}[Product and ratio of two It\^o processes]
+Let $X$ and $Y$ satisfy
+$$
+\mathrm{d} X_t = \mu^X_t\,\mathrm{d} t + \sigma^X_t\,\mathrm{d} W_t,
+\qquad
+\mathrm{d} Y_t = \mu^Y_t\,\mathrm{d} t + \sigma^Y_t\,\mathrm{d} W_t,
+$$
+where all coefficients are adapted and square-integrable on $[0,T]$ (as needed).
+\begin{enumerate}[label=\textbf{(\alph*)}, itemsep=0.25em]
+  \item Set $Z_t:=X_tY_t$. Using It\^o's product rule, derive the dynamics of $Z_t$
+  (identify both the drift and diffusion terms explicitly).
+  \item Assume now that $X_t>0$ and $Y_t>0$ a.s.\ for all $t$. Set $R_t:=X_t/Y_t$.
+  Compute $\mathrm{d}(\ln R_t)$ using It\^o's formula, then deduce the SDE for $R_t$.
+  \item (Optional) Consider the multiplicative dynamics
+  $$
+    \mathrm{d} X_t = X_t(\mu^X_t\,\mathrm{d} t + \sigma^X_t\,\mathrm{d} W_t),
+    \qquad
+    \mathrm{d} Y_t = Y_t(\mu^Y_t\,\mathrm{d} t + \sigma^Y_t\,\mathrm{d} W_t).
+  $$
+  Solve explicitly for $X_t$ and $Y_t$ (as stochastic exponentials), and verify that the resulting expression
+  for $R_t=X_t/Y_t$ matches your answer in (b).
+\end{enumerate}
+\end{exercise}
+
+\section{Lecture 5 --- Black--Scholes price and Greeks.}
+
+
+Throughout, fix $0\le t<T$, $\tau:=T-t$, $K>0$, $r\in\R$, $\sigma>0$, and denote by
+$$
+\Phi(x):=\int_{-\infty}^x \frac{1}{\sqrt{2\pi}}e^{-u^2/2}\,du,
+\qquad
+\varphi(x):=\Phi'(x)=\frac{1}{\sqrt{2\pi}}e^{-x^2/2}
+$$
+the standard normal CDF and density.
+
+We also use the usual notations
+$$
+d_1(t,s):=\frac{\ln(s/K)+(r+\frac12\sigma^2)\tau}{\sigma\sqrt{\tau}},
+\qquad
+d_2(t,s):=d_1(t,s)-\sigma\sqrt{\tau}.
+$$
+The Black--Scholes call and put prices are
+$$
+C(t,s)=s\Phi(d_1)-K e^{-r\tau}\Phi(d_2),
+\qquad
+P(t,s)=K e^{-r\tau}\Phi(-d_2)-s\Phi(-d_1).
+$$
+
+% ----------------------------------------------------------
+\subsection*{Warm-up identities (very useful)}
+% ----------------------------------------------------------
+
+\begin{exercise}[Derivatives of $d_1,d_2$]
+Show that for $s>0$,
+$$
+\partial_s d_1(t,s)=\partial_s d_2(t,s)=\frac{1}{s\sigma\sqrt{\tau}}.
+$$
+Compute also $\partial_\sigma d_1(t,s)$ and $\partial_\sigma d_2(t,s)$.
+\end{exercise}
+
+\begin{exercise}[The key ``$\varphi$-identity'']
+Prove the identity
+\begin{equation}\label{eq:phi-identity-exo}
+s\,\varphi(d_1)=K e^{-r\tau}\,\varphi(d_2).
+\end{equation}
+\emph{Hint:} write $\varphi(d_2)/\varphi(d_1)=\exp(-(d_2^2-d_1^2)/2)$ and use
+$d_2=d_1-\sigma\sqrt{\tau}$.
+\end{exercise}
+
+\begin{exercise}[Put--call parity]
+Prove
+$$
+C(t,s)-P(t,s)=s-K e^{-r\tau}.
+$$
+Then deduce $\Delta_P=\Delta_C-1$ and $\Gamma_P=\Gamma_C$ once you have computed Greeks for the call.
+\end{exercise}
+
+% ----------------------------------------------------------
+\subsection*{Greeks: compute and prove}
+% ----------------------------------------------------------
+
+\begin{exercise}[Delta of the call]
+Starting from
+$$
+C(t,s)=s\Phi(d_1)-K e^{-r\tau}\Phi(d_2),
+$$
+differentiate w.r.t.\ $s$ and prove
+$$
+\boxed{\ \Delta(t,s):=\partial_s C(t,s)=\Phi(d_1(t,s)).\ }
+$$
+\emph{Hint:} you will obtain extra terms involving $\varphi(d_1)\partial_s d_1$ and
+$\varphi(d_2)\partial_s d_2$; use \eqref{eq:phi-identity-exo} to cancel them.
+\end{exercise}
+
+\begin{exercise}[Gamma of the call]
+Differentiate your Delta formula and show
+$$
+\boxed{\ \Gamma(t,s):=\partial_{ss}C(t,s)=\frac{\varphi(d_1(t,s))}{s\sigma\sqrt{\tau}}.\ }
+$$
+Then show $\Gamma(t,s)>0$ for all $s>0$.
+\end{exercise}
+
+\begin{exercise}[Vega of the call]
+Differentiate $C(t,s)$ with respect to $\sigma$ and prove
+$$
+\boxed{\ \text{Vega}(t,s):=\partial_\sigma C(t,s)= s\,\varphi(d_1(t,s))\,\sqrt{\tau}.\ }
+$$
+Conclude that the call price is strictly increasing in $\sigma$ (for $\tau>0$).
+\end{exercise}
+
+\begin{exercise}[Rho of the call]
+Differentiate with respect to $r$ and show
+$$
+\boxed{\ \rho(t,s):=\partial_r C(t,s)=K \tau e^{-r\tau}\Phi(d_2(t,s)).\ }
+$$
+\emph{Optional:} interpret the sign of $\rho$ for calls and puts.
+\end{exercise}
+
+\begin{exercise}[Theta of the call]
+Compute $\Theta(t,s):=\partial_t C(t,s)$ and prove the formula
+$$
+\boxed{\ 
+\Theta(t,s)= -\frac{s\varphi(d_1)\sigma}{2\sqrt{\tau}}-rK e^{-r\tau}\Phi(d_2).
+\ }
+$$
+\emph{Hint:} it is often simpler to differentiate in $\tau=T-t$ first, then use
+$\partial_t=-\partial_\tau$.
+\end{exercise}
+
+\begin{exercise}[A Greek identity from the PDE]
+Assume (or recall) that $C$ satisfies the Black--Scholes PDE
+$$
+\partial_t C + rs\,\partial_s C + \tfrac12\sigma^2 s^2 \partial_{ss}C - rC = 0.
+$$
+Rewrite it as a relation between Greeks:
+$$
+\boxed{\ \Theta + rs\,\Delta + \tfrac12\sigma^2 s^2 \Gamma - rC = 0.\ }
+$$
+Check the identity by plugging your closed-form expressions.
+\end{exercise}
+
+% ----------------------------------------------------------
+\subsection*{Conceptual / interpretation exercises}
+% ----------------------------------------------------------
+
+\begin{exercise}[Qualitative behavior of Delta]
+Show that for a call, $\Delta(t,s)\in(0,1)$ and that
+$$
+\Delta(t,s)\to 1\ \text{as } s\to\infty,
+\qquad
+\Delta(t,s)\to 0\ \text{as } s\downarrow 0.
+$$
+Interpret these limits in terms of hedging.
+\end{exercise}
+
+\begin{exercise}[Convexity and Gamma]
+Let $g(s)=(s-K)_+$. Show that $g$ is convex and explain why, in a diffusion model,
+the option price $s\mapsto C(t,s)$ should be convex (hence $\Gamma\ge 0$).
+\emph{Hint:} you may use Jensen's inequality on the risk-neutral pricing formula if you have seen it,
+or argue directly from the explicit $\Gamma$ formula.
+\end{exercise}
+
+\begin{exercise}[Short-maturity behavior (ATM scaling)]
+Assume $s=K$ and $r=0$ for simplicity. Study the asymptotic behavior of
+$$
+C(t,K) \quad \text{as }\ \tau\downarrow 0.
+$$
+Show that $C(t,K)\sim K\,\sigma\sqrt{\tau}\,\varphi(0)$.
+Interpret this as ``time value is of order $\sqrt{\tau}$''.
+\end{exercise}
+
+% ----------------------------------------------------------
+\subsection*{Implied volatility (optional but very standard)}
+% ----------------------------------------------------------
+
+\begin{exercise}[No-arbitrage bounds]
+Show that for a call,
+$$
+(s-K e^{-r\tau})_+ \le C(t,s)\le s.
+$$
+\emph{Hint:} use $0\le (S_T-K)_+\le S_T$ and take discounted expectations.
+\end{exercise}
+
+\begin{exercise}[Existence/uniqueness of implied vol (using Vega)]
+Fix $(t,s,K,T,r)$ and suppose you observe a price $C^{\mathrm{mkt}}$ satisfying the
+bounds of the previous exercise and $\tau>0$.
+Assuming continuity of $\sigma\mapsto C(t,s;\sigma)$, use Vega $>0$ to argue that the
+implied volatility equation
+$$
+C(t,s;K,T,r,\sigma_{\mathrm{imp}})=C^{\mathrm{mkt}}
+$$
+has at most one solution. (Discuss briefly why a solution should exist.)
+\end{exercise}
+
+\begin{exercise}[Implied-vol sensitivity (Vega inversion)]
+Assume $\sigma_{\mathrm{imp}}$ is defined implicitly by
+$C(t,s;\sigma_{\mathrm{imp}})=C^{\mathrm{mkt}}$.
+Differentiate both sides w.r.t.\ $C^{\mathrm{mkt}}$ and show
+$$
+\boxed{\ \frac{\partial \sigma_{\mathrm{imp}}}{\partial C^{\mathrm{mkt}}}
+=
+\frac{1}{\text{Vega}(t,s;K,T,r,\sigma_{\mathrm{imp}})}.\ }
+$$
+\emph{Interpretation:} when Vega is small (deep ITM/OTM, short maturity), implied vol is unstable.
+\end{exercise}
+
+
+% % --- Put ~10--15 exercises here ---
+
+\section{Lecture 6 \& 7 --- Girsanov Theorem and Neutral Risk Measure.}
+
+% ============================================================
+% Extra exercises (medium -> hard) aligned with the notes
+
+
+
+% ------------------------------------------------------------
+\begin{exercise}[Bayes rule in practice: conditional expectation under $\mathbb{Q}$.]
+Let $Z\ge 0$ with $\E^\mathbb{P}[Z]=1$ and define $\mathbb{Q}$ by $\mathrm{d}\mathbb{Q}=Z\,\mathrm{d}\mathbb{P}$ on $\F_T$.
+Let $0\le s\le t\le T$ and let $Y$ be integrable and $\F_t$-measurable.
+\begin{enumerate}[leftmargin=1.2em, label=(\alph*), itemsep=0.3em]
+\item Prove that for any $G\in\F_s$,
+$$
+\E^\mathbb{Q}[Y\1_G]=\E^\mathbb{P}[Z_t\,Y\,\1_G],
+$$
+where $(Z_u)_{u\le T}$ is the density process $Z_u:=\E^\mathbb{P}[Z_T\mid \F_u]$.
+\item Deduce the Bayes formula
+$$
+\E^\mathbb{Q}[Y\mid \F_s]=\frac{1}{Z_s}\,\E^\mathbb{P}[Z_tY\mid \F_s].
+$$
+\item Apply this with $Y=\1_{\{W_t\ge a\}}$ and $Z_T=\exp(\theta W_T-\tfrac12\theta^2T)$
+(constant tilt) to express $\mathbb{Q}(W_t\ge a\mid \F_s)$ as an explicit function of $(t,s,W_s)$.
+\end{enumerate}
+\end{exercise}
+
+
+% ------------------------------------------------------------
+\begin{exercise}[Gaussian tilting in dimension $2$ (correlation + conditional law).]
+Under $\mathbb{P}$, let $(X,Y)$ be centered Gaussian with
+$$
+\text{Var}(X)=\text{Var}(Y)=1,\qquad \text{Cov}(X,Y)=\rho\in(-1,1).
+$$
+Define $\mathbb{Q}$ by $\mathrm{d}\mathbb{Q} = Z\,\mathrm{d}\mathbb{P}$ with
+$$
+Z=\exp\!\Big(\theta X-\tfrac12\theta^2\Big).
+$$
+\begin{enumerate}[leftmargin=1.2em, label=(\alph*), itemsep=0.3em]
+\item Identify the law of $X$ under $\mathbb{Q}$.
+\item Compute $\E^\mathbb{Q}[Y]$ and $\text{Var}^\mathbb{Q}(Y)$.
+\item Show that the conditional law of $Y$ given $X$ is the same under $\mathbb{P}$ and $\mathbb{Q}$,
+and deduce the joint law of $(X,Y)$ under $\mathbb{Q}$ (mean vector and covariance matrix).
+\end{enumerate}
+\end{exercise}
+% ------------------------------------------------------------
+\begin{exercise}[Cameron--Martin check (deterministic drift): characteristic function.]
+Let $W$ be a 1D Brownian motion under $\mathbb{P}$ on $[0,T]$ and let $h\in L^2([0,T])$ deterministic.
+Define
+$$
+Z_T=\exp\!\left(\int_0^T h(t)\,\mathrm{d} W_t-\frac12\int_0^T h(t)^2\,\mathrm{d} t\right),
+\qquad \frac{\mathrm{d}\mathbb{Q}}{\mathrm{d}\mathbb{P}}\Big|_{\F_T}=Z_T.
+$$
+Let $B_t:=W_t-\int_0^t h(u)\,\mathrm{d} u$.
+\begin{enumerate}[leftmargin=1.2em, label=(\alph*), itemsep=0.3em]
+\item For fixed $0\le s<t\le T$ and $u\in\R$, compute
+$\E^\mathbb{Q}[e^{iu(B_t-B_s)}\mid \F_s]$.
+\item Deduce that $B_t-B_s\sim \mathcal N(0,t-s)$ under $\mathbb{Q}$ and is independent of $\F_s$.
+\item Conclude that $B$ is a Brownian motion under $\mathbb{Q}$.
+\end{enumerate}
+\end{exercise}
+% ------------------------------------------------------------
+\begin{exercise}[Novikov condition: easy cases and a counterexample search.]
+Let $\phi$ be progressively measurable with $\int_0^T \phi_t^2\,\mathrm{d} t<\infty$ a.s.,
+and define the exponential martingale
+$$
+Z_t=\exp\!\left(-\int_0^t \phi_s\,\mathrm{d} W_s-\frac12\int_0^t \phi_s^2\,\mathrm{d} s\right).
+$$
+\begin{enumerate}[leftmargin=1.2em, label=(\alph*), itemsep=0.3em]
+\item Show that if $\phi$ is bounded, then Novikov holds and $(Z_t)$ is a true martingale.
+\item Show that if $\phi_t=\alpha W_t$ for a constant $\alpha\in\R$, then
+Novikov holds for $T$ small enough (give an explicit condition on $(\alpha,T)$).
+\item (Hard) Look for a progressively measurable $\phi$ such that $\int_0^T \phi_t^2\,\mathrm{d} t<\infty$ a.s.
+but $\E[Z_T]<1$ (strict supermartingale). Give either a construction or a literature reference.
+\end{enumerate}
+\end{exercise}
+% ------------------------------------------------------------
+\begin{exercise}[Girsanov + SDE drift switch: verify on an explicit process.]
+Let $W$ be Brownian under $\mathbb{P}$ and let $\phi$ satisfy Novikov.
+Define $\mathbb{Q}$ by $\mathrm{d}\mathbb{Q}/\mathrm{d}\mathbb{P}|_{\F_T}=Z_T$ with
+$$
+Z_T=\exp\!\left(-\int_0^T \phi_s\,\mathrm{d} W_s-\frac12\int_0^T \phi_s^2\,\mathrm{d} s\right),
+$$
+and let $B_t:=W_t+\int_0^t \phi_s\,\mathrm{d} s$ (Brownian under $\mathbb{Q}$).
+Consider the It\^o process under $\mathbb{P}$
+$$
+\mathrm{d} X_t = \mu_t\,\mathrm{d} t + \sigma_t\,\mathrm{d} W_t,\qquad X_0=x_0,
+$$
+with adapted coefficients and $\sigma_t\neq 0$.
+\begin{enumerate}[leftmargin=1.2em, label=(\alph*), itemsep=0.3em]
+\item Rewrite the dynamics of $X$ under $\mathbb{Q}$ in terms of $B$.
+\item Choose $\phi_t=-\mu_t/\sigma_t$ and deduce that $X$ is a (local) martingale under $\mathbb{Q}$.
+\item Apply to the discounted stock $\bar S_t=D_tS_t$ from Part D with
+$\phi_t=(\mu_t-r_t)/\sigma_t$ and recover $\mathrm{d}\bar S_t=\sigma_t \bar S_t\,\mathrm{d} B_t$ under $\mathbb{Q}$.
+\end{enumerate}
+\end{exercise}
+% ------------------------------------------------------------
+\begin{exercise}[Risk-neutral pricing: verify the martingale property of discounted option prices.]
+Assume constant $(r,\sigma)$ and under $\mathbb{Q}$:
+$$
+\frac{\mathrm{d} S_t}{S_t}=r\,\mathrm{d} t+\sigma\,\mathrm{d} B_t.
+$$
+Let $H=g(S_T)$ with $g$ such that $g(S_T)\in L^1(\mathbb{Q})$ and define
+$$
+V_t:=\E^\mathbb{Q}\!\left[e^{-r(T-t)}H\mid \F_t\right].
+$$
+\begin{enumerate}[leftmargin=1.2em, label=(\alph*), itemsep=0.3em]
+\item Show that the discounted process $\bar V_t:=e^{-rt}V_t$ is a $\mathbb{Q}$-martingale.
+\item Use It\^o (assume $V_t=p(t,S_t)$ smooth) to show that $p$ solves
+$$
+\partial_t p+rs\,\partial_s p+\tfrac12\sigma^2 s^2\,\partial_{ss}p-rp=0,\qquad p(T,s)=g(s).
+$$
+\item Conclude that ``PDE pricing'' and ``risk-neutral expectation pricing'' coincide.
+\end{enumerate}
+\end{exercise}
+% ------------------------------------------------------------
+\begin{exercise}[Discrete-time delta hedging error: first-order expansion (hard).]
+Consider the Black--Scholes model with constant $(r,\sigma)$ and a European payoff $g(S_T)$.
+Let $p(t,s)$ be the BS price function (smooth enough) and define the discrete delta hedge on a grid
+$0=t_0<\cdots<t_n=T$ by $\Delta_{t_{i-1}}=\partial_s p(t_{i-1},S_{t_{i-1}})$ and discounted wealth
+$$
+e^{-rT}X_T^{\,n}=p(0,S_0)+\sum_{i=1}^n \Delta_{t_{i-1}}\big(\bar S_{t_i}-\bar S_{t_{i-1}}\big),
+\qquad \bar S_t=e^{-rt}S_t.
+$$
+Let $\mathrm{PL}_T^{\,n}:=X_T^{\,n}-g(S_T)$.
+\begin{enumerate}[leftmargin=1.2em, label=(\alph*), itemsep=0.3em]
+\item Show (formally) that the continuous-time hedge gives $\mathrm{PL}_T^{\,\infty}=0$.
+\item Prove that the leading-order term of the (discounted) hedging error satisfies
+$$
+e^{-rT}\mathrm{PL}_T^{\,n}\approx \frac12\sum_{i=1}^n
+\Gamma_{t_{i-1}}\,(\Delta S_i)^2
+\quad\text{with}\quad
+\Gamma_t=\partial_{ss}p(t,S_t),\ \Delta S_i=S_{t_i}-S_{t_{i-1}},
+$$
+up to terms of smaller order in the mesh size.
+\item Deduce a heuristic scaling for $\text{Var}(\mathrm{PL}_T^{\,n})$ as the mesh size goes to $0$.
+\end{enumerate}
+\end{exercise}
+% ------------------------------------------------------------
+\begin{exercise}[Greeks by differentiation under the expectation (bridge to Girsanov).]
+In the Black--Scholes model under $\mathbb{Q}$ with constant $(r,\sigma)$,
+let
+$$
+p(t,s)=\E^\mathbb{Q}\!\left[e^{-r(T-t)}g(S_T)\mid S_t=s\right],
+\quad
+S_T=s\exp\!\left((r-\tfrac12\sigma^2)(T-t)+\sigma\sqrt{T-t}\,Z\right).
+$$
+Assume $g$ is Lipschitz with polynomial growth.
+\begin{enumerate}[leftmargin=1.2em, label=(\alph*), itemsep=0.3em]
+\item Justify (dominated convergence) that $\partial_s p$ can be computed by differentiating inside the expectation,
+and express $\Delta=\partial_s p$ as an expectation involving $g$.
+\item Do the same for Vega $\partial_\sigma p$ (careful: $\sigma$ appears in mean and variance).
+\item Apply to $g(s)=(s-K)_+$ and recover $\Delta_t=\mathbf N(d_+(t,S_t))$.
+\end{enumerate}
+
+\end{exercise}
+
+
+% ------------------------------------------------------------
+\begin{exercise}[Asian option (arithmetic average): martingale pricing, state augmentation, and PDE.]
+Assume constant $(r,\sigma)$ and under $\mathbb{Q}$:
+$$
+\frac{\mathrm{d}S_t}{S_t}=r\,\mathrm{d}t+\sigma\,\mathrm{d}B_t,
+\qquad S_0>0.
+$$
+Consider the arithmetic-average Asian call with payoff
+$$
+H=\left(\frac1T\int_0^T S_u\,\mathrm{d}u-K\right)^+.
+$$
+Define the running integral
+$$
+I_t:=\int_0^t S_u\,\mathrm{d}u.
+$$
+
+\begin{enumerate}[leftmargin=1.2em, label=(\alph*), itemsep=0.3em]
+\item Write the risk-neutral pricing formula for the option price
+$$
+V_t=\E^\mathbb{Q}\!\left[e^{-r(T-t)}\left(\frac1T\int_0^T S_u\,\mathrm{d}u-K\right)^+\Bigm|\F_t\right].
+$$
+
+\item Show that
+$$
+\int_0^T S_u\,\mathrm{d}u=I_t+\int_t^T S_u\,\mathrm{d}u,
+$$
+and deduce that the price can be written as a deterministic function of \emph{two} state variables:
+$$
+V_t=v(t,S_t,I_t).
+$$
+
+\item Derive the dynamics of $(S_t,I_t)$ under $\mathbb{Q}$:
+$$
+\mathrm{d}S_t=rS_t\,\mathrm{d}t+\sigma S_t\,\mathrm{d}B_t,
+\qquad
+\mathrm{d}I_t=S_t\,\mathrm{d}t.
+$$
+Explain why $(S_t,I_t)$ is Markov even though $S$ alone is not enough for pricing this payoff.
+
+\item Assume $v\in C^{1,2,1}$ is smooth enough. Apply It\^o's formula to $v(t,S_t,I_t)$ and derive the PDE satisfied by $v$:
+$$
+\partial_t v + rs\,\partial_s v + s\,\partial_i v + \frac12\sigma^2 s^2\,\partial_{ss}v - rv=0,
+$$
+with terminal condition
+$$
+v(T,s,i)=\left(\frac{i}{T}-K\right)^+.
+$$
+
+\item Define the discounted price $\bar V_t=e^{-rt}V_t$. Show directly from the risk-neutral pricing formula that $(\bar V_t)$ is a $\mathbb{Q}$-martingale.
+
+\item (Numerical / implementation-oriented) Propose a Monte Carlo estimator for $V_0$ based on an Euler discretization of
+$$
+\int_0^T S_u\,\mathrm{d}u
+\approx \sum_{k=0}^{n-1} S_{t_k}\Delta t.
+$$
+State clearly:
+\begin{itemize}[leftmargin=1.2em]
+\item what is simulated under $\mathbb{Q}$,
+\item what is averaged,
+\item where the discount factor appears.
+\end{itemize}
+
+\item (Bonus, medium-hard) Let
+$$
+G:=\exp\!\left(\frac1T\int_0^T \log S_u\,\mathrm{d}u\right)
+$$
+(the geometric average). Explain why the geometric-average Asian option is analytically tractable in Black--Scholes, and suggest using it as a \emph{control variate} for Monte Carlo pricing of the arithmetic Asian option.
+\end{enumerate}
+\end{exercise}
+% ------------------------------------------------------------
+\begin{exercise}[Change of num\'eraire (forward measure) in a one-step pricing identity.]
+Let $B(t,T)$ denote the time-$t$ price of a zero-coupon bond maturing at $T$, and let $N_t:=B(t,T)$ be the num\'eraire.
+Assume a measure $\mathbb{Q}^T$ exists such that for any traded asset $X$,
+$$
+\frac{X_t}{B(t,T)}
+$$
+is a $\mathbb{Q}^T$-martingale (under suitable integrability assumptions).
+
+Consider a payoff at time $T$ of the form
+$$
+H=(S_T-K)^+.
+$$
+
+\begin{enumerate}[leftmargin=1.2em, label=(\alph*), itemsep=0.3em]
+\item Starting from the general num\'eraire pricing formula, show that
+$$
+V_t = B(t,T)\,\E^{\mathbb{Q}^T}\!\left[\frac{H}{B(T,T)}\Bigm|\F_t\right].
+$$
+
+\item Use $B(T,T)=1$ to deduce
+$$
+V_t = B(t,T)\,\E^{\mathbb{Q}^T}\!\left[H\mid\F_t\right].
+$$
+
+\item Compare this with money-market pricing:
+$$
+V_t=\E^{\mathbb{Q}}\!\left[e^{-\int_t^T r_u\,\mathrm{d}u}H\mid\F_t\right].
+$$
+Explain in words why both formulas price the \emph{same} claim but under different numeraires/measures.
+
+\item (Conceptual) Give one example from fixed-income where choosing a forward measure is more convenient than using the money-market num\'eraire (e.g.\ caplets, bond options, swaptions).
+\end{enumerate}
+\end{exercise}
+% ------------------------------------------------------------
+\begin{exercise}[Incomplete market toy model: many EMMs and non-unique prices.]
+Work on a filtered probability space supporting a 2D Brownian motion $(W^1,W^2)$ under $\mathbb{P}$.
+Suppose there is only \emph{one} risky traded asset $S$ and one money-market account $B^{(0)}$, with dynamics
+$$
+\frac{\mathrm{d}S_t}{S_t}=\mu\,\mathrm{d}t+\sigma_1\,\mathrm{d}W_t^1+\sigma_2\,\mathrm{d}W_t^2,
+\qquad
+\mathrm{d}B_t^{(0)}=rB_t^{(0)}\,\mathrm{d}t,
+$$
+where $\sigma_1^2+\sigma_2^2>0$.
+
+\begin{enumerate}[leftmargin=1.2em, label=(\alph*), itemsep=0.3em]
+\item Write the discounted stock dynamics under $\mathbb{P}$:
+$$
+\mathrm{d}\bar S_t = \bar S_t\big((\mu-r)\,\mathrm{d}t+\sigma_1\,\mathrm{d}W_t^1+\sigma_2\,\mathrm{d}W_t^2\big).
+$$
+
+\item Consider a Girsanov shift $\phi_t=(\phi_t^1,\phi_t^2)$ (for simplicity, take constants $\phi^1,\phi^2$) and define
+a measure $\mathbb{Q}$ via the 2D exponential martingale. Show that under $\mathbb{Q}$,
+$$
+W_t^i = B_t^i - \phi^i t,\qquad i=1,2,
+$$
+where $(B^1,B^2)$ is a 2D Brownian motion under $\mathbb{Q}$.
+
+\item Derive the condition on $(\phi^1,\phi^2)$ for $\bar S$ to be a local martingale under $\mathbb{Q}$:
+$$
+\sigma_1\phi^1+\sigma_2\phi^2=\mu-r.
+$$
+
+\item Show that this linear equation has infinitely many solutions $(\phi^1,\phi^2)$.
+Conclude that the EMM is not unique in this model (market is incomplete).
+
+\item Consider a contingent claim
+$$
+H=\mathbf{1}_{\{W_T^2\ge 0\}}.
+$$
+Explain informally why this claim is not replicable using only $(S,B^{(0)})$.
+
+\item (Conceptual pricing consequence) Explain why no-arbitrage does not determine a unique price for $H$:
+different EMMs generally give different values of
+$$
+\E^\mathbb{Q}[e^{-rT}H].
+$$
+\end{enumerate}
+\end{exercise}
+
+% ============================================================
+% Exercise --- Continuous-time lookback feature (one-touch)
+% ============================================================
+
+\begin{exercise}[Continuous-time lookback digital (one-touch) in Black--Scholes]
+We work under the risk-neutral measure $\mathbb{Q}$ (money-market num\'eraire).
+Assume the stock pays a continuous dividend yield $q\ge 0$ and follows
+\[
+\frac{\dd S_t}{S_t}=(r-q)\,\dd t+\sigma\,\dd B_t,
+\qquad S_0>0,\ \sigma>0.
+\]
+Fix a barrier level $H>S_0$ and a maturity $T>0$.
+
+Consider the \emph{lookback digital (one-touch)} payoff
+\[
+\Pi := \mathbf 1_{\left\{\sup_{0\le t\le T} S_t \ge H\right\}}.
+\]
+This contract pays \$1 at time $T$ if the stock \emph{ever} touches (or exceeds) $H$ before $T$.
+
+\medskip
+\noindent\textbf{Goal.} Compute the no-arbitrage price
+\[
+V_0 = \E^{\mathbb{Q}}\!\left[e^{-rT}\,\Pi\right]
+= e^{-rT}\,\mathbb{Q}\!\left(\sup_{0\le t\le T} S_t \ge H\right).
+\]
+
+\begin{enumerate}[leftmargin=1.6em, itemsep=0.35em]
+
+% ------------------------------------------------------------
+\item \textbf{Log-transform and reduction to a hitting event.}
+Define the log-return process
+\[
+X_t := \ln\!\Big(\frac{S_t}{S_0}\Big).
+\]
+\begin{enumerate}[leftmargin=1.6em, itemsep=0.25em]
+\item Show (by It\^o's formula) that
+\[
+X_t = \Big((r-q)-\tfrac12\sigma^2\Big)t + \sigma B_t
+=: \mu t + \sigma B_t,
+\qquad \mu:=(r-q)-\tfrac12\sigma^2.
+\]
+\item Show that the barrier event can be rewritten as
+\[
+\left\{\sup_{0\le t\le T} S_t \ge H\right\}
+=
+\left\{\sup_{0\le t\le T} X_t \ge a\right\},
+\qquad
+a:=\ln\!\Big(\frac{H}{S_0}\Big)>0.
+\]
+\end{enumerate}
+
+% ------------------------------------------------------------
+\item \textbf{A key lemma: hitting probability for a drifted Brownian motion.}
+Let $(B_t)_{t\ge0}$ be a standard Brownian motion and define
+\[
+Y_t := \mu t + \sigma B_t,
+\qquad \mu\in\R,\ \sigma>0.
+\]
+Prove the identity
+\begin{equation}\label{eq:hitting-drifted}
+\mathbb{Q}\!\left(\sup_{0\le t\le T} Y_t \ge a\right)
+=
+\Phi\!\left(\frac{\mu T-a}{\sigma\sqrt{T}}\right)
++
+\exp\!\left(\frac{2\mu a}{\sigma^2}\right)\,
+\Phi\!\left(\frac{-\mu T-a}{\sigma\sqrt{T}}\right),
+\qquad a>0,
+\end{equation}
+where $\Phi$ is the standard normal CDF.
+
+\medskip
+\noindent\textbf{Guided proof (recommended).}
+\begin{enumerate}[leftmargin=1.6em, itemsep=0.25em]
+\item First treat the driftless case $\mu=0$:
+show that
+\[
+\mathbb{Q}\!\left(\sup_{0\le t\le T} (\sigma B_t)\ge a\right)
+=
+2\,\mathbb{Q}(\sigma B_T \ge a)
+=
+2\left[1-\Phi\!\left(\frac{a}{\sigma\sqrt{T}}\right)\right].
+\]
+Hint: use the reflection principle for Brownian motion.
+
+\item Now handle $\mu\neq 0$ using a \emph{change of measure}.
+Define $\theta:=\mu/\sigma$ and the density
+\[
+Z_T:=\exp\!\left(-\theta B_T - \tfrac12\theta^2 T\right).
+\]
+Under the tilted measure $\widetilde{\mathbb{Q}}$ defined by
+$\dd\widetilde{\mathbb{Q}}=Z_T\,\dd\mathbb{Q}$ on $\F_T$,
+the process $\widetilde B_t:=B_t+\theta t$ is a Brownian motion.
+Rewrite $Y_t$ under $\widetilde{\mathbb{Q}}$ in terms of $\widetilde B$ and reduce the problem to
+a driftless maximum event under $\widetilde{\mathbb{Q}}$.
+
+\item Carefully transform back to $\mathbb{Q}$ (use $\E^{\mathbb{Q}}[\cdot]=\E^{\widetilde{\mathbb{Q}}}[Z_T^{-1}\cdot]$)
+and simplify to obtain \eqref{eq:hitting-drifted}.
+\end{enumerate}
+
+% ------------------------------------------------------------
+\item \textbf{Closed-form price of the one-touch (lookback digital).}
+Use \eqref{eq:hitting-drifted} with $Y=X$, i.e.\ $\mu=(r-q)-\tfrac12\sigma^2$ and $a=\ln(H/S_0)$, to deduce
+\[
+V_0
+=
+e^{-rT}\left[
+\Phi\!\left(\frac{\mu T-a}{\sigma\sqrt{T}}\right)
++
+\exp\!\left(\frac{2\mu a}{\sigma^2}\right)\,
+\Phi\!\left(\frac{-\mu T-a}{\sigma\sqrt{T}}\right)
+\right],
+\qquad
+\mu=(r-q)-\tfrac12\sigma^2,\ a=\ln\!\Big(\frac{H}{S_0}\Big).
+\]
+\textbf{Sanity checks.}
+\begin{itemize}[leftmargin=1.6em, itemsep=0.2em]
+\item If $H\downarrow S_0$ (so $a\downarrow0$), then $V_0\to e^{-rT}$ (almost sure hit at time 0).
+\item If $H\uparrow\infty$ (so $a\to\infty$), then $V_0\to 0$.
+\end{itemize}
+
+% ------------------------------------------------------------
+\item \textbf{(Optional) Monte Carlo verification (discrete monitoring).}
+Simulate $S$ on a grid $0=t_0<\cdots<t_N=T$ and approximate
+\[
+\mathbf 1_{\{\sup_{0\le t\le T} S_t\ge H\}}
+\approx
+\mathbf 1_{\{\max_{0\le k\le N} S_{t_k}\ge H\}}.
+\]
+Compute the Monte Carlo estimator
+\[
+\widehat V_0^{(N)} := e^{-rT}\,\frac1M\sum_{m=1}^M
+\mathbf 1_{\{\max_k S_{t_k}^{(m)}\ge H\}},
+\]
+and compare it to the closed-form value from Question 3.
+Comment on the bias as $N$ increases (discrete monitoring misses barrier hits between grid points).
+
+\end{enumerate}
+
+\end{exercise}
+
+
+% ============================================================
+% Additional Exercises --- Static Arbitrage (Lecture 9)
+% ============================================================
+
+\section{Lecture 8\& 9 --- Static arbitrage and consistency checks}
+
+\begin{exercise}[Call spread bounds]
+Fix a maturity \(T\) and two strikes \(K_1<K_2\). Let
+\[
+C(K_1), \qquad C(K_2)
+\]
+be the prices of European call options.
+
+\begin{enumerate}[leftmargin=1.6em]
+\item Write explicitly the payoff of the call spread
+\[
+(S_T-K_1)^+-(S_T-K_2)^+.
+\]
+
+\item Show that for all \(S_T\),
+\[
+0 \le (S_T-K_1)^+-(S_T-K_2)^+ \le K_2-K_1.
+\]
+
+\item Deduce that
+\[
+0 \le C(K_1)-C(K_2) \le e^{-r(T-t)}(K_2-K_1).
+\]
+
+\item Construct an arbitrage if one of these inequalities is violated.
+\end{enumerate}
+\end{exercise}
+
+% ------------------------------------------------------------
+
+\begin{exercise}[Monotonicity and arbitrage]
+Let \(K_1<K_2\) and suppose that
+\[
+C(K_1) < C(K_2).
+\]
+
+\begin{enumerate}[leftmargin=1.6em]
+\item Construct a portfolio involving two calls that yields a non-negative payoff.
+
+\item Compute its initial cost.
+
+\item Show that this leads to an arbitrage opportunity.
+\end{enumerate}
+\end{exercise}
+
+% ------------------------------------------------------------
+
+\begin{exercise}[Convexity and butterfly arbitrage]
+Let \(K_1<K_2<K_3\) and suppose that
+\[
+C(K_2) > \frac{K_3-K_2}{K_3-K_1}C(K_1)
++
+\frac{K_2-K_1}{K_3-K_1}C(K_3).
+\]
+
+\begin{enumerate}[leftmargin=1.6em]
+\item Consider the butterfly portfolio
+\[
+(S_T-K_1)^+ - 2(S_T-K_2)^+ + (S_T-K_3)^+.
+\]
+
+\item Show that its payoff is non-negative.
+
+\item Compute its initial cost under the above assumption.
+
+\item Conclude that this leads to an arbitrage.
+\end{enumerate}
+\end{exercise}
+
+% ------------------------------------------------------------
+
+\begin{exercise}[Put--call parity violation]
+Let \(C_t\) and \(P_t\) be the prices of a European call and put with the same strike \(K\) and maturity \(T\).
+
+Suppose that
+\[
+C_t - P_t > S_t - K e^{-r(T-t)}.
+\]
+
+\begin{enumerate}[leftmargin=1.6em]
+\item Identify which portfolio is overpriced.
+
+\item Construct explicitly a trading strategy that yields an arbitrage.
+
+\item Describe both the initial cashflow and the terminal payoff.
+\end{enumerate}
+\end{exercise}
+
+% ------------------------------------------------------------
+
+\begin{exercise}[Calendar arbitrage]
+Consider two European calls with the same strike \(K\) but maturities \(T_1<T_2\).
+
+Suppose that
+\[
+C(K,T_2) < C(K,T_1).
+\]
+
+\begin{enumerate}[leftmargin=1.6em]
+\item Construct a trading strategy exploiting this violation.
+
+\item Compute the initial cashflow.
+
+\item Show that the value of the portfolio at time \(T_1\) is non-negative.
+
+\item Conclude that this yields an arbitrage.
+\end{enumerate}
+\end{exercise}
+
+
+% ============================================================
+% Additional Exercises --- American Options
+% ============================================================
+
+\section{Lecture 10 --- American options}
+
+% ------------------------------------------------------------
+
+\begin{exercise}[American put in a two-step binomial model]
+Consider a two-period binomial model with
+\[
+S_0=100,\qquad u=1.2,\qquad d=0.8,\qquad r=0,
+\]
+and an American put with strike \(K=100\).
+
+\begin{enumerate}[leftmargin=1.6em]
+\item Compute the risk-neutral probability \(p\).
+
+\item Build the stock-price tree.
+
+\item Compute the terminal payoff of the American put at maturity.
+
+\item Using backward induction, compute the option value at each node.
+
+\item At each node, compare the immediate exercise value with the continuation value and determine whether early exercise is optimal.
+\end{enumerate}
+\end{exercise}
+
+% ------------------------------------------------------------
+
+\begin{exercise}[American vs European put in a three-step tree]
+Consider a three-period binomial model with
+\[
+S_0=100,\qquad u=1.1,\qquad d=0.9,\qquad 1+r=1.02,
+\]
+and strike \(K=100\).
+
+\begin{enumerate}[leftmargin=1.6em]
+\item Compute the price of the corresponding European put.
+
+\item Compute the price of the corresponding American put.
+
+\item Compare the two prices and compute the early exercise premium.
+
+\item Identify the nodes where immediate exercise is optimal for the American put.
+\end{enumerate}
+\end{exercise}
+
+% ------------------------------------------------------------
+
+\begin{exercise}[Dynamic programming on a finite-state Markov chain]
+Let \(X_n\) be a Markov chain on the state space
+\[
+\{1,2,3\}
+\]
+with transition matrix
+\[
+A=
+\begin{pmatrix}
+0.6 & 0.4 & 0 \\
+0.2 & 0.5 & 0.3 \\
+0 & 0.3 & 0.7
+\end{pmatrix}.
+\]
+Assume the discount factor is \(\alpha=0.95\), maturity \(T=3\), and reward function
+\[
+g(1)=0,\qquad g(2)=2,\qquad g(3)=5.
+\]
+
+\begin{enumerate}[leftmargin=1.6em]
+\item Compute \(V_3\).
+
+\item Using the recursion
+\[
+V_n = \max\big(\alpha^n g(X_n),\, A V_{n+1}\big),
+\]
+compute \(V_2\), \(V_1\), and \(V_0\) componentwise.
+
+\item For each state and each time, determine whether it is optimal to stop or continue.
+
+\item Interpret economically the resulting exercise policy.
+\end{enumerate}
+\end{exercise}
+
+% ------------------------------------------------------------
+
+\begin{exercise}[Risk-neutral representation in continuous time]
+Consider an American put in the Black--Scholes model with payoff
+\[
+g(s)=(K-s)^+.
+\]
+
+\begin{enumerate}[leftmargin=1.6em]
+\item Write the continuous-time risk-neutral pricing representation
+\[
+V_t={\rm esssup}_{\tau\in\mathcal{T}_{t,T}}
+\E^{\mathbb{Q}}\!\left[e^{-r(\tau-t)}(K-S_\tau)^+\mid\mathcal{F}_t\right].
+\]
+
+\item Write the corresponding European pricing formula.
+
+\item Explain, using these two formulas, why
+\[
+V_t^{\mathrm{Am}}\ge V_t^{\mathrm{Eur}}.
+\]
+
+\item For the numerical values
+\[
+S_t=95,\qquad K=100,\qquad r=0.05,\qquad T-t=1,
+\]
+compute the immediate exercise value.
+
+\item Explain qualitatively when early exercise may be optimal.
+\end{enumerate}
+\end{exercise}
+
+% ------------------------------------------------------------
+
+\begin{exercise}[Variational inequality for the American put]
+Let \(v(t,s)\) denote the price of an American put in the Black--Scholes model.
+
+\begin{enumerate}[leftmargin=1.6em]
+\item Write the variational inequality satisfied by \(v\):
+\[
+\max\!\left((K-s)^+-v,\; v_t + rs\,v_s + \frac12 \sigma^2 s^2 v_{ss} - rv\right)=0.
+\]
+
+\item Specialize this formula to the parameters
+\[
+K=100,\qquad r=0.02,\qquad \sigma=0.2.
+\]
+
+\item Compute explicitly the terminal condition \(v(T,s)\) at
+\[
+s=60,\ 80,\ 100,\ 120.
+\]
+
+\item For each of these values of \(s\), compute the immediate exercise payoff.
+
+\item Explain which of these values are more likely to lie in the stopping region and which are more likely to lie in the continuation region.
+\end{enumerate}
+\end{exercise}
+
+% ------------------------------------------------------------
+
+\begin{exercise}[Finite-difference / Longstaff--Schwartz intuition]
+This exercise is computational and qualitative.
+
+\begin{enumerate}[leftmargin=1.6em]
+\item In a finite-difference method for an American put, explain what is done at each time step after computing the PDE update:
+\[
+v^{\text{new}}(t,s)
+\quad \longrightarrow \quad
+\max\big(v^{\text{new}}(t,s),(K-s)^+\big).
+\]
+
+\item Suppose at some grid point \((t,s)\) one obtains numerically
+\[
+v^{\text{new}}(t,s)=7.4
+\qquad\text{and}\qquad
+(K-s)^+=9.
+\]
+What value should be kept for the American option?
+
+\item In the Longstaff--Schwartz method, one estimates the continuation value by regression.
+Suppose that at one date the estimated continuation value is \(5.2\) and the immediate exercise payoff is \(6.1\).
+Should one exercise or continue?
+
+\item Suppose instead that the continuation value is \(8.4\) and the immediate payoff is \(6.1\).
+What is the optimal decision?
+
+\item Explain in one sentence the common idea behind the tree method, the finite-difference method, and the Longstaff--Schwartz method.
+\end{enumerate}
+\end{exercise}
+
+% \section{Lecture 7 --- Risk Neutral Pricing and the Black Scholes Model.}
+
+
+% % --- Put ~10--15 exercises here ---
+
+% \section{Lecture 7 --- Connection between PDEs and Martingale representation.}
+
+
+% % ==========================================================
+% \section*{Appendix (optional)}
+% % You can add formula sheets, common identities, etc.
+
+\end{document}

@@ -1,0 +1,2195 @@
+% =====================================================
+% Merged header (Bootcamp palette + Metropolis look)
+% =====================================================
+\documentclass[10pt,aspectratio=169]{beamer}
+
+% -----------------------------
+% Language & encoding
+% -----------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english,french]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+
+% -----------------------------
+% Math / tables / layout
+% -----------------------------
+\usepackage{amsmath,amssymb,bm,mathtools}
+\usepackage{booktabs}
+\usepackage{multicol}
+\usepackage{changepage}
+
+% -----------------------------
+% Graphics
+% -----------------------------
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc,decorations.pathreplacing}
+
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+
+% -----------------------------
+% Theme (Metropolis)
+% -----------------------------
+\usetheme[numbering=fraction,progressbar=frametitle]{metropolis}
+\setbeamertemplate{frame numbering}[fraction]
+\setbeamertemplate{navigation symbols}{}
+
+% -----------------------------
+% Colors (unified palette)
+% -----------------------------
+\definecolor{BootcampBlueDark}{HTML}{1A3C68}
+\definecolor{BootcampBlue}{RGB}{31,110,178}
+\definecolor{AccentGold}{HTML}{DAA520}
+\definecolor{SoftGray}{RGB}{245,246,248}
+\definecolor{TextBlack}{HTML}{000000}
+\definecolor{Crimson}{HTML}{990000}
+\definecolor{MatrixGreen}{HTML}{228B22}
+\definecolor{MatrixRed}{HTML}{B22222}
+
+% -----------------------------
+% Global formatting
+% -----------------------------
+\setbeamercolor{normal text}{fg=TextBlack,bg=white}
+\setbeamercolor{title}{fg=TextBlack}
+\setbeamercolor{structure}{fg=BootcampBlueDark}
+\setbeamercolor{progress bar}{fg=BootcampBlueDark,bg=gray!30}
+
+% -----------------------------
+% Thick frametitle band (your “Bootcamp” look)
+% -----------------------------
+\setbeamercolor{frametitle}{bg=BootcampBlueDark,fg=white}
+\setbeamerfont{frametitle}{series=\bfseries,size=\large}
+\setbeamertemplate{frametitle}{
+  \nointerlineskip
+  \begin{beamercolorbox}[wd=\paperwidth,ht=3.2ex,dp=1.4ex,leftskip=1em,rightskip=1em]{frametitle}
+    \usebeamerfont{frametitle}\insertframetitle
+  \end{beamercolorbox}
+}
+
+% -----------------------------
+% Blocks (coherent with prior lectures)
+% -----------------------------
+\setbeamercolor{block title example}{bg=BootcampBlueDark!90!black,fg=white}
+\setbeamercolor{block body example}{bg=BootcampBlueDark!5!white,fg=black}
+\setbeamertemplate{blocks}[rounded][shadow=false]
+
+% Custom Definition Block (same API as before)
+\newenvironment{definitionblock}[1]{%
+  \par\vspace{0.4em}%
+  \begin{beamercolorbox}[
+      wd=\textwidth,
+      sep=0.4em,
+      leftskip=0.3em,
+      rightskip=0.6em,
+      rounded=false,
+      shadow=false
+    ]{block title example}%
+    \raisebox{0.15em}{\usebeamerfont{block title example}#1}%
+  \end{beamercolorbox}%
+  \vspace{-0.4em}%
+  \begin{beamercolorbox}[
+      wd=\textwidth,
+      sep=1em,
+      leftskip=0.6em,
+      rightskip=0.6em,
+      rounded=false,
+      shadow=false
+    ]{block body example}%
+    \usebeamerfont{block body example}%
+}{%
+  \end{beamercolorbox}%
+  \par\vspace{0.6em}%
+}
+
+
+
+% -----------------------------
+% Section / subsection transition pages
+% -----------------------------
+\metroset{
+  sectionpage=progressbar,
+  subsectionpage=progressbar
+}
+\AtBeginSection{
+  \frame[plain]{\sectionpage}
+}
+\AtBeginSubsection{
+  \frame[plain]{\subsectionpage}
+}
+
+% Graphics folder (extracted from the provided PDF)
+\graphicspath{{bm_figs/}}
+
+% =====================================================
+% Metadata
+% =====================================================
+\title{Option Pricing : Motivations and First Mathematical and Numerical tools}
+\author{}
+\date{}
+
+\AtBeginSection[]{
+  \begin{frame}{\insertsectionhead}
+    \tableofcontents[
+      currentsection,
+      hideothersubsections
+    ]
+  \end{frame}
+}
+
+\begin{document}
+
+
+% =====================================================
+\begin{frame}[plain]
+  \titlepage
+\end{frame}
+
+% --------------------------------------
+% --------------------------------------
+\begin{frame}{References (chapters/pages)}
+
+\footnotesize
+\textbf{Main references.}
+
+\begin{itemize}\setlength{\itemsep}{0.35em}
+  \item \textit{Shreve}, \emph{Stochastic Calculus for Finance II}:
+  Ch.~1/2 (General Probability Theory), pp.~1--77.
+  \item \textit{Karatzas \& Shreve}, \emph{Brownian Motion and Stochastic Calculus}:
+  Ch.~1, pp.~1--45.
+\end{itemize}
+
+\end{frame}
+
+% =====================================================
+\begin{frame}{Roadmap}
+  \tableofcontents[hideallsubsections]
+\end{frame}
+
+\section{Introduction}
+
+% =====================================================
+% =====================================================
+% INTRODUCTION (completed)
+% =====================================================
+\subsection{Motivation}
+% -----------------------------------------------------
+\begin{frame}{Why do derivatives exist? (Motivation)}
+\begin{itemize}
+  \item In the real world, many businesses face \textbf{future uncertainty}:\pause
+  \begin{itemize}
+    \item energy costs for airlines / industrials,\pause
+    \item foreign exchange exposure for international sales,\pause
+    \item interest-rate risk for borrowing/lending,\pause
+    \item stock price risk for investors and companies.\pause
+  \end{itemize}
+  \item A derivative is a way to \textbf{transfer} or \textbf{reshape} that risk.\pause
+  \item \textbf{Pricing} is the question: what is a fair value \emph{today} for a payoff that depends on \emph{tomorrow}?
+\end{itemize}
+\end{frame}
+
+% -----------------------------------------------------
+\begin{frame}{What is a contract?}
+\begin{block}{Generic definition}
+A (financial) contract specifies an exchange of cash and/or assets between two parties,
+according to rules written \textbf{today}, but applied over a time interval $[0,T]$.\pause
+\end{block}
+
+\medskip
+\begin{itemize}
+  \item \textbf{Maturity} $T$: the date(s) at which cashflows occur.\pause
+  \item \textbf{Underlying} $S$: the market variable(s) the contract depends on (stock, FX, rate, commodity, \dots).\pause
+  \item \textbf{Payoff} $V_T$: the cashflow at $T$ (possibly path-dependent).\pause
+  \item \textbf{Settlement}: cash-settled vs.\ physical delivery.\pause
+  \item \textbf{Trading venue}: exchange-traded vs.\ OTC (customized).
+\end{itemize}
+\end{frame}
+
+% -----------------------------------------------------
+\begin{frame}{A derivative = a contingent claim}
+\begin{block}{Contingent claim}
+A derivative is a contract whose payoff $V_T$ is a function of some underlying market observables. \pause 
+\[
+V_T = \Phi(\text{market data up to }T). \pause 
+\]
+\end{block}
+
+\medskip
+\begin{itemize}
+  \item \textbf{Forward (example):} agree at time $0$ to exchange at time $T$ at price $K$.
+  \[
+  V_T = S_T - K \quad \text{(payoff to the long).} \pause 
+  \]
+  \item \textbf{Option (example):} payoff is typically nonlinear (e.g. $(S_T-K)^+$). \pause 
+  \item Many contracts are combinations of simpler payoffs.
+\end{itemize}
+\end{frame}
+
+% -----------------------------------------------------
+\begin{frame}{Long and short positions in a contract}
+\begin{block}{Sign convention}
+\begin{itemize}
+  \item \textbf{Long} the contract: you \emph{receive} the payoff $V_T$ at maturity.\pause
+  \item \textbf{Short} the contract: you \emph{pay} the payoff $V_T$ at maturity.\pause
+\end{itemize}
+\end{block}
+
+\medskip
+\begin{itemize}
+  \item If the long pays an upfront premium $\pi_0$ at time 0, the short receives $\pi_0$.\pause
+  \item P\&L intuition:
+  \[
+  \text{Long P\&L} \approx -\pi_0 + \text{(discounted future payoff)}.\pause
+  \]
+  \item Contracts are often \textbf{marked-to-market}: their value evolves through time as market data changes.
+\end{itemize}
+\end{frame}
+
+% -----------------------------------------------------
+\begin{frame}{How much to sell a contract? (Naive approach)}
+\begin{block}{First guess: ``just take an expectation''}
+A tempting idea is:
+\[
+\text{Price at }0 \stackrel{?}{=} \mathbb{E}^{\mathbb{P}}\!\left[\text{discounted payoff}\right],\pause
+\]
+where $\mathbb{P}$ is the ``real-world'' (historical) probability measure.
+\end{block}
+
+\medskip
+\begin{itemize}
+  \item This can be reasonable for \textbf{insurance-type} problems.\pause
+  \item But in markets, \textbf{risk is priced} and investors have different risk preferences.\pause
+  \item Worse: if we used ``any'' expectation, \textbf{different agents would produce different prices}.
+\end{itemize}
+\end{frame}
+
+% -----------------------------------------------------
+\begin{frame}{Why the naive expectation fails (in markets)}
+\begin{itemize}
+  \item \textbf{Risk premium:} under $\mathbb{P}$, risky assets typically have drift reflecting compensation for risk.\pause
+  \item \textbf{Tradability matters:} if the risk can be hedged using traded assets, its price is constrained.\pause
+  \item \textbf{No-arbitrage:} market prices must be consistent, otherwise one can create ``money from nothing''.\pause
+  \item \textbf{Conclusion:} in many cases, the ``correct'' pricing measure is \emph{not} $\mathbb{P}$.
+\end{itemize}
+
+\medskip
+\begin{block}{Course message}
+Risk-neutral pricing is not a magical formula to memorize: it is a \textbf{consequence of hedging + no-arbitrage}.
+\end{block}
+\end{frame}
+
+% -----------------------------------------------------
+\begin{frame}{Core principle: no-arbitrage and replication}
+\begin{block}{Replication idea}
+If we can build a \textbf{self-financing} trading strategy whose terminal value equals the payoff $V_T$ in all scenarios,
+then the only no-arbitrage price is:
+\[
+V_0 = \text{initial cost of the replicating strategy}.\pause
+\]
+\end{block}
+
+\medskip
+\begin{itemize}
+  \item If the market is \textbf{complete}, every payoff can be replicated $\Rightarrow$ unique price.\pause
+  \item If the market is \textbf{incomplete} (frictions, constraints, missing instruments), pricing is not unique:
+  we then talk about bounds, preferences, calibration choices, bid/ask, \dots
+\end{itemize}
+\end{frame}
+
+% -----------------------------------------------------
+\begin{frame}{Discounting and interest rates (one-minute preview)}
+\begin{itemize}
+  \item Money today is not the same as money tomorrow: \textbf{time value of money}.\pause
+  \item Introduce the risk-free bank account (money market account) $(B_t)_{t\ge 0}$, often
+  \[
+  B_t = e^{rt} \quad \text{(constant short rate $r$, simplest case).}\pause
+  \]
+  \item We will frequently work with \textbf{discounted quantities}:
+  \[
+  \tilde{X}_t := \frac{X_t}{B_t}.
+  \]
+\end{itemize}
+\end{frame}
+
+% -----------------------------------------------------
+\begin{frame}{Risk-neutral pricing (preview)}
+\begin{block}{Key formula (in a frictionless arbitrage-free model)}
+There exists a probability measure $\mathbb{Q}$ (``risk-neutral'') such that discounted traded asset prices are martingales.
+For a (replicable) payoff $V_T$,
+\[
+V_t = B_t \, \mathbb{E}^{\mathbb{Q}}\!\left[\frac{V_T}{B_T}\,\Big|\,\mathcal{F}_t\right].\pause
+\]
+\end{block}
+
+\medskip
+\begin{itemize}
+  \item $\mathcal{F}_t$ represents the \textbf{information available} at time $t$.\pause 
+  \item Important: $\mathbb{Q}$ is not a ``belief'' measure; it is imposed by \textbf{no-arbitrage + hedging}.
+\end{itemize}
+\end{frame}
+
+% -----------------------------------------------------
+\begin{frame}{What tools do we need to find the price of a contract?}
+\begin{itemize}
+  \item \textbf{A market model:} what is tradable, how prices evolve, what is observable?\pause 
+  \item \textbf{Modeling assumptions:}\pause 
+  \begin{itemize}
+    \item frictionless vs.\ transaction costs / bid-ask,\pause 
+    \item continuous-time vs.\ discrete-time trading,\pause 
+    \item constraints (short-selling, borrowing, margin, liquidity).\pause 
+  \end{itemize}
+  \item \textbf{A pricing principle:} typically \textbf{no-arbitrage}, possibly leading to replication or bounds.\pause 
+  \item \textbf{Mathematical + numerical tools:} stochastic processes, PDE/expectations, algorithms.\pause 
+\end{itemize}
+
+\medskip
+\begin{block}{Warning}
+Every result comes with assumptions: understanding their limits is part of the job. 
+\end{block}
+
+\end{frame}
+
+% -----------------------------------------------------
+\subsection{What we need in order to find the price of a contract}
+
+\begin{frame}{Hypotheses on the behaviour of the market?}
+\begin{itemize}
+  \item We simplify reality to make pricing feasible and consistent.\pause 
+  \item Typical baseline in this course:
+  \begin{itemize}
+    \item \textbf{No arbitrage} (core axiom),\pause 
+    \item sufficiently liquid trading (to hedge/replicate at least approximately),\pause 
+    \item a specified information flow $(\mathcal{F}_t)_{t\ge0}$ (what you know when you trade),\pause 
+    \item a chosen dynamics for underlying assets (discrete or continuous time).\pause 
+  \end{itemize}
+  \item Then we ask: what prices are \textbf{consistent} with these hypotheses?
+\end{itemize}
+\end{frame}
+
+% -----------------------------------------------------
+\begin{frame}{Math tools? (1/2) Randomness evolving in time}
+\begin{itemize}
+  \item Pricing is about \textbf{future random quantities} viewed from \textbf{today}.\pause 
+  \item We need a language for:
+  \begin{itemize}
+    \item \textbf{stochastic processes} $(S_t)_{t\in[0,T]}$,\pause 
+    \item \textbf{filtration} $(\mathcal{F}_t)$: the continuous flow of information,\pause 
+    \item \textbf{conditional expectation}: ``best estimate given what we know at time $t$''.\pause 
+  \end{itemize}
+  \item Brownian motion will be our main building block for continuous-time models
+  (and discrete-time models often converge to it). 
+\end{itemize}
+\end{frame}
+
+% -----------------------------------------------------
+\begin{frame}{Math tools? (2/2) From models to prices}
+\begin{itemize}
+  \item Once dynamics are specified, pricing often takes one (or both) forms:\pause 
+  \begin{enumerate}
+    \item \textbf{Expectation form:}
+    \[
+    V_t = B_t \, \mathbb{E}^{\mathbb{Q}}\!\left[\frac{V_T}{B_T}\,\Big|\,\mathcal{F}_t\right].\pause 
+    \]
+    \item \textbf{PDE form:} $V_t=v(t,S_t)$ where $v$ solves a PDE (e.g.\ Black--Scholes in the simplest setting).\pause 
+  \end{enumerate}
+  \item Understanding the bridge \textbf{expectation $\leftrightarrow$ PDE} is a major theme of the course. 
+\end{itemize}
+\end{frame}
+
+% -----------------------------------------------------
+\begin{frame}{A few words on the numerics}
+\begin{itemize}
+  \item Closed-form formulas are rare: we need computational methods.\pause 
+  \item Typical numerical tools in this course:
+  \begin{itemize}
+    \item \textbf{Trees} (binomial / trinomial): intuitive and robust for early exercises (TBD),\pause
+    \item \textbf{Monte Carlo}: expectations in high dimension, path-dependent payoffs,\pause 
+    \item \textbf{Finite differences}: solving PDEs on a grid (when dimension is small).\pause 
+  \end{itemize}
+  \item Numerical work always comes with:
+  discretization error, stability/convergence issues, and runtime constraints.
+\end{itemize}
+\end{frame}
+
+% -----------------------------------------------------
+\begin{frame}{A few words on the numerics in practice (Python)}
+\begin{itemize}
+  \item You will regularly be given Python homework.\pause 
+  \item In finance, performance matters: we often need \textbf{fast} computations (pricing, calibration, risk).\pause 
+  \item On Brightspace: \textit{Scientific Python} notes (NumPy basics, vectorization, profiling).\pause 
+  \item This week's focus: \textbf{vectorization} (e.g.\ NumPy operations instead of Python loops) and clean code.\pause 
+\end{itemize}
+
+\medskip
+\begin{block}{Goal}
+Be able to go from a model + payoff to a reliable numerical price (and Greeks) in a reproducible way.
+\end{block}
+\end{frame}
+
+\section{Tools for Modelisation of Random function}
+
+% ======================================================
+\subsection{Sigma-Algebras \& Information}
+
+% --------------------------------------
+\begin{frame}{Information Sets}
+
+\begin{definitionblock}{\(\sigma\)-Algebra}
+A \emph{\(\sigma\)-algebra} \(\mathcal{G}\subseteq\mathcal{F}\) is a collection of events such that:\pause
+\begin{itemize}
+  \item \(\Omega\in\mathcal{G}\), \pause
+  \item if \(A\in\mathcal{G}\), then \(A^c\in\mathcal{G}\),\pause
+  \item if \((A_n)\subset\mathcal{G}\), then \(\bigcup_n A_n\in\mathcal{G}\).\pause
+\end{itemize}
+\end{definitionblock}
+
+\medskip
+
+\begin{itemize}
+  \item A \(\sigma\)-algebra represents the \emph{information available}.\pause
+  \item More events \(\Rightarrow\) more information.\pause
+  \item If \(A\notin\mathcal{G}\), then event \(A\) is \emph{not observable} with information \(\mathcal{G}\).
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{\(\mathcal{G}\)-Measurable Random Variables = Observable Quantities}
+
+\begin{definitionblock}{\(\mathcal{G}\)-Measurability}
+A random variable \(Y:(\Omega,\mathcal{F})\to(\mathbb{R},\mathcal{B}(\mathbb{R}))\) is \(\mathcal{G}\)-measurable if\pause
+\[
+\{Y\le t\}\in \mathcal{G}
+\quad\text{for all } t\in\mathbb{R}.
+\vspace{-3mm}
+\]
+\end{definitionblock}
+\vspace{-3mm}
+\textbf{Interpretation (Information View):}\pause
+\begin{itemize}
+  \item \(\mathcal{G}\)-measurable means: \(Y\) can be \emph{computed/observed} using only the information in \(\mathcal{G}\).\pause
+  \item Equivalently, for any Borel set \(B\subseteq\mathbb{R}\), the event \(\{Y\in B\}\) is \(\mathcal{G}\)-observable:\pause
+  \[
+  \{Y\in B\}\in \mathcal{G}.
+  \]
+  \item If \(\mathcal{G}=\sigma(\Pi)\) comes from a partition \(\Pi=(A_i)\), then \(Y\) cannot distinguish two outcomes inside the same atom:\pause
+  \[
+  \omega,\omega'\in A_i \;\Rightarrow\; Y(\omega)=Y(\omega')\ \ \text{(i.e.\ \(Y\) is constant on each \(A_i\)).}
+  \vspace{-3mm}
+  \]
+\end{itemize}
+\medskip
+\textbf{Takeaway:}\pause\;
+\(\mathcal{G}\)-measurable \(=\) \emph{“\(Y\) does not use information finer than \(\mathcal{G}\)”}.
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Example: Partial Information on a Finite Space}
+
+Consider a dice roll:
+\[
+\Omega=\{1,2,3,4,5,6\}.
+\]
+\pause
+\medskip
+
+\textbf{Full information:}
+\[
+\mathcal{F}=\mathcal{P}(\Omega)
+\quad\text{(all subsets)}.
+\]\pause
+
+\medskip
+
+\textbf{Partial information:}
+suppose we only observe whether the result is even or odd.
+\[
+\mathcal{G}
+=
+\sigma(\{2,4,6\})
+=
+\{\emptyset,\{2,4,6\},\{1,3,5\},\Omega\}.
+\]
+\pause
+\medskip
+
+\begin{itemize}
+  \item We cannot distinguish 2 from 4 or 6.\pause
+  \item Events not in \(\mathcal{G}\) are \emph{unobservable}.
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Example: Information Generated by a Random Variable}
+
+Let \(X:\Omega\to\mathbb{R}\) be a random variable.
+\pause
+\medskip
+
+The \(\sigma\)-algebra generated by \(X\) is
+\[
+\sigma(X)
+=
+\{X^{-1}(B): B\in\mathcal{B}(\mathbb{R})\}.
+\]\pause
+
+\medskip
+
+\begin{itemize}
+  \item \(\sigma(X)\) contains all events that can be described using \(X\).\pause
+  \item Knowing \(\sigma(X)\) is equivalent to knowing the value of \(X\).\pause
+\end{itemize}
+
+\medskip
+\textbf{Example:}\pause
+\begin{itemize}
+  \item \(X=\mathbf{1}_A\)  \(\Rightarrow\)
+  \(\sigma(X)=\{\emptyset,A,A^c,\Omega\}\).\pause
+\end{itemize}
+
+\medskip
+\textbf{Interpretation:}\pause
+conditional expectation given \(\sigma(X)\) means
+\emph{using only the information carried by \(X\)}.
+
+\end{frame}
+
+% =====================================================
+% Add AFTER your existing three frames in
+% \subsection{Sigma-Algebras \& Information}
+% =====================================================
+
+% --------------------------------------
+\begin{frame}{\(\sigma(\mathcal{C})\): The \(\sigma\)-Algebra Generated by Events}
+
+Let \(\mathcal{C}\subseteq \mathcal{F}\) be a collection of events (not necessarily a \(\sigma\)-algebra).\pause
+
+\begin{definitionblock}{Generated \(\sigma\)-Algebra}
+The \(\sigma\)-algebra \(\sigma(\mathcal{C})\) generated by \(\mathcal{C}\) is the \emph{smallest} \(\sigma\)-algebra
+containing \(\mathcal{C}\):\pause
+\[
+\sigma(\mathcal{C})
+:= \bigcap \Big\{ \mathcal{H}\subseteq \mathcal{F} \;:\;
+\mathcal{H}\text{ is a }\sigma\text{-algebra and } \mathcal{C}\subseteq \mathcal{H} \Big\}.
+\]
+\end{definitionblock}
+
+\medskip
+
+\begin{itemize}
+  \item \textbf{Minimality:} any \(\sigma\)-algebra containing \(\mathcal{C}\) must also contain \(\sigma(\mathcal{C})\).\pause
+  \item \textbf{Information view:} \(\sigma(\mathcal{C})\) is the information obtained from observing \emph{all events in \(\mathcal{C}\)}.\pause
+  \item In particular, it contains everything you can build from \(\mathcal{C}\) using
+  complements and countable unions (hence also intersections).
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{How \(\sigma(\{A\})\) is Built from a Single Event}
+
+Take one event \(A\subseteq \Omega\).\pause
+
+\medskip
+Start with \(A\). A \(\sigma\)-algebra must also contain:\pause
+\begin{itemize}
+  \item \(\Omega\) and \(\emptyset\),\pause
+  \item the complement \(A^c\),\pause
+  \item any countable unions / intersections of these sets.\pause
+\end{itemize}
+
+\medskip
+But with only \(A\) and \(A^c\), there is nothing more to generate:\pause
+\[
+\sigma(\{A\})=\{\emptyset,\;A,\;A^c,\;\Omega\}.
+\]
+
+\medskip
+\begin{itemize}
+  \item This is exactly the information of a \textbf{yes/no observation}: \(\mathbf{1}_A\).\pause
+  \item You can tell whether \(A\) happened, but nothing finer inside \(A\) or \(A^c\).
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Illustration: \(\sigma(A,B)\) on a Finite Space}
+
+Let \(\Omega=\{1,2,3,4,5,6\}\) (dice). Define two events:\pause
+\[
+A=\{2,4,6\}\quad(\text{even}), \qquad
+B=\{4,5,6\}\quad(\ge 4).
+\]
+\pause
+\medskip
+
+The information \(\sigma(A,B)\) distinguishes outcomes only through the four regions:\pause
+\[
+A\cap B=\{4,6\},\quad
+A\cap B^c=\{2\},\quad
+A^c\cap B=\{5\},\quad
+A^c\cap B^c=\{1,3\}.
+\]
+\pause
+\medskip
+
+So every event in \(\sigma(A,B)\) is a union of these \emph{atoms}:\pause
+\[
+\sigma(A,B)=\Big\{\text{all unions of } \{4,6\},\{2\},\{5\},\{1,3\}\Big\}.
+\]
+
+\medskip
+\begin{itemize}
+  \item With \(\sigma(A,B)\), you can distinguish \(2\) from \(4\) and \(6\),\pause
+  \item but you still cannot distinguish \(4\) from \(6\), nor \(1\) from \(3\).
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Generated \(\sigma\)-Algebra from a Partition (Atoms View)}
+
+Let \(\Pi=(A_i)_{i\in I}\) be a partition of \(\Omega\) (disjoint, union \(=\Omega\)).\pause
+
+\begin{definitionblock}{\(\sigma\)-Algebra Generated by a Partition}
+\[
+\sigma(\Pi)=\Big\{\bigcup_{i\in J} A_i \;:\; J\subseteq I\Big\}.
+\]
+\end{definitionblock}
+\pause
+
+\medskip
+\begin{itemize}
+  \item The sets \(A_i\) are the \textbf{atoms} (finest observable pieces).\pause
+  \item Any \(\mathcal{G}=\sigma(\Pi)\)-measurable random variable is \textbf{constant on each atom}:\pause
+  \[
+  Y \text{ is }\mathcal{G}\text{-measurable} \;\Longrightarrow\;
+  Y=\sum_{i\in I} c_i\,\mathbf{1}_{A_i}.
+  \]
+  \item Intuition: with information \(\sigma(\Pi)\), you only know \emph{which block \(A_i\)} occurred.
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+% \begin{frame}{Finite \(\Omega\): \(\sigma\)-Algebras are Partitions}
+
+% Assume \(\Omega\) is finite.
+% \pause
+
+% \begin{itemize}
+%   \item Any \(\sigma\)-algebra \(\mathcal{G}\) corresponds to a partition of \(\Omega\)
+%   into \emph{atoms} (indistinguishable blocks).\pause
+%   \item Two outcomes \(\omega,\omega'\) are in the same atom if
+%   \[
+%   \forall A\in\mathcal{G},\quad \mathbf{1}_A(\omega)=\mathbf{1}_A(\omega').\pause
+%   \]
+%   \item Events in \(\mathcal{G}\) are exactly unions of atoms.\pause
+% \end{itemize}
+
+% \medskip
+% \textbf{Why this matters:}\pause
+% conditioning on \(\mathcal{G}\) means \emph{averaging inside each atom}:
+% you can only use what is distinguishable under \(\mathcal{G}\).
+
+% \end{frame}
+
+% ======================================================
+\subsection{Sigma Algebras and Filtration}
+
+% --------------------------------------
+\begin{frame}{Filtrations: Information Over Time}
+
+\begin{definitionblock}{Filtration}
+A \emph{filtration} is an increasing family of \(\sigma\)-algebras
+\[
+(\mathcal{F}_t)_{t\ge0}
+\quad\text{with}\quad
+\mathcal{F}_s\subseteq\mathcal{F}_t
+\ \text{for } s\le t.
+\]
+\end{definitionblock}\pause
+
+\begin{itemize}
+  \item \(\mathcal{F}_t\): information available up to time \(t\).\pause
+  \item ``Information accumulates'' (you cannot forget).\pause
+  \item This is the mathematical object behind the word \emph{history}.
+\end{itemize}\pause
+
+\medskip
+\textbf{Example (discrete time):}\pause
+\begin{itemize}
+  \item \(\mathcal{F}_k = \sigma(X_1,\dots,X_k)\) generated by observations up to time \(k\).
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Example: Revealing Coin Tosses Over Time}
+
+We toss a coin three times:
+\[
+\Omega=\{HHH,HHT,HTH,HTT,THH,THT,TTH,TTT\}.
+\]
+\pause
+\medskip
+
+\textbf{After the 1st toss:}\pause\;
+we only know whether it was Head or Tail:
+\[
+\mathcal{F}_1=\{\emptyset,\Omega,A_H,A_T\},
+\]
+where
+\[
+A_H=\{HHH,HHT,HTH,HTT\},\qquad
+A_T=\{THH,THT,TTH,TTT\}.
+\]
+\pause
+\medskip
+
+\textbf{After the 2nd toss:}\pause\;
+we refine the partition into \(HH,HT,TH,TT\) blocks, so \(\mathcal{F}_2\) is richer than \(\mathcal{F}_1\).
+
+\medskip
+\begin{itemize}
+  \item \(\mathcal{F}_1\subseteq \mathcal{F}_2\subseteq \mathcal{F}_3=\mathcal{P}(\Omega)\).\pause
+  \item Each step adds events that become ``decidable'' with the new information.
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Adapted Processes: ``No Look-Ahead''}
+
+\begin{definitionblock}{Adaptedness}
+Given a filtration \((\mathcal{F}_t)_{t\ge 0}\), a process \((X_t)_{t\ge 0}\) is
+\emph{adapted} if, for every \(t\),
+\[
+X_t \ \text{is } \mathcal{F}_t\text{-measurable}.
+\]
+\end{definitionblock}\pause
+
+\begin{itemize}
+  \item \(X_t\) can be computed from the information available at time \(t\).\pause
+  \item Adaptedness is the mathematical way to say:
+  \emph{you cannot use future information to choose today’s quantity}.\pause
+\end{itemize}
+
+\medskip
+\textbf{Finance intuition:}\pause\;
+a trading strategy \(\Delta_t\) should be adapted: you decide \(\Delta_t\) using only what you know at time \(t\).
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Canonical Filtration: Generated by Observations}
+
+Often the information \emph{comes from what you observe}.
+\pause
+
+\begin{definitionblock}{Canonical Filtration of a Process}
+Given a process \(X=(X_t)_{t\ge 0}\), its \emph{canonical filtration} is
+\[
+\mathcal{F}^X_t := \sigma(X_s:\, s\le t).
+\]
+\end{definitionblock}\pause
+
+\begin{itemize}
+  \item \(\mathcal{F}^X_t\) is the smallest \(\sigma\)-algebra that makes \((X_s)_{s\le t}\) observable.\pause
+  \item In option pricing, a common choice is the filtration generated by traded prices:
+  \[
+  \mathcal{F}_t = \sigma(S_u:\,u\le t).
+  \]\pause
+\end{itemize}
+
+\medskip
+\textbf{Interpretation:}\pause\;
+your model should specify \emph{what is observable} and therefore \emph{what you are allowed to condition on}.
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Why Filtration Appears in Pricing}
+
+The payoff \(V_T\) is only known at maturity \(T\).\pause
+
+At an earlier time \(t\), the price should be based on the information available then:
+\[
+V_t \;=\; \text{``best estimate of discounted payoff, given } \mathcal{F}_t\text{''}.
+\]
+\pause
+
+\begin{itemize}
+  \item \(\mathcal{F}_t\) tells us \emph{what we know} at time \(t\).\pause
+  \item Conditional expectation is the mathematical operator for ``best estimate'' given information.\pause
+  \item Later in the course we will see the risk-neutral form:
+  \[
+  V_t = \mathbb{E}^{\mathbb{Q}}\!\left[\;e^{-\int_t^T r_s ds}\,V_T \ \big|\ \mathcal{F}_t\right].
+  \]
+\end{itemize}
+
+\end{frame}
+
+% ======================================================
+\subsection{Conditioning: Conditional Probability \& Distributions}
+
+% --------------------------------------
+\begin{frame}{Conditional Probability: The Core Idea}
+
+\begin{definitionblock}{Conditional Probability}
+Let \(A,B\) be events with \(\mathbb{P}(B)>0\).\pause
+The \emph{conditional probability} of \(A\) given \(B\) is
+\[
+\mathbb{P}(A\mid B)
+=
+\frac{\mathbb{P}(A\cap B)}{\mathbb{P}(B)}.
+\]
+\end{definitionblock}\pause
+
+\medskip
+\begin{itemize}
+  \item We restrict attention to the scenario where \(B\) occurred.\pause
+  \item Probabilities are \emph{renormalized} on \(B\).\pause
+  \item Intuition: conditioning = \textbf{updating} after observing information.\pause
+\end{itemize}
+
+\medskip
+\textbf{Two levels of conditioning:}\pause
+\begin{itemize}
+  \item on an event \(B\) \(\Rightarrow\) \(\mathbb{P}(\cdot\mid B)\),\pause
+  \item on information (a r.v.\ \(Y\) or a \(\sigma\)-algebra \(\mathcal{G}\)) \(\Rightarrow\) conditional laws / conditional expectation.
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Conditional Distributions}
+
+\textbf{Discrete case.}\pause
+
+Let \((X,Y)\) be discrete random variables.\pause
+For \(y\) such that \(\mathbb{P}(Y=y)>0\),\pause
+\[
+\mathbb{P}(X=x\mid Y=y)
+=
+\frac{\mathbb{P}(X=x,Y=y)}{\mathbb{P}(Y=y)}.
+\]\pause
+
+\medskip
+
+\textbf{Continuous case.}\pause
+
+If \((X,Y)\) has joint density \(f_{X,Y}\),\pause
+the conditional density of \(X\mid Y=y\) is\pause
+\[
+f_{X\mid Y=y}(x)
+=
+\frac{f_{X,Y}(x,y)}{f_Y(y)},
+\quad \text{if } f_Y(y)>0.
+\]\pause
+
+\medskip
+\begin{itemize}
+  \item Conditioning changes the law if \(X\) and \(Y\) are related.\pause
+  \item If \(X\) and \(Y\) are independent, conditioning has no effect.\pause
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Example: Discrete Conditional Distribution}
+
+Let \((X,Y)\) take values in \(\{0,1\}\times\{0,1\}\) with joint probabilities:\pause
+\[
+\begin{array}{c|cc}
+ & Y=0 & Y=1 \\ \hline
+X=0 & 0.3 & 0.1 \\
+X=1 & 0.2 & 0.4
+\end{array}
+\]
+\pause
+\medskip
+
+Compute the marginal of \(Y\):\pause
+\[
+\mathbb{P}(Y=1)=0.1+0.4=0.5,
+\qquad
+\mathbb{P}(Y=0)=0.5.
+\]
+\pause
+\medskip
+
+Then the conditional distribution of \(X\mid Y=1\) is:\pause
+\[
+\mathbb{P}(X=1\mid Y=1)=\frac{0.4}{0.5}=0.8,
+\qquad
+\mathbb{P}(X=0\mid Y=1)=0.2.
+\]
+\pause
+
+\medskip
+\textbf{Interpretation:}\pause
+observing \(Y=1\) strongly increases the likelihood of \(X=1\).
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Example: Continuous Conditional Density}
+
+Let \((X,Y)\) have joint density
+\[
+f_{X,Y}(x,y)=
+\begin{cases}
+2 & \text{if } 0<x<y<1,\\
+0 & \text{otherwise.}
+\end{cases}
+\]\pause
+
+\medskip
+
+First compute the marginal density of \(Y\):\pause
+\[
+f_Y(y)=\int_0^y 2\,dx = 2y,
+\quad 0<y<1.
+\]
+\pause
+\medskip
+
+The conditional density of \(X\mid Y=y\) is\pause
+\[
+f_{X\mid Y=y}(x)=\frac{2}{2y}=\frac{1}{y},
+\quad 0<x<y.
+\]
+\pause
+
+\textbf{Conclusion:}\pause
+\[
+X\mid Y=y \sim \mathrm{Uniform}(0,y).
+\]
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Example: Independence and Conditioning}
+
+Let \(X\sim \mathcal{N}(0,1)\) and \(Y\sim \mathrm{Exp}(1)\), independent.\pause
+
+\medskip
+Then the joint density factorizes:\pause
+\[
+f_{X,Y}(x,y)=f_X(x)f_Y(y).
+\]
+\pause
+Hence, for all \(y>0\),\pause
+\[
+f_{X\mid Y=y}(x)=f_X(x).
+\]
+\pause
+\medskip
+
+\textbf{Interpretation:}\pause
+\begin{itemize}
+  \item Knowing \(Y\) gives no information about \(X\).\pause
+  \item Conditioning does not change the distribution.\pause
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Why Conditioning Matters in Finance (Minimal Link)}
+
+At time \(t\), we do not know future quantities (payoffs, prices at \(T\)).\pause
+
+\medskip
+\begin{block}{Key idea}
+Pricing and risk are built from \textbf{conditional} objects:
+\[
+\text{``value today''} = \text{(discounted) expectation given today’s information}.
+\]
+\end{block}\pause
+
+\medskip
+\begin{itemize}
+  \item The information available at time \(t\) will be modeled by a \(\sigma\)-algebra \(\mathcal{F}_t\).\pause
+  \item Conditional expectation \(\mathbb{E}[\cdot\mid \mathcal{F}_t]\) is the tool that formalizes
+  ``best estimate given what is known at time \(t\)''.
+\end{itemize}
+
+\end{frame}
+
+% ======================================================
+\subsection{Conditional Expectation}
+
+% --------------------------------------
+\begin{frame}{Conditional Expectation: Motivation}
+
+\begin{itemize}
+  \item What is the \emph{best prediction} of a random variable \(X\), given partial information?\pause
+  \item Conditional expectation answers this question.\pause
+\end{itemize}
+
+\medskip
+\textbf{Goal:} predict \(X\) using only information contained in\pause
+\begin{itemize}
+  \item a random variable \(Y\), or\pause
+  \item a \(\sigma\)-algebra \(\mathcal{G}\).
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Conditional Expectation Given a \(\sigma\)-Algebra}
+
+\begin{definitionblock}{Conditional Expectation \(\mathbb{E}[X\mid\mathcal{G}]\)}
+Let \(X\in L^1(\Omega,\mathcal{F},\mathbb{P})\) and \(\mathcal{G}\subseteq\mathcal{F}\).\pause
+The conditional expectation \(\mathbb{E}[X\mid\mathcal{G}]\) is the (a.s.) unique \(\mathcal{G}\)-measurable random variable \(Z\) such that\pause
+\[
+\int_A Z\,d\mathbb{P} = \int_A X\,d\mathbb{P}
+\quad\text{for all }A\in\mathcal{G}.
+\]
+\end{definitionblock}\pause
+
+\medskip
+\begin{itemize}
+  \item \(\mathcal{G}\)-measurable means: \(Z\) uses only the information in \(\mathcal{G}\).\pause
+  \item ``Partial averaging'': \(Z\) matches \(X\) on every event you can test with \(\mathcal{G}\).
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{\(\mathbb{E}[X\mid Y]\): Concrete Definition}
+
+\textbf{Discrete case.}\pause
+
+If \((X,Y)\) is discrete,
+\[
+\mathbb{E}[X\mid Y=y]
+=
+\sum_x x\,\mathbb{P}(X=x\mid Y=y).
+\]
+\pause
+Equivalently,
+\[
+\mathbb{E}[X\mid Y]
+=
+g(Y)
+\quad\text{for some measurable function }g.
+\]
+\pause
+
+\medskip
+\textbf{Continuous case.}\pause
+
+If \((X,Y)\) has joint density,
+\[
+\mathbb{E}[X\mid Y=y]
+=
+\int x\, f_{X\mid Y=y}(x)\,dx.
+\]
+\pause
+
+\medskip
+\begin{itemize}
+  \item \(\mathbb{E}[X\mid Y]\) is a \emph{function of \(Y\)}.\pause
+  \item Hence it is itself a random variable.
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Conditional Expectation Given \(\sigma(Y)\) (Test Functions)}
+
+\begin{definitionblock}{Test Functions Formulation}
+Let \(X\in L^1\) and \(\mathcal{G}=\sigma(Y)\).\pause
+The conditional expectation \(\mathbb{E}[X\mid\sigma(Y)]\) is the unique \(\sigma(Y)\)-measurable random variable \(m(Y)\) such that\pause
+\[
+\mathbb{E}\!\big[m(Y)\,\varphi(Y)\big]
+=
+\mathbb{E}\!\big[X\,\varphi(Y)\big]
+\quad
+\text{for all bounded measurable functions } \varphi.
+\]
+\end{definitionblock}
+\pause
+
+\medskip
+\begin{itemize}
+  \item Here the test random variables are exactly functions of \(Y\): \(Z=\varphi(Y)\).\pause
+  \item Equivalent to testing indicators \(\varphi=\mathbf{1}_{\{Y\in B\}}\).\pause
+  \item Emphasizes the idea: \(\mathbb{E}[X\mid\sigma(Y)]\) is the best prediction using only information carried by \(Y\).
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Example 1: Discrete Conditional Expectation}
+
+Let \((X,Y)\) be discrete with joint distribution:\pause
+\[
+\begin{array}{c|cc}
+ & Y=0 & Y=1 \\ \hline
+X=0 & 0.3 & 0.1 \\
+X=1 & 0.2 & 0.4
+\end{array}
+\]
+\pause
+\medskip
+
+For \(Y=1\):\pause
+\[
+\mathbb{E}[X\mid Y=1]
+=
+0\cdot 0.2 + 1\cdot 0.8 = 0.8.
+\]
+\pause
+For \(Y=0\):\pause
+\[
+\mathbb{E}[X\mid Y=0]
+=
+0\cdot \tfrac{3}{5} + 1\cdot \tfrac{2}{5} = \tfrac{2}{5}.
+\]
+\pause
+
+Hence\pause
+\[
+\mathbb{E}[X\mid Y]
+=
+0.8\,\mathbf{1}_{\{Y=1\}}
++
+\tfrac{2}{5}\,\mathbf{1}_{\{Y=0\}}.
+\]
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Example 2: Continuous Conditional Expectation}
+
+With the previous density, we found:\pause
+\[
+X\mid Y=y \sim \mathrm{Uniform}(0,y).
+\]
+\pause
+
+Therefore\pause
+\[
+\mathbb{E}[X\mid Y=y]
+=
+\int_0^y x\,\frac{1}{y}\,dx
+=
+\frac{y}{2}.
+\]
+\pause
+
+\medskip
+\textbf{Conclusion:}\pause
+\[
+\mathbb{E}[X\mid Y]=\frac{Y}{2}.
+\]
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Three Properties You Will Use All the Time}
+
+Let \(X,X'\in L^1\), \(\mathcal{H}\subseteq\mathcal{G}\subseteq\mathcal{F}\), and \(Z\) be \(\mathcal{G}\)-measurable.\pause
+
+\begin{itemize}
+  \item \textbf{Linearity:}\pause
+  \[
+  \mathbb{E}[aX+X'\mid\mathcal{G}]
+  =
+  a\,\mathbb{E}[X\mid\mathcal{G}]
+  +\mathbb{E}[X'\mid\mathcal{G}].
+  \]
+  \pause
+  \item \textbf{Taking out what is known:}\pause
+  \[
+  \mathbb{E}[ZX\mid\mathcal{G}]
+  =
+  Z\,\mathbb{E}[X\mid\mathcal{G}].
+  \]
+  \pause
+  \item \textbf{Tower property:}\pause
+  \[
+  \mathbb{E}\!\left[\mathbb{E}[X\mid\mathcal{G}]\mid\mathcal{H}\right]
+  =
+  \mathbb{E}[X\mid\mathcal{H}].
+  \]
+\end{itemize}
+
+\medskip
+These identities are the engine behind dynamic pricing and martingales.
+
+\end{frame}
+
+% ======================================================
+\subsection{Stochastic Processes}
+
+% ======================================================
+\subsubsection{Discrete Time}
+
+% --------------------------------------
+\begin{frame}{Stochastic Processes (Discrete Time)}
+
+\begin{definitionblock}{Discrete-Time Stochastic Process}
+A \emph{stochastic process} in discrete time is a sequence of random variables
+\[
+(X_n)_{n=0,1,2,\dots}
+\quad \text{with } X_n:\Omega\to\mathcal{X}.
+\]
+\end{definitionblock}\pause
+
+\begin{itemize}
+  \item \(n\) represents time steps (days, weeks, trades, \dots).\pause
+  \item \(\mathcal{X}\) is the \emph{state space} (e.g. \(\mathbb{R}\), \(\mathbb{Z}\), a finite set).\pause
+  \item Think of \((X_0,X_1,\dots)\) as a \textbf{random time series}.\pause
+\end{itemize}
+
+\medskip
+\textbf{Information:}\pause
+\[
+\mathcal{F}_n := \sigma(X_0,\dots,X_n)
+\quad \text{(what is known up to time }n\text{).}
+\]
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Key Notions in Discrete Time}
+
+Let \((X_n)_{n\ge 0}\) be a process and \((\mathcal{F}_n)_{n\ge 0}\) a filtration.\pause
+
+\begin{itemize}
+  \item \textbf{Adaptedness:}\pause
+  \(X_n\) is \(\mathcal{F}_n\)-measurable for each \(n\).\pause
+  \item \textbf{Increments:}\pause
+  \(\Delta X_n := X_n - X_{n-1}\) (how the process moves).\pause
+  \item \textbf{Path / trajectory:}\pause
+  for a fixed \(\omega\), the sequence \(n\mapsto X_n(\omega)\).\pause
+  \item \textbf{Conditional dynamics:}\pause
+  quantities like \(\mathbb{P}(X_{n+1}\in A \mid \mathcal{F}_n)\).\pause
+\end{itemize}
+
+\medskip
+These are the objects we will use later to formalize \emph{prediction}, \emph{risk}, and \emph{pricing} over time.
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Example: Random Walk (Discrete Time)}
+
+\textbf{Model.}\pause\;
+Let \((\varepsilon_n)_{n\ge 1}\) be i.i.d. with
+\[
+\mathbb{P}(\varepsilon_n=+1)=\mathbb{P}(\varepsilon_n=-1)=\tfrac12.
+\]\pause
+Define
+\[
+S_0=0,
+\qquad
+S_n = \sum_{k=1}^n \varepsilon_k.
+\]
+\pause
+
+\begin{itemize}
+  \item \((S_n)\) is a simple \textbf{random walk}.\pause
+  \item It is adapted to \(\mathcal{F}_n=\sigma(\varepsilon_1,\dots,\varepsilon_n)\).\pause
+  \item Increments are independent and centered: \(\mathbb{E}[\varepsilon_{n+1}\mid \mathcal{F}_n]=0\).\pause
+\end{itemize}
+
+\medskip
+\textbf{Preview:}\pause\;
+under scaling, random walks converge to Brownian motion (continuous-time limit).
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Discrete-Time Asset Price Models (Preview)}
+
+In discrete time, a (toy) price process may be written as
+\[
+S_{n+1} = S_n \cdot U_{n+1}
+\quad \text{or} \quad
+S_{n+1}=S_n+\Delta S_{n+1},
+\]
+where \(U_{n+1}\) (or \(\Delta S_{n+1}\)) is random.\pause
+
+\medskip
+\begin{itemize}
+  \item We will later build \textbf{no-arbitrage} pricing in discrete time (binomial model).\pause
+  \item Pricing at time \(n\) will involve conditional expectation given \(\mathcal{F}_n\).\pause
+  \item This is the cleanest environment to understand replication and hedging.
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Stopping Times: ``Random Times'' Chosen Without Look-Ahead}
+
+\begin{definitionblock}{Stopping Time (Discrete Time)}
+Let \((\mathcal{F}_n)_{n\ge 0}\) be a filtration.
+A random variable \(\tau:\Omega\to\{0,1,2,\dots\}\cup\{\infty\}\) is a \emph{stopping time} if for every \(n\ge 0\),
+\[
+\{\tau \le n\}\in \mathcal{F}_n.
+\]
+\end{definitionblock}\pause
+
+\begin{itemize}
+  \item At time \(n\), you can decide whether ``\(\tau\le n\)'' happened using only information up to \(n\).\pause
+  \item \textbf{No look-ahead:} you are not allowed to use future values to define the stopping rule.\pause
+\end{itemize}
+
+\medskip
+\textbf{Interpretation:}\pause\;
+a stopping time is a \emph{time when something occurs} (e.g. hitting a level, default, exercise),
+detectable from the observed history.
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Examples of Stopping Times (Discrete Time)}
+
+Let \((S_n)_{n\ge 0}\) be an adapted process (e.g. a random walk or a price).\pause
+
+\begin{itemize}
+  \item \textbf{First hitting time of a level \(a\):}\pause
+  \[
+  \tau_a := \inf\{n\ge 0:\ S_n \ge a\}.
+  \]
+  \item \textbf{First time we enter a set \(B\):}\pause
+  \[
+  \tau_B := \inf\{n\ge 0:\ S_n \in B\}.
+  \]
+  \item \textbf{First time an alarm triggers:}\pause
+  \[
+  \tau := \inf\{n\ge 0:\ g(S_0,\dots,S_n)\ge c\},
+  \]
+  where \(g\) uses only past and present data.\pause
+\end{itemize}
+
+\medskip
+All these are stopping times because \(\{\tau\le n\}\) can be decided from \((S_0,\dots,S_n)\).\pause
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{What is \emph{Not} a Stopping Time? (Look-Ahead Examples)}
+
+Stopping times must be based only on current and past information.\pause
+
+\medskip
+Let \((S_n)\) be adapted. Consider:\pause
+\[
+\tau^\star := \inf\{n\ge 0:\ S_{n+1} > S_n\}.
+\]
+\pause
+\begin{itemize}
+  \item To know whether \(\tau^\star \le n\), you need to check \(S_{k+1}\) for some \(k\le n\), which may require values \emph{after} time \(n\).\pause
+  \item Hence \(\tau^\star\) is generally \textbf{not} a stopping time.\pause
+\end{itemize}
+
+\medskip
+\textbf{Rule of thumb:}\pause\;
+if the definition involves future values (like \(S_{n+1}\), maxima over a future interval, etc.),
+it is not a valid stopping time.
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Martingales vs.\ Sub/Supermartingales (Discrete Time)}
+
+Let \((X_n)_{n\ge 0}\) be an \emph{integrable} adapted process w.r.t.\ a filtration \((\mathcal{F}_n)_{n\ge 0}\).\pause
+
+\begin{definitionblock}{Definitions}
+\begin{itemize}
+  \item \textbf{Martingale:}\;
+  \(\displaystyle \mathbb{E}[X_{n+1}\mid \mathcal{F}_n]=X_n \) a.s.\ for all \(n\).\pause
+  \item \textbf{Submartingale:}\;
+  \(\displaystyle \mathbb{E}[X_{n+1}\mid \mathcal{F}_n]\ge X_n \) a.s.\ for all \(n\).\pause
+  \item \textbf{Supermartingale:}\;
+  \(\displaystyle \mathbb{E}[X_{n+1}\mid \mathcal{F}_n]\le X_n \) a.s.\ for all \(n\).\pause
+\end{itemize}
+\end{definitionblock}
+
+\medskip
+\begin{itemize}
+  \item Martingale: \textbf{fair game} (no predictable drift).\pause
+  \item Submartingale: \textbf{favorable on average} (expected to go up).\pause
+  \item Supermartingale: \textbf{unfavorable on average} (expected to go down).
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Intuition and Quick Examples}
+
+\textbf{Random walk (fair):}\pause\;
+If \(S_n=\sum_{k=1}^n \varepsilon_k\) with \(\mathbb{E}[\varepsilon_{n+1}\mid\mathcal{F}_n]=0\), then\pause
+\[
+\mathbb{E}[S_{n+1}\mid \mathcal{F}_n]=S_n
+\quad\Rightarrow\quad (S_n)\ \text{is a martingale.}
+\]
+\pause
+
+\medskip
+\textbf{Add a drift:}\pause\;
+If \(X_n=S_n+cn\) with \(c>0\), then\pause
+\[
+\mathbb{E}[X_{n+1}\mid\mathcal{F}_n]=X_n+c \ge X_n
+\quad\Rightarrow\quad (X_n)\ \text{is a submartingale.}
+\]
+\pause
+
+\medskip
+\textbf{Doob decomposition (message):}\pause
+\begin{itemize}
+  \item “Submartingale \(=\) martingale + increasing trend (on average)”.\pause
+  \item “Supermartingale \(=\) martingale + decreasing trend (on average)”.\pause
+\end{itemize}
+
+\medskip
+\begin{block}{Finance preview}
+Under a risk-neutral measure, \emph{discounted prices} are (typically) martingales.
+\end{block}
+
+\end{frame}
+
+\begin{frame}{The Information at a Random Time: \(\mathcal{F}_\tau\)}
+
+\begin{definitionblock}{\(\sigma\)-Algebra at a Stopping Time (Discrete Time)}
+Let \(\tau\) be a stopping time. Define
+\[
+\mathcal{F}_\tau
+:= \Big\{A\in\mathcal{F}:\; A\cap\{\tau\le n\}\in \mathcal{F}_n \ \text{for all } n\ge 0\Big\}.
+\]
+\end{definitionblock}\pause
+
+\begin{itemize}
+  \item \(\mathcal{F}_\tau\) contains the events that are \textbf{decidable at the random time \(\tau\)}.\pause
+  \item Think: “what you know \emph{when you stop}”.\pause
+\end{itemize}
+
+\medskip
+\textbf{Sanity checks:}\pause
+\begin{itemize}
+  \item If \(\tau\equiv n\) (deterministic), then \(\mathcal{F}_\tau=\mathcal{F}_n\).\pause
+  \item If \(\tau\le n\), then \(\mathcal{F}_\tau\subseteq \mathcal{F}_n\) (you never know more than time \(n\)).
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Martingales and Stopping Times (Optional Stopping --- Preview)}
+
+Let \((M_n)_{n\ge 0}\) be a martingale w.r.t.\ \((\mathcal{F}_n)\), and let \(\tau\) be a stopping time.\pause
+
+\begin{block}{Stopped Process}
+Define the \emph{stopped process}:
+\[
+M^{\tau}_n := M_{n\wedge \tau}.
+\]
+\end{block}\pause
+
+\begin{itemize}
+  \item \((M^\tau_n)\) is again a martingale (intuitively: you freeze the game when you stop).\pause
+\end{itemize}
+
+\medskip
+\begin{block}{Optional Stopping Theorem (safe version)}
+If \(\tau\) is bounded (e.g. \(\tau\le N\)), then\pause
+\[
+\mathbb{E}[M_\tau]=\mathbb{E}[M_0],
+\qquad\text{and}\qquad
+\mathbb{E}[M_N\mid \mathcal{F}_\tau]=M_\tau \ \text{a.s.}
+\]
+\end{block}\pause
+
+\medskip
+\textbf{Meaning:}\pause\;
+even if you choose the stopping time based on past observations,
+you cannot create an advantage in a fair game.
+
+\end{frame}
+
+% ======================================================
+\subsubsection{Continuous Time}
+
+% --------------------------------------
+\begin{frame}{Stochastic Processes (Continuous Time)}
+
+\begin{definitionblock}{Continuous-Time Stochastic Process}
+A \emph{continuous-time} stochastic process is a family of random variables
+\[
+(X_t)_{t\ge 0}
+\quad \text{with } X_t:\Omega\to\mathcal{X}.
+\]
+\end{definitionblock}\pause
+
+\begin{itemize}
+  \item Time \(t\) varies in a continuum (e.g. \(t\in[0,T]\)).\pause
+  \item We model information with a filtration \((\mathcal{F}_t)_{t\ge 0}\).\pause
+  \item Typically, \(X\) is assumed \textbf{adapted} (no future information).\pause
+\end{itemize}
+
+\medskip
+\textbf{Why continuous time?}\pause
+\begin{itemize}
+  \item convenient approximation for high-frequency trading environments,\pause
+  \item leads to powerful calculus tools (Ito calculus) and PDE connections.
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Sample Paths and Regularity (Continuous Time)}
+
+When working in continuous time, we often specify \emph{path properties}.\pause
+
+\begin{itemize}
+  \item \textbf{Continuous paths:}\pause\;
+  \(t\mapsto X_t(\omega)\) is continuous for almost every \(\omega\).\pause
+  \item \textbf{C\`adl\`ag paths:}\pause\;
+  right-continuous with left limits (common when jumps are allowed).\pause
+  \item \textbf{Finite variation vs.\ rough paths:}\pause\;
+  some processes have ``smooth'' accumulation, others are very irregular.\pause
+\end{itemize}
+
+\medskip
+\textbf{Finance preview:}\pause\;
+equity models often start with continuous paths (diffusions), then add jumps to capture events.
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Filtration in Continuous Time}
+
+\begin{itemize}
+  \item \(\mathcal{F}_t\) represents \textbf{everything observed up to time }t.\pause
+  \item Typical choice for a price process \(S\):\pause
+  \[
+  \mathcal{F}_t^S := \sigma(S_u:\,0\le u\le t).
+  \]
+  \item More generally, one may have several sources of information (prices, rates, volatility proxies, \dots).\pause
+\end{itemize}
+
+\medskip
+\begin{block}{Key constraint (no look-ahead)}
+Trading decisions at time \(t\) must be \(\mathcal{F}_t\)-measurable.
+\end{block}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Brownian Motion (One-Slide Preview)}
+
+Brownian motion will be the basic building block for continuous-time models.\pause
+
+\begin{definitionblock}{Standard Brownian Motion (informal)}
+A process \((W_t)_{t\ge 0}\) such that:\pause
+\begin{itemize}
+  \item \(W_0=0\),\pause
+  \item \(W_t-W_s \sim \mathcal{N}(0,t-s)\) for \(0\le s<t\),\pause
+  \item increments over disjoint intervals are independent,\pause
+  \item paths are continuous.\pause
+\end{itemize}
+\end{definitionblock}
+
+\medskip
+We will study it carefully later; for now, remember:\pause
+\[
+\text{``continuous time randomness''} \approx \text{Gaussian independent increments.}
+\]
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{From Processes to Pricing (Preview)}
+
+In continuous time, the price of a claim will be a process \((V_t)_{0\le t\le T}\).\pause
+
+\medskip
+\begin{itemize}
+  \item \(V_T\) is the payoff (known only at maturity).\pause
+  \item \(V_t\) is the value \emph{given} the current information \(\mathcal{F}_t\).\pause
+  \item Under no-arbitrage assumptions, we will obtain representations of the form:\pause
+  \[
+  V_t
+  =
+  \mathbb{E}^{\mathbb{Q}}\!\left[
+  e^{-\int_t^T r_s ds}\,V_T
+  \,\Big|\,\mathcal{F}_t
+  \right].
+  \]
+\end{itemize}
+
+\medskip
+\textbf{Next step:}\pause\;
+introduce martingales and the role of the risk-neutral measure.
+
+\end{frame}
+
+\begin{frame}{Stopping Times (Continuous Time)}
+
+\begin{definitionblock}{Stopping Time (Continuous Time)}
+Let \((\mathcal{F}_t)_{t\ge 0}\) be a filtration.
+A random variable \(\tau:\Omega\to[0,\infty]\) is a \emph{stopping time} if for every \(t\ge 0\),
+\[
+\{\tau \le t\}\in \mathcal{F}_t.
+\]
+\end{definitionblock}\pause
+
+\begin{itemize}
+  \item \(\tau\) is ``observable in real time'': by time \(t\), you can tell whether the event has happened.\pause
+  \item Many important random times in finance are stopping times.\pause
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Examples (Continuous Time) with Minimal Process Content}
+
+Let \((S_t)_{t\ge 0}\) be an adapted process (e.g. an asset price).\pause
+
+\begin{itemize}
+  \item \textbf{Barrier (hitting time):}\pause
+  \[
+  \tau_a := \inf\{t\ge 0:\ S_t \ge a\}.
+  \]
+  \item \textbf{Default time (first time a firm value hits a boundary):}\pause
+  \[
+  \tau_{\text{def}} := \inf\{t\ge 0:\ V_t \le L\}.
+  \]
+  \item \textbf{Exit time from an interval:}\pause
+  \[
+  \tau := \inf\{t\ge 0:\ S_t \notin (l,u)\}.
+  \]
+\end{itemize}
+
+\medskip
+These times are stopping times in the natural filtration of \((S_t)\) under mild regularity assumptions (e.g. right-continuous paths).\pause
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Why Stopping Times Matter in Option Pricing}
+
+\begin{itemize}
+  \item \textbf{American options:}\pause
+  the holder chooses an \emph{exercise time} \(\tau\) before maturity \(T\).\pause
+  \item The key constraint is \(\tau\) must be a \textbf{stopping time} w.r.t.\ the market information \((\mathcal{F}_t)\).\pause
+  \item Informally: you can exercise based on what you know \emph{now}, not on what will happen later.\pause
+\end{itemize}
+
+\medskip
+\begin{block}{Preview (optimal stopping)}
+For a discounted payoff \(G_t\), the American value is
+\[
+V_0 = \sup_{\tau \in \mathcal{T}_{[0,T]}}
+\mathbb{E}^{\mathbb{Q}}\!\left[G_\tau\right],
+\]
+where \(\mathcal{T}_{[0,T]}\) is the set of \((\mathcal{F}_t)\)-stopping times valued in \([0,T]\).
+\end{block}\pause
+
+\medskip
+This is the mathematical core behind ``exercise policies'' and dynamic programming.
+
+\end{frame}
+
+% --------------------------------------
+% --------------------------------------
+\begin{frame}{Martingales vs.\ Sub/Supermartingales (Continuous Time)}
+
+Let \((X_t)_{t\ge 0}\) be an \emph{integrable} adapted process w.r.t.\ a filtration \((\mathcal{F}_t)_{t\ge 0}\).\pause
+
+\begin{definitionblock}{Definitions (for all \(0\le s\le t\))}
+\begin{itemize}
+  \item \textbf{Martingale:}\;
+  \(\displaystyle \mathbb{E}[X_t\mid \mathcal{F}_s]=X_s \) a.s.\ \(\forall\, s\le t.\)\pause
+  \item \textbf{Submartingale:}\;
+  \(\displaystyle \mathbb{E}[X_t\mid \mathcal{F}_s]\ge X_s \) a.s.\ \(\forall\, s\le t.\)\pause
+  \item \textbf{Supermartingale:}\;
+  \(\displaystyle \mathbb{E}[X_t\mid \mathcal{F}_s]\le X_s \) a.s.\ \(\forall\, s\le t.\)\pause
+\end{itemize}
+\end{definitionblock}
+
+\medskip
+\begin{itemize}
+  \item Martingale: \textbf{fair game} (no predictable drift).\pause
+  \item Submartingale: \textbf{favorable on average} (expected to increase).\pause
+  \item Supermartingale: \textbf{unfavorable on average} (expected to decrease).
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{The Information at a Random Time: \(\mathcal{F}_\tau\) (Continuous Time)}
+
+\begin{definitionblock}{\(\sigma\)-Algebra at a Stopping Time}
+Let \(\tau\) be a stopping time w.r.t.\ \((\mathcal{F}_t)_{t\ge 0}\). Define
+\[
+\mathcal{F}_\tau
+:= \Big\{A\in\mathcal{F}:\; A\cap\{\tau\le t\}\in \mathcal{F}_t \ \text{for all } t\ge 0\Big\}.
+\]
+\end{definitionblock}\pause
+
+\begin{itemize}
+  \item \(\mathcal{F}_\tau\) contains the events that are \textbf{decidable when we stop at time \(\tau\)}.\pause
+  \item Think: “what is known up to the random time \(\tau\)”.\pause
+\end{itemize}
+
+\medskip
+\textbf{Sanity checks:}\pause
+\begin{itemize}
+  \item If \(\tau\equiv t_0\) (deterministic), then \(\mathcal{F}_\tau=\mathcal{F}_{t_0}\).\pause
+  \item If \(\tau\le t\), then \(\mathcal{F}_\tau\subseteq \mathcal{F}_t\) (you never know more than time \(t\)).
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Martingales and Stopping Times (Optional Stopping --- Preview, Continuous Time)}
+
+Let \((M_t)_{t\ge 0}\) be a martingale w.r.t.\ \((\mathcal{F}_t)\), and let \(\tau\) be a stopping time.\pause
+
+\begin{block}{Stopped Process}
+Define the \emph{stopped process}:
+\[
+M^{\tau}_t := M_{t\wedge \tau}.
+\]
+\end{block}\pause
+
+\begin{itemize}
+  \item \((M^\tau_t)_{t\ge 0}\) is again a martingale (you freeze the game when you stop).\pause
+\end{itemize}
+
+\medskip
+\begin{block}{Optional Stopping Theorem (safe version)}
+If \(\tau\) is bounded (e.g. \(\tau\le T\) a.s.) and \(M\) is integrable, then\pause
+\[
+\mathbb{E}[M_\tau]=\mathbb{E}[M_0],
+\qquad\text{and}\qquad
+\mathbb{E}[M_T\mid \mathcal{F}_\tau]=M_\tau \ \text{a.s.}
+\]
+\end{block}\pause
+
+\medskip
+\textbf{Meaning:}\pause\;
+choosing a stopping time based on observed information cannot create an advantage in a fair game.
+
+\end{frame}
+
+% ======================================================
+\section{Statistical Tools for Option Pricing}
+
+% ======================================================
+\subsection{Law of Large Numbers}
+
+% --------------------------------------
+\begin{frame}{Why We Need Statistical Tools (Finance Context)}
+In option pricing and risk management, we constantly need:\pause
+\begin{itemize}
+  \item to \textbf{describe} random quantities (returns, payoffs, rates),\pause
+  \item to \textbf{estimate} unknown parameters from data,\pause
+  \item to \textbf{approximate} expectations and probabilities numerically.\pause
+\end{itemize}
+
+\medskip
+Typical object:\pause
+\[
+\mathbb{E}\big[\text{discounted payoff}\big]
+\quad \text{or} \quad
+\mathbb{P}(\text{loss} > x).
+\]
+
+\medskip
+\textbf{Today:} the first tool behind estimation is the \textbf{Law of Large Numbers}.
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Law of Large Numbers (LLN)}
+
+\begin{definitionblock}{LLN (Informal Statement)}
+Let \((X_i)_{i\ge1}\) be i.i.d.\ with \(\mathbb{E}[|X_1|]<\infty\).\pause
+Then the sample average converges to the true mean:\pause
+\[
+\frac{1}{n}\sum_{i=1}^n X_i \longrightarrow \mathbb{E}[X_1]
+\quad \text{(typically a.s.).}
+\]
+\end{definitionblock}\pause
+
+\begin{itemize}
+  \item Averaging many independent observations reduces randomness.\pause
+  \item This justifies \textbf{estimating expectations by empirical means}.\pause
+\end{itemize}
+
+\medskip
+\textbf{Vocabulary:}\pause\;
+\[
+\widehat{\mu}_n := \frac{1}{n}\sum_{i=1}^n X_i
+\quad \text{is a consistent estimator of } \mu=\mathbb{E}[X_1].
+\]
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{LLN in Practice: Estimating Mean Return}
+
+Let \(R_1,\dots,R_n\) be daily returns (modeled as i.i.d.\ for a first approximation).\pause
+
+\medskip
+\textbf{Estimate the average return:}\pause
+\[
+\widehat{\mu}_n = \frac{1}{n}\sum_{i=1}^n R_i.
+\]
+
+\medskip
+\begin{itemize}
+  \item By LLN, \(\widehat{\mu}_n \to \mu\) as \(n\to\infty\).\pause
+  \item In finance, this is the basis of\pause
+  \begin{itemize}
+    \item historical drift estimates,\pause
+    \item risk premium estimates,\pause
+    \item expected P\&L backtests.\pause
+  \end{itemize}
+\end{itemize}
+
+\medskip
+\textbf{Warning (important in practice):}\pause\;
+i.i.d.\ is often false (volatility clustering, regime changes), but LLN remains the baseline intuition.
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Monte Carlo Preview: LLN Behind Pricing}
+
+Suppose we want to compute
+\[
+V_0 = \mathbb{E}\big[g(X)\big],
+\]
+for some payoff-like function \(g\).\pause
+
+\medskip
+\textbf{Monte Carlo estimator:}\pause
+\[
+\widehat{V}_n = \frac{1}{n}\sum_{i=1}^n g(X^{(i)}),
+\]
+where \(X^{(i)}\) are i.i.d.\ simulated copies of \(X\).\pause
+
+\medskip
+\begin{itemize}
+  \item By LLN, \(\widehat{V}_n \to V_0\).\pause
+  \item This is why simulation can price derivatives (once the model is chosen).\pause
+\end{itemize}
+
+\medskip
+\textbf{Next:}\pause\; CLT explains the error size \(\sim 1/\sqrt{n}\) (we will use it for confidence intervals).
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Central Limit Theorem (CLT): The Fluctuations Around the Mean}
+
+\begin{definitionblock}{CLT (i.i.d.\ case)}
+Let \((X_i)_{i\ge1}\) be i.i.d.\ with
+\(\mu=\mathbb{E}[X_1]\) and \(0<\sigma^2=\mathrm{Var}(X_1)<\infty\).\pause
+Then
+\[
+\sqrt{n}\,\Big(\widehat{\mu}_n-\mu\Big)
+=
+\sqrt{n}\left(\frac{1}{n}\sum_{i=1}^n X_i - \mu\right)
+\ \xRightarrow[n\to\infty]{}\ 
+\mathcal{N}(0,\sigma^2).
+\]
+Equivalently,
+\[
+\widehat{\mu}_n \approx \mathcal{N}\!\left(\mu,\frac{\sigma^2}{n}\right)
+\quad \text{for large } n.
+\]
+\end{definitionblock}\pause
+
+\begin{itemize}
+  \item LLN says \(\widehat{\mu}_n\to \mu\) (consistency).\pause
+  \item CLT quantifies the \textbf{typical error size}: \(\widehat{\mu}_n-\mu=\mathcal{O}(1/\sqrt{n})\).\pause
+  \item The limit is Gaussian: many small independent noises add up.
+\end{itemize}
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{CLT in Practice: Standard Error and Confidence Interval}
+
+From the CLT, for large \(n\),\pause
+\[
+\widehat{\mu}_n \approx \mathcal{N}\!\left(\mu,\frac{\sigma^2}{n}\right).
+\]\pause
+
+\medskip
+\textbf{Standard error (unknown \(\sigma\)):}\pause
+\[
+\widehat{\sigma}^2
+:= \frac{1}{n-1}\sum_{i=1}^n (X_i-\widehat{\mu}_n)^2,
+\qquad
+\mathrm{SE}(\widehat{\mu}_n) \approx \frac{\widehat{\sigma}}{\sqrt{n}}.
+\]\pause
+
+\medskip
+\textbf{Approx.\ 95\% confidence interval for \(\mu\):}\pause
+\[
+\widehat{\mu}_n \ \pm\ 1.96\,\frac{\widehat{\sigma}}{\sqrt{n}}.
+\]\pause
+
+\begin{itemize}
+  \item Bigger \(n\) shrinks the uncertainty like \(1/\sqrt{n}\).\pause
+  \item The CI is about \textbf{estimation error}, not about future returns.
+\end{itemize}
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Monte Carlo Error: CLT Behind the \(1/\sqrt{n}\) Rate}
+
+Recall the Monte Carlo estimator\pause
+\[
+\widehat{V}_n = \frac{1}{n}\sum_{i=1}^n g(X^{(i)}),
+\qquad
+V_0=\mathbb{E}[g(X)].
+\]\pause
+
+Assume \(\mathrm{Var}(g(X))=\sigma_g^2<\infty\).\pause
+Then the CLT gives\pause
+\[
+\sqrt{n}\,\big(\widehat{V}_n - V_0\big)
+\ \xRightarrow[n\to\infty]{}\ 
+\mathcal{N}(0,\sigma_g^2),
+\qquad
+\widehat{V}_n \approx \mathcal{N}\!\left(V_0,\frac{\sigma_g^2}{n}\right).
+\]\pause
+
+\medskip
+\textbf{Practical takeaway:}\pause
+\begin{itemize}
+  \item Typical pricing error is \(\approx \sigma_g/\sqrt{n}\).\pause
+  \item To divide the error by \(2\), you need \(\approx 4\times\) more simulations.\pause
+\end{itemize}
+
+\medskip
+\textbf{This motivates variance reduction} (antithetic variates, control variates, importance sampling).
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{When CLT Can Mislead (Finance Context)}
+
+The CLT is a powerful baseline, but it has assumptions.\pause
+
+\begin{itemize}
+  \item \textbf{Dependence:} returns are not i.i.d.\ (volatility clustering).\pause
+  \item \textbf{Heavy tails:} if variance is infinite, the Gaussian limit may fail.\pause
+  \item \textbf{Non-stationarity:} regime changes break the idea of one fixed \(\mu,\sigma\).\pause
+\end{itemize}\pause
+
+\medskip
+\textbf{Still:}\pause\;
+under weak dependence and finite variance, CLT-type results often remain approximately valid,
+but standard errors must be adapted (e.g.\ HAC / block bootstrap).\pause
+
+\medskip
+\textbf{Rule of thumb:}\pause\;
+use CLT as a first approximation, and sanity-check with diagnostics / robust methods.
+\end{frame}
+
+% ======================================================
+\subsection{Cumulative distribution Function}
+
+% --------------------------------------
+\begin{frame}{Cumulative Distribution Function (CDF)}
+
+\begin{definitionblock}{CDF}
+For a real-valued random variable \(X\), the \emph{cumulative distribution function} is\pause
+\[
+F_X(x) := \mathbb{P}(X \le x),
+\qquad x\in\mathbb{R}.
+\]
+\end{definitionblock}\pause
+
+\begin{itemize}
+  \item \(F_X\) fully characterizes the law of \(X\).\pause
+  \item Properties:\pause
+  \begin{itemize}
+    \item non-decreasing,\pause
+    \item right-continuous,\pause
+    \item \(\lim_{x\to-\infty}F_X(x)=0\), \(\lim_{x\to+\infty}F_X(x)=1\).
+  \end{itemize}
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{From CDF to Probability Statements}
+
+\textbf{Probabilities from the CDF:}\pause
+\[
+\mathbb{P}(a < X \le b) = F_X(b) - F_X(a).
+\]
+\pause
+
+\medskip
+\textbf{Quantiles:}\pause\;
+the \(\alpha\)-quantile (Value-at-Risk type object) is
+\[
+q_\alpha := \inf\{x:\ F_X(x)\ge \alpha\}.
+\]
+\pause
+
+\medskip
+\begin{itemize}
+  \item In risk management, \(q_{0.01}\) or \(q_{0.05}\) are common.\pause
+  \item In option pricing, we often need tail probabilities under a chosen measure.
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Continuous Case: PDF and CDF}
+
+If \(X\) admits a density \(f_X\), then\pause
+\[
+F_X(x) = \int_{-\infty}^{x} f_X(u)\,du,
+\qquad
+f_X(x) = \frac{d}{dx}F_X(x)\ \text{(a.e.)}.
+\]
+\pause
+
+\medskip
+\begin{itemize}
+  \item CDF is always defined.\pause
+  \item Density may fail to exist (mixtures, atoms, discrete components).\pause
+\end{itemize}
+
+\medskip
+\textbf{Finance angle:}\pause\;
+option prices are often integrals against densities (or expectations), while risk measures often read directly from CDF/quantiles.
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Empirical CDF (Data)}
+
+Given observations \(X_1,\dots,X_n\), define the empirical CDF:\pause
+\[
+\widehat{F}_n(x)
+=
+\frac{1}{n}\sum_{i=1}^n \mathbf{1}_{\{X_i\le x\}}.
+\]
+\pause
+
+\begin{itemize}
+  \item \(\widehat{F}_n(x)\) is the observed frequency of \(\{X\le x\}\).\pause
+  \item By LLN, for each fixed \(x\): \(\widehat{F}_n(x)\to F_X(x)\).\pause
+\end{itemize}
+
+\medskip
+\textbf{Use cases:}\pause
+\begin{itemize}
+  \item non-parametric risk estimation (historical VaR/ES),\pause
+  \item checking model fit (QQ-plots, tail behavior).
+\end{itemize}
+
+\end{frame}
+
+% ======================================================
+\subsection{Gaussian Vectors}
+
+% --------------------------------------
+\begin{frame}{Gaussian Random Variables and Vectors}
+
+\begin{definitionblock}{Gaussian r.v.}
+A random variable \(X\) is Gaussian if \(X\sim \mathcal{N}(m,\sigma^2)\).\pause
+\end{definitionblock}
+
+\medskip
+\begin{definitionblock}{Gaussian Vector}
+A vector \(X\in\mathbb{R}^d\) is Gaussian if every linear combination \(a^\top X\) is Gaussian, for all \(a\in\mathbb{R}^d\).\pause
+\end{definitionblock}\pause
+
+\begin{itemize}
+  \item The law is fully characterized by mean \(m\in\mathbb{R}^d\) and covariance matrix \(\Sigma\in\mathbb{R}^{d\times d}\).\pause
+  \item Notation: \(X\sim \mathcal{N}(m,\Sigma)\).
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Linear Transformations}
+
+Let \(X\sim \mathcal{N}(m,\Sigma)\), and take \(A\in\mathbb{R}^{k\times d}\), \(b\in\mathbb{R}^k\).\pause
+
+\begin{block}{Stability}
+\[
+AX + b \sim \mathcal{N}(Am+b,\ A\Sigma A^\top).
+\]
+\end{block}\pause
+
+\begin{itemize}
+  \item Linear portfolios of Gaussian risk factors are Gaussian.\pause
+  \item This is why Gaussian models appear naturally in factor risk and interest-rate modeling.
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Conditional Gaussian (Key Formula)}
+
+Partition a Gaussian vector as
+\[
+\begin{pmatrix} X \\ Y \end{pmatrix}
+\sim \mathcal{N}\!\left(
+\begin{pmatrix} \mu_X \\ \mu_Y \end{pmatrix},
+\begin{pmatrix}
+\Sigma_{XX} & \Sigma_{XY}\\
+\Sigma_{YX} & \Sigma_{YY}
+\end{pmatrix}
+\right).
+\]\pause
+
+\medskip
+Then \(X\mid Y=y\) is Gaussian with:\pause
+\[
+\mathbb{E}[X\mid Y=y]
+=
+\mu_X + \Sigma_{XY}\Sigma_{YY}^{-1}(y-\mu_Y),
+\]
+\[
+\mathrm{Cov}(X\mid Y=y)
+=
+\Sigma_{XX}-\Sigma_{XY}\Sigma_{YY}^{-1}\Sigma_{YX}.
+\]
+\pause
+
+\begin{itemize}
+  \item Conditioning stays in the Gaussian family.\pause
+  \item The conditional mean is \textbf{affine} in the observed value \(y\).
+\end{itemize}
+
+\end{frame}
+
+% --------------------------------------
+\begin{frame}{Why Gaussian Vectors Matter in Finance}
+
+\begin{itemize}
+  \item \textbf{CLT intuition:} sums/averages of many small shocks tend to look Gaussian.\pause
+  \item \textbf{Multivariate modeling:} returns of multiple assets, factor models, yield curve moves.\pause
+  \item \textbf{Bridge to continuous time:} Brownian motion is a \emph{Gaussian process} (finite-dimensional distributions are Gaussian).\pause
+\end{itemize}
+
+\medskip
+\begin{block}{Practical takeaway}
+Gaussian vectors make many computations explicit (portfolios, conditionals, regressions), but tails are often underestimated in reality.
+\end{block}
+
+\end{frame}
+
+
+
+
+
+
+
+\end{document}
